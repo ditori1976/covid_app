@@ -53,14 +53,49 @@ ecdc_raw.loc[:, 'country'].replace(
 
 countries_codes = pd.read_csv('data/country_codes.csv')
 
+countries_codes.rename(columns={'name': 'country',
+                                'alpha-3': 'iso_alpha',
+                                'alpha-2': 'geoId',
+                                'country-code': 'iso_num'}, inplace=True)
+countries_codes.drop(columns=['iso_3166-2', 'intermediate-region', 'region-code',
+                              'sub-region-code', 'intermediate-region-code'], inplace=True)
 
+countries_codes.loc[countries_codes.geoId == 'KP', 'country'] = 'North Korea'
+countries_codes.loc[countries_codes.geoId == 'KR', 'country'] = 'South Korea'
+countries_codes.loc[countries_codes.geoId == 'VN', 'country'] = 'Vietnam'
+countries_codes.loc[countries_codes.geoId == 'IR', 'country'] = 'Iran'
+countries_codes.loc[countries_codes.geoId ==
+                    'GB', 'country'] = 'United Kingdom'
+
+countries_un = pd.read_csv('data/countries.csv')
+countries_un.rename(columns={'name': 'country'}, inplace=True)
+countries_un.drop(columns=['Rank', 'pop2018', 'Density'], inplace=True)
+countries_un.loc[:, 'pop2019'] = countries_un.pop2019.mul(1000)
+countries_un.loc[:, 'country'].replace(
+    to_replace=r'United States', value='United States of America', regex=True, inplace=True)
+countries_un.loc[:, 'country'].replace(
+    to_replace=r'Russia', value='Russian Federation', regex=True, inplace=True)
+
+per_country = ecdc_raw.iloc[:, [0, 4, 5]].groupby(ecdc_raw.iloc[:, 6]).sum()
+
+#
+summary_country = pd.merge(per_country, countries_un,
+                           how='left', on=['country'])
+summary_country = pd.merge(
+    summary_country, countries_codes,  how='left', on=['country'])
+summary_country.loc[:, 'Cases/Mio. capita'] = summary_country.cases / \
+    summary_country.pop2019*1000000
+summary_country.loc[:, 'Deaths/Mio. capita'] = summary_country.deaths / \
+    summary_country.pop2019*1000000
+
+print(summary_country.columns)
 app = dash.Dash(__name__)
 
 #app.scripts.config.serve_locally = True
 #app.css.config.serve_locally = True
 
 app.layout = html.Div([
-    html.H1(MAPBOX)
+    html.H1(summary_country.columns)
 ])
 
 application = app.server
