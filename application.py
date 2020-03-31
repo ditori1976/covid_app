@@ -25,6 +25,9 @@ import pandas as pd
 import plotly.graph_objects as go
 from urllib.request import urlopen
 import json
+import requests
+import sys
+import io
 
 if "HOST" in os.environ:
     host = os.environ.get("HOST")
@@ -32,7 +35,24 @@ else:
     host = "127.0.0.1"
 
 MAPBOX = os.environ.get("MAPBOX")
-print(MAPBOX)
+
+with urlopen(
+    "https://raw.githubusercontent.com/mapbox/geojson-vt-cpp/master/data/countries.geojson"
+) as response:
+    countries = json.load(response)
+
+url = "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
+s = requests.get(url).content
+ecdc_raw = pd.read_csv(io.StringIO(s.decode('latin-1')))
+
+ecdc_raw.rename(columns={'countriesAndTerritories': 'country'}, inplace=True)
+ecdc_raw.iloc[:, 6].replace(
+    to_replace=r'_', value=' ', regex=True, inplace=True)
+ecdc_raw.loc[:, 'country'].replace(
+    to_replace=r'Russia', value='Russian Federation', regex=True, inplace=True)
+
+countries_codes = pd.read_csv('data/country_codes.csv')
+
 
 app = dash.Dash(__name__)
 
