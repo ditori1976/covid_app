@@ -29,7 +29,10 @@ import requests
 import sys
 import io
 
-dirname = os.path.dirname(__file__)
+
+dirname = os.path.abspath(__file__)  # dirname
+dirname = os.path.dirname(os.path.abspath(__file__))
+
 
 if "HOST" in os.environ:
     host = os.environ.get("HOST")
@@ -37,6 +40,7 @@ else:
     host = "127.0.0.1"
 
 MAPBOX = os.environ.get("MAPBOX")
+print(MAPBOX)
 
 with urlopen(
     "https://raw.githubusercontent.com/mapbox/geojson-vt-cpp/master/data/countries.geojson"
@@ -53,8 +57,8 @@ ecdc_raw.iloc[:, 6].replace(
 ecdc_raw.loc[:, 'country'].replace(
     to_replace=r'Russia', value='Russian Federation', regex=True, inplace=True)
 
-print(ecdc_raw.head())
 
+print(dirname + '/data/country_codes.csv')
 countries_codes = pd.read_csv(dirname + '/data/country_codes.csv')
 
 countries_codes.rename(columns={'name': 'country',
