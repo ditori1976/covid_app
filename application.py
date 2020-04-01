@@ -88,10 +88,10 @@ summary_country = pd.merge(per_country, countries_un,
                            how='left', on=['country'])
 summary_country = pd.merge(
     summary_country, countries_codes,  how='left', on=['country'])
-summary_country.loc[:, 'Cases/Mio. capita'] = summary_country.cases / \
-    summary_country.pop2019*1000000
-summary_country.loc[:, 'Deaths/Mio. capita'] = summary_country.deaths / \
-    summary_country.pop2019*1000000
+summary_country.loc[:, 'Cases/Mio. capita'] = (summary_country.cases /
+                                               summary_country.pop2019*1000000).round(0)
+summary_country.loc[:, 'Deaths/Mio. capita'] = (summary_country.deaths /
+                                                summary_country.pop2019*1000000).round(0)
 
 
 layout = go.Layout(yaxis=dict(type="linear", autorange=True))
@@ -113,7 +113,7 @@ fig.update_layout(legend_orientation="h", legend=dict(
     x=0, y=.95), plot_bgcolor='white', autosize=True, height=400)
 
 per_country = ecdc_raw.iloc[:, [0, 4, 5]].groupby(ecdc_raw.iloc[:, 6]).sum()
-min_cases = 2000
+min_cases = 20000
 per_country_max = per_country[per_country.iloc[:, 0] > min_cases]
 per_country_max = per_country_max.sort_values('cases')
 fig_cc = go.Figure(data=[go.Bar(name='confirmed infections', x=per_country_max.index,
