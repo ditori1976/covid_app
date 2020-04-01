@@ -40,7 +40,6 @@ else:
     host = "127.0.0.1"
 
 MAPBOX = os.environ.get("MAPBOX")
-print(MAPBOX)
 
 with urlopen(
     "https://raw.githubusercontent.com/mapbox/geojson-vt-cpp/master/data/countries.geojson"
@@ -57,8 +56,6 @@ ecdc_raw.iloc[:, 6].replace(
 ecdc_raw.loc[:, 'country'].replace(
     to_replace=r'Russia', value='Russian Federation', regex=True, inplace=True)
 
-
-print(dirname + '/data/country_codes.csv')
 countries_codes = pd.read_csv(dirname + '/data/country_codes.csv')
 
 countries_codes.rename(columns={'name': 'country',
@@ -136,7 +133,7 @@ app.layout = html.Div(
             [
                 dbc.Col(
                     html.Img(
-                        src=app.get_asset_url("logo.PNG"),
+                        src=app.get_asset_url("logo.png"),
                         height=50,
                         # style={'margin': 5},
                     ),
