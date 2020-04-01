@@ -38,6 +38,12 @@ if "HOST" in os.environ:
     host = os.environ.get("HOST")
 else:
     host = "127.0.0.1"
+    
+if "PORT" in os.environ:
+    port = os.environ.get("PORT")
+else:
+    port = "8080"
+
 
 MAPBOX = os.environ.get("MAPBOX")
 
@@ -259,4 +265,4 @@ def update_figure(selected):
 
 application = app.server
 if __name__ == '__main__':
-    application.run(debug=True, port=8080)
+    application.run(debug=True, port=port, host=host)
