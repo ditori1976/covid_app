@@ -29,6 +29,8 @@ import requests
 import sys
 import io
 
+dirname = os.path.dirname(__file__)
+
 if "HOST" in os.environ:
     host = os.environ.get("HOST")
 else:
@@ -53,7 +55,7 @@ ecdc_raw.loc[:, 'country'].replace(
 
 print(ecdc_raw.head())
 
-countries_codes = pd.read_csv('/data/country_codes.csv')
+countries_codes = pd.read_csv(dirname + '/data/country_codes.csv')
 
 countries_codes.rename(columns={'name': 'country',
                                 'alpha-3': 'iso_alpha',
@@ -69,7 +71,7 @@ countries_codes.loc[countries_codes.geoId == 'IR', 'country'] = 'Iran'
 countries_codes.loc[countries_codes.geoId ==
                     'GB', 'country'] = 'United Kingdom'
 
-countries_un = pd.read_csv('/data/countries.csv')
+countries_un = pd.read_csv(dirname + '/data/countries.csv')
 countries_un.rename(columns={'name': 'country'}, inplace=True)
 countries_un.drop(columns=['Rank', 'pop2018', 'Density'], inplace=True)
 countries_un.loc[:, 'pop2019'] = countries_un.pop2019.mul(1000)
