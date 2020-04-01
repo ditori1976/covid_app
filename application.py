@@ -43,7 +43,7 @@ with urlopen(
 
 url = "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 s = requests.get(url).content
-ecdc_raw = pd.read_csv(io.StringIO(s.decode('latin-1')))
+ecdc_raw = pd.read_csv(io.StringIO(s.decode('utf-8')))
 
 ecdc_raw.rename(columns={'countriesAndTerritories': 'country'}, inplace=True)
 ecdc_raw.iloc[:, 6].replace(
@@ -51,7 +51,9 @@ ecdc_raw.iloc[:, 6].replace(
 ecdc_raw.loc[:, 'country'].replace(
     to_replace=r'Russia', value='Russian Federation', regex=True, inplace=True)
 
-countries_codes = pd.read_csv('data/country_codes.csv')
+print(ecdc_raw.head())
+
+countries_codes = pd.read_csv('app/data/country_codes.csv')
 
 countries_codes.rename(columns={'name': 'country',
                                 'alpha-3': 'iso_alpha',
@@ -67,7 +69,7 @@ countries_codes.loc[countries_codes.geoId == 'IR', 'country'] = 'Iran'
 countries_codes.loc[countries_codes.geoId ==
                     'GB', 'country'] = 'United Kingdom'
 
-countries_un = pd.read_csv('data/countries.csv')
+countries_un = pd.read_csv('app/data/countries.csv')
 countries_un.rename(columns={'name': 'country'}, inplace=True)
 countries_un.drop(columns=['Rank', 'pop2018', 'Density'], inplace=True)
 countries_un.loc[:, 'pop2019'] = countries_un.pop2019.mul(1000)
@@ -88,17 +90,22 @@ summary_country.loc[:, 'Cases/Mio. capita'] = summary_country.cases / \
 summary_country.loc[:, 'Deaths/Mio. capita'] = summary_country.deaths / \
     summary_country.pop2019*1000000
 
-print(summary_country.columns)
+
+layout = go.Layout(yaxis=dict(type="linear", autorange=True))
+layout_log = go.Layout(yaxis=dict(type="linear", autorange=True))
+
 app = dash.Dash(__name__)
+application = app.server
+
 
 #app.scripts.config.serve_locally = True
 #app.css.config.serve_locally = True
 
 app.layout = html.Div([
-    html.H1(summary_country.columns)
+    html.H1(ecdc_raw.columns)
 ])
 
-application = app.server
+# start server
 
 if __name__ == '__main__':
     application.run(debug=True, port=8080)
