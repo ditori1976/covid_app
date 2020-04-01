@@ -187,7 +187,11 @@ app.layout = html.Div(
                     ),
                     width=6,
                     style={"margin": 0},
-                ),
+                )
+            ]
+        ),
+        dbc.Row(
+            [
                 dbc.Col(
                     [
                         html.Div(
