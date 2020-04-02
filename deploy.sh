@@ -12,4 +12,4 @@ if [ -z "$env" ]; then
 fi
 
 git commit -m $message
-eb deploy $env
+eb deploy use $env
