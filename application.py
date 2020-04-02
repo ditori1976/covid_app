@@ -20,14 +20,10 @@ import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 
-# import dash_table
 import pandas as pd
 import plotly.graph_objects as go
 
-# import sys
-
-
-# dirname = os.path.dirname(os.path.abspath(__file__))
+from tools import DataLoader
 
 if "HOST" in os.environ:
     host = os.environ.get("HOST")
@@ -42,20 +38,28 @@ else:
 
 MAPBOX = os.environ.get("MAPBOX")
 
-# load data
-from load_data import ecdc_raw, countries, per_country, summary_country
-
-all_infections_deaths = ecdc_raw.iloc[:, [0, 4, 5]].groupby(["dateRep"]).sum().cumsum()
-
-per_country = ecdc_raw.iloc[:, [0, 4, 5]].groupby(ecdc_raw.iloc[:, 6]).sum()
 min_cases = 20000
-per_country_max = per_country[per_country.iloc[:, 0] > min_cases]
+
+# load data
+def get_data():
+    global data
+    data = DataLoader()
+
+
+get_data()
+
+# prepare data
+all_infections_deaths = (
+    data.ecdc_raw.iloc[:, [0, 4, 5]].groupby(["dateRep"]).sum().cumsum()
+)
+per_country_max = data.per_country[data.per_country.iloc[:, 0] > min_cases]
 per_country_max = per_country_max.sort_values("cases")
 
 # layout
 layout = go.Layout(yaxis=dict(type="linear", autorange=True))
 layout_log = go.Layout(yaxis=dict(type="linear", autorange=True))
 
+# figures
 fig = go.Figure(
     data=[
         go.Scatter(
@@ -98,6 +102,7 @@ fig_cc.update_layout(
     height=400,
 )
 
+# create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.themes.GRID])
 
 app.layout = html.Div(
@@ -193,7 +198,7 @@ app.layout = html.Div(
 )
 def update_figure(selected):
     # .groupby(['iso_alpha', 'country']).mean().reset_index()
-    dff = summary_country
+    dff = data.summary_country
 
     def config(text):
         if text == "cases":
@@ -205,7 +210,7 @@ def update_figure(selected):
 
     title, limit = config(selected)
     trace = go.Choroplethmapbox(
-        geojson=countries,
+        geojson=data.countries,
         locations=dff["iso_alpha"],
         z=dff[title],
         text=dff["country"],

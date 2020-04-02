@@ -10,7 +10,7 @@ dirname = os.path.dirname(os.path.abspath(__file__))
 
 url = "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
 s = requests.get(url).content
-ecdc_raw = pd.read_csv(io.StringIO(s.decode("utf-8")), parse_dates=["dateRep"])
+ecdc_raw = pd.read_csv(io.StringIO(s.decode("utf-8")), parse_dates=["dateRep"], error_bad_lines=False)
 
 ecdc_raw = ecdc_raw[ecdc_raw.dateRep <= dt.datetime.today()].sort_values("dateRep")
 
