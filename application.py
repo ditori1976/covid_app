@@ -88,6 +88,16 @@ fig_cc.update_layout(
     height=400,
 )
 
+style_dropdown = {
+    "width": "100%",
+    "border-width": 0,
+    "background-color": "#faf9f7",
+    # "text-align": "center",
+    # "padding": "20 0",
+    "display": "inline-block",
+    "verticalAlign": "middle",
+}
+
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.themes.GRID])
 
@@ -96,9 +106,11 @@ app.layout = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Img(src=app.get_asset_url("logo.png"), height=50), width=1,
+                    html.Img(src=app.get_asset_url("logo.png"), height=50),
+                    width=1,
+                    style={"text-align": "center"},
                 ),
-                dbc.Col(html.H1("COVID-19"), width=2,),
+                dbc.Col(html.H1("COVID-19"), width=4, lg=3, style={"margin-top": 10}),
                 dbc.Col(
                     html.Div(
                         id="select-indicator",
@@ -110,43 +122,33 @@ app.layout = html.Div(
                                     {"label": "Cases/Mio. capita ", "value": "cases"},
                                     {"label": "Deaths/Mio. capita ", "value": "deaths"},
                                 ],
-                                style={
-                                    "display": "block",
-                                    "margin-left": "auto",
-                                    "margin-right": "auto",
-                                    "width": "100%",
-                                    "border-width": 0,
-                                    "background-color": "#faf9f7",
-                                    "text-align": "center",
-                                    "width": 200,
-                                },
+                                style=style_dropdown,
                             )
                         ],
+                        style={"display": "flex"},
                     ),
-                    width=2,
+                    width=6,
+                    lg=2,
                     style={"margin-top": 20},
                 ),
             ],
             justify="center",
-            #no_gutters=True,
+            no_gutters=True,
+            style={"margin-top": 5},
         ),
         dbc.Row(
             [
                 dbc.Col(
                     html.Div(
                         id="div-main-map",
-                        children=[
-                            dcc.Graph(id="main-map")#, style={ "padding": 0},
-                        ]
-                        #style={ "padding": 0},
+                        children=[dcc.Graph(id="main-map")]  # , style={ "padding": 0},
+                        # style={ "padding": 0},
                     ),
                     width=12,
                     lg=6,
                 )
             ],
-            
             justify="center",
-  
         ),
         dbc.Row(
             [
@@ -157,8 +159,8 @@ app.layout = html.Div(
                             children=[dcc.Graph(id="timeline", figure=fig),],
                         )
                     ],
-                width=12,
-                lg=6
+                    width=12,
+                    lg=6,
                 )
             ],
             justify="center",
@@ -229,7 +231,7 @@ def update_figure(selected):
                 mapbox_zoom=0.5,
                 mapbox_center={"lat": 25, "lon": 0},
                 mapbox_accesstoken=MAPBOX,
-                #margin={"r": 0, "t": 0, "l": 0, "b": 0},
+                # margin={"r": 0, "t": 0, "l": 0, "b": 0},
             ),
         },
         {"data": [scatter]},
