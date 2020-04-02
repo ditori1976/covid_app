@@ -63,15 +63,8 @@ layout_log = go.Layout(yaxis=dict(type="linear", autorange=True))
 fig = go.Figure(
     data=[
         go.Scatter(
-            name="Cases",
-            x=all_infections_deaths.index,
-            y=all_infections_deaths.iloc[:, 0],
-        ),
-        go.Scatter(
-            name="Deaths",
-            x=all_infections_deaths.index,
-            y=all_infections_deaths.iloc[:, 1],
-        ),
+            x=all_infections_deaths.index, y=all_infections_deaths.loc[:, "cases"],
+        )
     ],
     layout=layout,
 )
@@ -84,15 +77,8 @@ fig.update_layout(
 )
 
 fig_cc = go.Figure(
-    data=[
-        go.Bar(
-            name="confirmed infections",
-            x=per_country_max.index,
-            y=per_country_max.iloc[:, 0],
-        ),
-        go.Bar(name="deaths", x=per_country_max.index, y=per_country_max.iloc[:, 1]),
-    ],
-    layout=layout_log,
+    data=[go.Bar(x=per_country_max.index, y=per_country_max.loc[:, "cases"],)],
+    layout=layout,
 )
 fig_cc.update_layout(
     legend_orientation="h",
@@ -142,7 +128,7 @@ app.layout = html.Div(
                 ),
             ],
             justify="center",
-            no_gutters=True,
+            #no_gutters=True,
         ),
         dbc.Row(
             [
@@ -150,12 +136,29 @@ app.layout = html.Div(
                     html.Div(
                         id="div-main-map",
                         children=[
-                            dcc.Graph(id="main-map", style={"margin": 0, "padding": 0},)
-                        ],
-                        style={"margin": 0, "padding": 0},
+                            dcc.Graph(id="main-map")#, style={ "padding": 0},
+                        ]
+                        #style={ "padding": 0},
                     ),
-                    width=6,
-                    style={"margin": 0},
+                    width=12,
+                    lg=6,
+                )
+            ],
+            
+            justify="center",
+  
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Div(
+                            id="div-timeline",
+                            children=[dcc.Graph(id="timeline", figure=fig),],
+                        )
+                    ],
+                width=12,
+                lg=6
                 )
             ],
             justify="center",
@@ -165,25 +168,12 @@ app.layout = html.Div(
                 dbc.Col(
                     [
                         html.Div(
-                            id="div-main-graph",
-                            children=[dcc.Graph(id="main-graph", figure=fig),],
+                            id="div-ranking",
+                            children=[dcc.Graph(id="ranking", figure=fig_cc),],
                         )
                     ],
-                    width=6,
-                ),
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-minor-graph",
-                            children=[dcc.Graph(id="minor-graph", figure=fig_cc),],
-                        )
-                    ],
-                    width=6,
+                    width=12,
+                    lg=6,
                 ),
             ],
             justify="center",
@@ -193,7 +183,11 @@ app.layout = html.Div(
 
 
 @app.callback(
-    dash.dependencies.Output("main-map", "figure"),
+    [
+        dash.dependencies.Output("main-map", "figure"),
+        dash.dependencies.Output("timeline", "figure"),
+        dash.dependencies.Output("ranking", "figure"),
+    ],
     [dash.dependencies.Input("value-selected", "value")],
 )
 def update_figure(selected):
@@ -219,17 +213,28 @@ def update_figure(selected):
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 20, "len": 0.6, "x": 0.8, "y": 0.6, "outlinewidth": 0},
     )
-    return {
-        "data": [trace],
-        "layout": go.Layout(
-            height=400,
-            mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-            mapbox_zoom=0.75,
-            mapbox_center={"lat": 25, "lon": 0},
-            mapbox_accesstoken=MAPBOX,
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        ),
-    }
+
+    scatter = go.Scatter(
+        x=all_infections_deaths.index, y=all_infections_deaths.loc[:, selected],
+    )
+
+    bar = go.Bar(x=per_country_max.index, y=per_country_max.loc[:, selected],)
+
+    return [
+        {
+            "data": [trace],
+            "layout": go.Layout(
+                height=500,
+                mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+                mapbox_zoom=0.5,
+                mapbox_center={"lat": 25, "lon": 0},
+                mapbox_accesstoken=MAPBOX,
+                #margin={"r": 0, "t": 0, "l": 0, "b": 0},
+            ),
+        },
+        {"data": [scatter]},
+        {"data": [bar]},
+    ]
 
 
 application = app.server
