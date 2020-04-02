@@ -26,30 +26,42 @@ class DataLoader:
         ) as response:
             self.countries = json.load(response)
 
-        self.ecdc_raw = ecdc_raw[ecdc_raw.dateRep <= dt.datetime.today()].sort_values(
+        ecdc_raw = ecdc_raw[ecdc_raw.dateRep <= dt.datetime.today()].sort_values(
             "dateRep"
         )
 
-        self.ecdc_raw.rename(
+        ecdc_raw.rename(
             columns={
                 "countriesAndTerritories": "country",
                 "countryterritoryCode": "iso_alpha",
             },
             inplace=True,
         )
-        self.ecdc_raw.iloc[:, 6].replace(
+        ecdc_raw.iloc[:, 6].replace(
             to_replace=r"_", value=" ", regex=True, inplace=True
         )
-
-        summary_country = self.ecdc_raw.copy()
-        summary_country.loc[:, "Cases/Mio. capita"] = (
-            summary_country.cases / summary_country.popData2018 * 1000000
-        ).round(0)
-        summary_country.loc[:, "Deaths/Mio. capita"] = (
-            summary_country.deaths / summary_country.popData2018 * 1000000
-        ).round(0)
-        self.summary_country = summary_country
 
         self.per_country = (
             ecdc_raw.iloc[:, [0, 4, 5]].groupby(ecdc_raw.iloc[:, 6]).sum()
         )
+
+        summary_country = ecdc_raw.loc[
+            :, ["cases", "deaths", "country", "iso_alpha", "popData2018"]
+        ].groupby("iso_alpha")
+        aggregation = {
+            "cases": "sum",
+            "deaths": "sum",
+            "country": "max",
+            "popData2018": "max",
+        }
+        summary_country = summary_country.agg(aggregation)
+        summary_country.loc[:, "Cases/Mio. capita"] = (
+            summary_country.cases / summary_country.popData2018 * 1000000
+        ).round(2)
+        summary_country.loc[:, "Deaths/Mio. capita"] = (
+            summary_country.deaths / summary_country.popData2018 * 1000000
+        ).round(2)
+        summary_country.reset_index(inplace=True)
+
+        self.summary_country = summary_country
+        self.ecdc_raw = ecdc_raw

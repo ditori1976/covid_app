@@ -197,7 +197,7 @@ app.layout = html.Div(
     [dash.dependencies.Input("value-selected", "value")],
 )
 def update_figure(selected):
-    # .groupby(['iso_alpha', 'country']).mean().reset_index()
+
     dff = data.summary_country
 
     def config(text):
