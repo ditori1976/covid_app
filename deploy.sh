@@ -5,5 +5,11 @@ if [ -z "$message" ]; then
   message='update'
 fi
 
+echo -en "environment [ 'covid-19' ] "
+read env
+if [ -z "$env" ]; then
+  env='covid-19'
+fi
+
 git commit -m $message
-eb deploy $0
+eb deploy $env
