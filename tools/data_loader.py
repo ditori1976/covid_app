@@ -57,10 +57,10 @@ class DataLoader:
         summary_country = summary_country.agg(aggregation)
         summary_country.loc[:, "Cases/Mio. capita"] = (
             summary_country.cases / summary_country.popData2018 * 1000000
-        ).round(2)
+        ).round(0)
         summary_country.loc[:, "Deaths/Mio. capita"] = (
             summary_country.deaths / summary_country.popData2018 * 1000000
-        ).round(2)
+        ).round(0)
         summary_country.reset_index(inplace=True)
 
         self.summary_country = summary_country
