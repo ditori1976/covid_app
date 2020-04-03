@@ -93,19 +93,19 @@ style_dropdown = {
     "border-width": 0,
     "background-color": "#faf9f7",
     "display": "inline-block",
-    "verticalAlign": "middle"
+    "verticalAlign": "middle",
 }
 
 style_center = {
-    "text-align":"center",
-    "display":"flex",
-    "justify-content":"center",
-    "align-items":"center"}
+    "text-align": "center",
+    "display": "flex",
+    "justify-content": "center",
+    "align-items": "center",
+}
 
 style_dropdown_div = style_center
-style_dropdown_div["font-size"]="2vh"
+style_dropdown_div["font-size"] = "2vh"
 
-print(style_dropdown_div)
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -118,7 +118,7 @@ dropdown_kind = dcc.Dropdown(
     ],
     style=style_dropdown,
     searchable=False,
-    optionHeight=100,
+    optionHeight=70,
 )
 
 body = html.Div(
@@ -129,21 +129,27 @@ body = html.Div(
                     dbc.Row(
                         [
                             dbc.Col(
-                                html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
-                                lg=2,
-                                md=2,
+                                html.Img(
+                                    src=app.get_asset_url("logo.png"),
+                                    height="auto",
+                                    width="70%",
+                                ),
+                                width=2,
                             ),
-                            dbc.Col(html.H1("COVID-19"), lg=4, md=6, style=style_center),
+                            dbc.Col(
+                                html.H1("COVID-19"), lg=5, md=7, style=style_center
+                            ),
                             dbc.Col(
                                 html.Div(
-                                    id="select-indicator", children=[dropdown_kind], style=style_dropdown_div
+                                    id="select-indicator",
+                                    children=[dropdown_kind],
+                                    style=style_dropdown_div,
                                 ),
-                                lg=6,
-                                md=10
+                                lg=5,
+                                md=10,
                             ),
                         ],
-                        justify="center"
-                        
+                        justify="center",
                     ),
                     lg=4,
                     md=12,
@@ -158,26 +164,16 @@ body = html.Div(
                     html.Div(
                         id="div-main-map",
                         children=[dcc.Graph(id="main-map")],
+                        style={"padding": 0, "margin": 0},
                     ),
-                    lg=6,
-                    md=12
+                    lg=8,
+                    md=12,
                 )
             ],
             justify="center",
         ),
         dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-timeline",
-                            children=[dcc.Graph(id="timeline", figure=fig),],
-                        )
-                    ],
-                    lg=6,
-                    md=12
-                )
-            ],
+            [dbc.Col(html.Div(html.H4("Most affected countries")), lg=6, md=10, xs=10)],
             justify="center",
         ),
         dbc.Row(
@@ -189,8 +185,23 @@ body = html.Div(
                             children=[dcc.Graph(id="ranking", figure=fig_cc),],
                         )
                     ],
-                    lg=6,
-                    md=12
+                    lg=8,
+                    md=12,
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Div(
+                            id="div-timeline",
+                            children=[dcc.Graph(id="timeline", figure=fig_cc),],
+                        )
+                    ],
+                    lg=8,
+                    md=12,
                 ),
             ],
             justify="center",
@@ -199,91 +210,7 @@ body = html.Div(
 )
 
 app.layout = html.Div([body])
-"""
-    [
-        dbc.Row(
-            [
-                dbc.Col(
-                    html.Img(src=app.get_asset_url("logo.png"), height=50),
-                    width=1,
-                    style={"text-align": "center"},
-                ),
-                dbc.Col(html.H1("COVID-19"), width=4, lg=3, style={"margin-top": 10}),
-                dbc.Col(
-                    html.Div(
-                        id="select-indicator",
-                        children=[
-                            dcc.Dropdown(
-                                id="value-selected",
-                                value="cases",
-                                options=[
-                                    {"label": "Cases/Mio. capita ", "value": "cases"},
-                                    {"label": "Deaths/Mio. capita ", "value": "deaths"},
-                                ],
-                                style=style_dropdown,
-                                searchable=False,
-                                optionHeight=60
-                            )
-                        ],
-                        style={"display": "flex"},
-                    ),
-                    width=6,
-                    lg=3,
-                    style={"margin-top": 20},
-                ),
-            ],
-            justify="center",
-            no_gutters=True,
-            style={"margin-top": 5},
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    html.Div(
-                        id="div-main-map",
-                        children=[dcc.Graph(id="main-map")],
-                        style={ "padding": 0},
-                    ),
-                    width=12,
-                    lg=6,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-timeline",
-                            children=[dcc.Graph(id="timeline", figure=fig),],
-                        )
-                    ],
-                    width=12,
-                    lg=6,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-ranking",
-                            children=[dcc.Graph(id="ranking", figure=fig_cc),],
-                        )
-                    ],
-                    width=12,
-                    lg=6,
-                ),
-            ],
-            justify="center",
-        ),
-    ]
-)
 
-"""
 
 @app.callback(
     [
