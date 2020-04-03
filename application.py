@@ -92,8 +92,8 @@ style_dropdown = {
     "width": "100%",
     "border-width": 0,
     "background-color": "#faf9f7",
-    "display": "inline-block",
-    "verticalAlign": "middle",
+    "height": "4vh",
+    "padding-top": "1vh",
 }
 
 style_center = {
@@ -101,10 +101,11 @@ style_center = {
     "display": "flex",
     "justify-content": "center",
     "align-items": "center",
+    "verticalAlign": "middle",
 }
 
 style_dropdown_div = style_center
-style_dropdown_div["font-size"] = "2vh"
+style_dropdown_div["font-size"] = "2.5vh"
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -121,6 +122,19 @@ dropdown_kind = dcc.Dropdown(
     optionHeight=70,
 )
 
+dropdown_kind = dcc.Dropdown(
+    id="value-selected",
+    value="cases",
+    options=[
+        {"label": "Cases/Mio. capita ", "value": "cases",},
+        {"label": "Deaths/Mio. capita ", "value": "deaths",},
+    ],
+    style=style_dropdown,
+    searchable=False,
+    optionHeight=70,
+)
+
+
 body = html.Div(
     [
         dbc.Row(
@@ -132,12 +146,18 @@ body = html.Div(
                                 html.Img(
                                     src=app.get_asset_url("logo.png"),
                                     height="auto",
-                                    width="70%",
+                                    width="100%",
                                 ),
-                                width=2,
+                                lg=2,
+                                md=2,
+                                xs=2,
                             ),
                             dbc.Col(
-                                html.H1("COVID-19"), lg=5, md=7, style=style_center
+                                html.H1("COVID-19"),
+                                lg=5,
+                                md=8,
+                                xs=10,
+                                style=style_center,
                             ),
                             dbc.Col(
                                 html.Div(
@@ -147,13 +167,31 @@ body = html.Div(
                                 ),
                                 lg=5,
                                 md=10,
+                                xs=10,
                             ),
                         ],
                         justify="center",
                     ),
-                    lg=4,
-                    md=12,
+                    xl=6,
+                    lg=8,
+                    md=10,
                     xs=12,
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(
+                        children=[
+                            "This site is to inform about the latested developments regarding the spread of COVID-19. The data being used is provided by ECDC. "
+                        ],
+                        style={"margin-top": "2vh"},
+                    ),
+                    lg=6,
+                    md=10,
+                    xs=10,
                 )
             ],
             justify="center",
@@ -166,8 +204,10 @@ body = html.Div(
                         children=[dcc.Graph(id="main-map")],
                         style={"padding": 0, "margin": 0},
                     ),
+                    xl=6,
                     lg=8,
-                    md=12,
+                    md=10,
+                    xs=12,
                 )
             ],
             justify="center",
@@ -185,10 +225,16 @@ body = html.Div(
                             children=[dcc.Graph(id="ranking", figure=fig_cc),],
                         )
                     ],
+                    xl=6,
                     lg=8,
-                    md=12,
+                    md=10,
+                    xs=12,
                 )
             ],
+            justify="center",
+        ),
+        dbc.Row(
+            [dbc.Col(html.Div(html.H4("Timeline")), lg=6, md=10, xs=10)],
             justify="center",
         ),
         dbc.Row(
@@ -200,8 +246,10 @@ body = html.Div(
                             children=[dcc.Graph(id="timeline", figure=fig_cc),],
                         )
                     ],
+                    xl=6,
                     lg=8,
-                    md=12,
+                    md=10,
+                    xs=12,
                 ),
             ],
             justify="center",
