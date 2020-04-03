@@ -92,16 +92,104 @@ style_dropdown = {
     "width": "100%",
     "border-width": 0,
     "background-color": "#faf9f7",
-    # "text-align": "center",
-    # "padding": "20 0",
     "display": "inline-block",
     "verticalAlign": "middle",
 }
 
 # create app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.themes.GRID])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-app.layout = html.Div(
+dropdown_kind = dcc.Dropdown(
+    id="value-selected",
+    value="cases",
+    options=[
+        {"label": "Cases/Mio. capita ", "value": "cases",},
+        {"label": "Deaths/Mio. capita ", "value": "deaths",},
+    ],
+    style=style_dropdown,
+    searchable=False,
+    optionHeight=100,
+)
+
+body = html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.Img(src=app.get_asset_url("logo.png"), height=50),
+                                lg=2,
+                                md=2,
+                            ),
+                            dbc.Col(html.H1("COVID-19"), lg=4, md=8, style={"text-align":"center"}),
+                            dbc.Col(
+                                html.Div(
+                                    id="select-indicator", children=[dropdown_kind],
+                                ),
+                                lg=6,
+                                md=10
+                            ),
+                        ],
+                        justify="center"
+                        
+                    ),
+                    lg=4,
+                    md=12,
+                    xs=12,
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(
+                        id="div-main-map",
+                        children=[dcc.Graph(id="main-map")],
+                    ),
+                    lg=6,
+                    md=12
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Div(
+                            id="div-timeline",
+                            children=[dcc.Graph(id="timeline", figure=fig),],
+                        )
+                    ],
+                    lg=6,
+                    md=12
+                )
+            ],
+            justify="center",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        html.Div(
+                            id="div-ranking",
+                            children=[dcc.Graph(id="ranking", figure=fig_cc),],
+                        )
+                    ],
+                    lg=6,
+                    md=12
+                ),
+            ],
+            justify="center",
+        ),
+    ]
+)
+
+app.layout = html.Div([body])
+"""
     [
         dbc.Row(
             [
@@ -123,12 +211,14 @@ app.layout = html.Div(
                                     {"label": "Deaths/Mio. capita ", "value": "deaths"},
                                 ],
                                 style=style_dropdown,
+                                searchable=False,
+                                optionHeight=60
                             )
                         ],
                         style={"display": "flex"},
                     ),
                     width=6,
-                    lg=2,
+                    lg=3,
                     style={"margin-top": 20},
                 ),
             ],
@@ -141,8 +231,8 @@ app.layout = html.Div(
                 dbc.Col(
                     html.Div(
                         id="div-main-map",
-                        children=[dcc.Graph(id="main-map")]  # , style={ "padding": 0},
-                        # style={ "padding": 0},
+                        children=[dcc.Graph(id="main-map")],
+                        style={ "padding": 0},
                     ),
                     width=12,
                     lg=6,
@@ -183,6 +273,7 @@ app.layout = html.Div(
     ]
 )
 
+"""
 
 @app.callback(
     [
