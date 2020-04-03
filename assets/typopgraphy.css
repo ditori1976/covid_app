@@ -2,20 +2,14 @@
     font-family: Georgia, Times, "Times New Roman", serif;
 }
 
+
+
 body {
-    margin-top: 1vh;
-    margin-left: 2vw;
-    margin-right: 2vw
-    
+    margin-top: 1vh;    
 }
 
 h1 {
-    color: #990099
-    font-size: 5vh;
-    #margin-bottom: 1vh;
-    #margin-top: 1vh;
+    font-size: 2em;
 }
 
-.row_space {
-    #margin-bottom: 1vh; 
-}
+
