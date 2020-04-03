@@ -93,9 +93,19 @@ style_dropdown = {
     "border-width": 0,
     "background-color": "#faf9f7",
     "display": "inline-block",
-    "verticalAlign": "middle",
+    "verticalAlign": "middle"
 }
 
+style_center = {
+    "text-align":"center",
+    "display":"flex",
+    "justify-content":"center",
+    "align-items":"center"}
+
+style_dropdown_div = style_center
+style_dropdown_div["font-size"]="2vh"
+
+print(style_dropdown_div)
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -119,14 +129,14 @@ body = html.Div(
                     dbc.Row(
                         [
                             dbc.Col(
-                                html.Img(src=app.get_asset_url("logo.png"), height=50),
+                                html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
                                 lg=2,
                                 md=2,
                             ),
-                            dbc.Col(html.H1("COVID-19"), lg=4, md=8, style={"text-align":"center"}),
+                            dbc.Col(html.H1("COVID-19"), lg=4, md=6, style=style_center),
                             dbc.Col(
                                 html.Div(
-                                    id="select-indicator", children=[dropdown_kind],
+                                    id="select-indicator", children=[dropdown_kind], style=style_dropdown_div
                                 ),
                                 lg=6,
                                 md=10
