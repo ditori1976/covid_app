@@ -62,13 +62,13 @@ class DataLoader:
         recovered_data = read_prepare_data(recovered_url, id_vars)
 
         self.confirmed = create_timeseries(
-            confirmed_data, lookup, id_vars, "date", "confirmed"
+            confirmed_data, self.lookup, id_vars, "date", "confirmed"
         )
         self.deaths = create_timeseries(
-            deaths_data.reset_index(), lookup, id_vars, "date", "deaths"
+            deaths_data.reset_index(), self.lookup, id_vars, "date", "deaths"
         )
         self.recovered = create_timeseries(
-            recovered_data.reset_index(), lookup, id_vars, "date", "recovered"
+            recovered_data.reset_index(), self.lookup, id_vars, "date", "recovered"
         )
 
     def ecdc(self):
