@@ -49,9 +49,8 @@ def get_data():
 get_data()
 
 # prepare data
-all_infections_deaths = (
-    data.ecdc_raw.iloc[:, [0, 4, 5]].groupby(["dateRep"]).sum().cumsum()
-)
+data.ecdc()
+all_infections_deaths = data.ecdc_raw.groupby(["date"]).sum().cumsum()
 per_country_max = data.per_country[data.per_country.iloc[:, 0] > min_cases]
 per_country_max = per_country_max.sort_values("cases")
 
