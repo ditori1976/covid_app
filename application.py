@@ -48,25 +48,68 @@ def get_data():
 
 get_data()
 
+data.jhu()
+data.geonames()
+
 # prepare data
-data.ecdc()
-all_infections_deaths = data.ecdc_raw.groupby(["date"]).sum().cumsum()
-per_country_max = data.per_country[data.per_country.iloc[:, 0] > min_cases]
-per_country_max = per_country_max.sort_values("cases")
+data_norm = pd.merge(
+    data.deaths.sort_values(["region", "date"]),
+    data.country_info[["iso_alpha", "population", "continent"]],
+    left_on="iso3",
+    right_on="iso_alpha",
+    how="inner",
+).drop(columns=["iso3", "iso2", "code3"])
+data_norm = pd.merge(
+    data_norm,
+    data.confirmed.sort_values(["region", "date"])[["date", "confirmed", "iso3"]],
+    left_on=["iso_alpha", "date"],
+    right_on=["iso3", "date"],
+    how="inner",
+).drop(columns=["iso3"])
+data_norm = pd.merge(
+    data_norm,
+    data.recovered.sort_values(["region", "date"])[["date", "recovered", "iso3"]],
+    left_on=["iso_alpha", "date"],
+    right_on=["iso3", "date"],
+    how="inner",
+).drop(columns=["iso3"])
+
+data_norm.loc[:, "cases/1M capita"] = (
+    data_norm.confirmed / data_norm.population * 1000000
+).round(0)
+data_norm.loc[:, "deaths/1M capita"] = (
+    data_norm.deaths / data_norm.population * 1000000
+).round(0)
+data_norm.loc[:, "recovered/1M capita"] = (
+    data_norm.recovered / data_norm.population * 1000000
+).round(0)
+
+data_norm.rename(columns={"confirmed": "cases"}, inplace=True)
+
+
+timeseries = data_norm.groupby(["continent", "date"]).sum()
+
+world = timeseries.groupby("date").sum()
+world = pd.DataFrame(
+    index=[pd.Series(data="world").repeat(len(world.index)), world.index],
+    data=world.values,
+    columns=world.columns,
+)
+
+timeseries = pd.concat([timeseries, world])
+
+
+per_country_max = data_norm[data_norm.date == data_norm.date.max()]
+per_country_max = per_country_max[per_country_max.cases > min_cases].sort_values(
+    "cases"
+)
 
 # layout
 layout = go.Layout(yaxis=dict(type="linear", autorange=True))
 layout_log = go.Layout(yaxis=dict(type="linear", autorange=True))
 
 # figures
-fig = go.Figure(
-    data=[
-        go.Scatter(
-            x=all_infections_deaths.index, y=all_infections_deaths.loc[:, "cases"],
-        )
-    ],
-    layout=layout,
-)
+fig = go.Figure(layout=layout)
 fig.update_layout(
     legend_orientation="h",
     legend=dict(x=0, y=0.95),
@@ -76,7 +119,7 @@ fig.update_layout(
 )
 
 fig_cc = go.Figure(
-    data=[go.Bar(x=per_country_max.index, y=per_country_max.loc[:, "cases"],)],
+    data=[go.Bar(x=per_country_max.region, y=per_country_max.loc[:, "cases"],)],
     layout=layout,
 )
 fig_cc.update_layout(
@@ -269,22 +312,22 @@ app.layout = html.Div([body])
 )
 def update_figure(selected):
 
-    dff = data.summary_country
+    dff = per_country_max
 
     def config(text):
         if text == "cases":
-            return "Cases/Mio. capita", 1000
+            return "cases/1M capita", 2000
         elif text == "deaths":
-            return "Deaths/Mio. capita", 100
+            return "deaths/1M capita", 100
         else:
-            return "Cases/Mio. capita", 1000
+            return "cases/1M capita", 2000
 
     title, limit = config(selected)
     trace = go.Choroplethmapbox(
         geojson=data.countries,
         locations=dff["iso_alpha"],
         z=dff[title],
-        text=dff["country"],
+        text=dff["region"],
         zmin=0,
         zmax=limit,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
@@ -292,10 +335,10 @@ def update_figure(selected):
     )
 
     scatter = go.Scatter(
-        x=all_infections_deaths.index, y=all_infections_deaths.loc[:, selected],
+        x=timeseries.loc["world"].index, y=timeseries.loc["world", selected],
     )
 
-    bar = go.Bar(x=per_country_max.index, y=per_country_max.loc[:, selected],)
+    bar = go.Bar(x=per_country_max.region, y=per_country_max.loc[:, selected],)
 
     return [
         {

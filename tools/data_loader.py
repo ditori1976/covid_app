@@ -21,9 +21,10 @@ class DataLoader:
 
     def jhu(self):
         def read_prepare_data(url, id_vars):
+            data_raw = pd.read_csv(url)
+            data_raw.rename(columns={"Country/Region": "region"}, inplace=True)
             data = (
-                pd.read_csv(url)
-                .groupby(id_vars)
+                data_raw.groupby(id_vars)
                 .sum()
                 .drop(columns=["Lat", "Long"])
                 .reset_index()
@@ -41,6 +42,7 @@ class DataLoader:
                 on=id_vars,
                 how="inner",
             )
+            timeseries.loc[:, var_name] = pd.to_datetime(timeseries.loc[:, var_name])
             return timeseries
 
         lookup_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv"
@@ -49,13 +51,9 @@ class DataLoader:
         recovered_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv"
 
         self.lookup = pd.read_csv(lookup_url)
-        self.lookup.rename(columns={"Country_Region": "Country/Region"}, inplace=True)
+        self.lookup.rename(columns={"Country_Region": "region"}, inplace=True)
 
-        confirmed_raw = pd.read_csv(confirmed_url)
-        deaths_raw = pd.read_csv(deaths_url)
-        recovered_raw = pd.read_csv(recovered_url)
-
-        id_vars = "Country/Region"
+        id_vars = "region"
 
         confirmed_data = read_prepare_data(confirmed_url, id_vars)
         deaths_data = read_prepare_data(deaths_url, id_vars)
@@ -65,13 +63,36 @@ class DataLoader:
             confirmed_data, self.lookup, id_vars, "date", "confirmed"
         )
         self.deaths = create_timeseries(
-            deaths_data.reset_index(), self.lookup, id_vars, "date", "deaths"
+            deaths_data, self.lookup, id_vars, "date", "deaths"
         )
         self.recovered = create_timeseries(
-            recovered_data.reset_index(), self.lookup, id_vars, "date", "recovered"
+            recovered_data, self.lookup, id_vars, "date", "recovered"
         )
 
+
+
+    def geonames(self):
+        geonames_country_info = (
+            "http://download.geonames.org/export/dump/countryInfo.txt"
+        )
+        country_info = pd.read_csv(
+            geonames_country_info, skiprows=49, delimiter="\t", na_filter=False
+        )
+        country_info.drop(columns=["#ISO"], inplace=True)
+        country_info.rename(
+            columns={
+                "fips": "geoId",
+                "ISO3": "iso_alpha",
+                "ISO-Numeric": "iso_num",
+                "Population": "population",
+                "Continent": "continent",
+            },
+            inplace=True,
+        )
+        self.country_info = country_info
+        
     def ecdc(self):
+        # deprecated
         url = "https://opendata.ecdc.europa.eu/covid19/casedistribution/csv"
         csv = requests.get(url).content
         ecdc_raw = pd.read_csv(
