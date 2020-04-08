@@ -42,7 +42,7 @@ jsonschema==3.2.0
 lxml==4.5.0
 MarkupSafe==1.1.1
 mccabe==0.6.1
-numpy==1.18.2
+numpy
 packaging==20.3
 pandas==1.0.3
 paramiko==2.7.1
