@@ -44,7 +44,7 @@ MarkupSafe==1.1.1
 mccabe==0.6.1
 numpy
 packaging==20.3
-pandas==1.0.3
+pandas
 paramiko==2.7.1
 pathspec==0.5.9
 plotly==4.5.4
