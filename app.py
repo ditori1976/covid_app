@@ -42,14 +42,16 @@ data_norm = pd.merge(
 ).drop(columns=["iso3", "iso2", "code3"])
 data_norm = pd.merge(
     data_norm,
-    data.confirmed.sort_values(["region", "date"])[["date", "confirmed", "iso3"]],
+    data.confirmed.sort_values(["region", "date"])[
+        ["date", "confirmed", "iso3"]],
     left_on=["iso_alpha", "date"],
     right_on=["iso3", "date"],
     how="inner",
 ).drop(columns=["iso3"])
 data_norm = pd.merge(
     data_norm,
-    data.recovered.sort_values(["region", "date"])[["date", "recovered", "iso3"]],
+    data.recovered.sort_values(["region", "date"])[
+        ["date", "recovered", "iso3"]],
     left_on=["iso_alpha", "date"],
     right_on=["iso3", "date"],
     how="inner",
@@ -82,8 +84,7 @@ timeseries = pd.concat([timeseries, world])
 
 per_country_max = data_norm[data_norm.date == data_norm.date.max()]
 per_country_max = per_country_max[per_country_max.cases > min_cases].sort_values(
-    "cases"
-)
+    "cases")
 
 scatter = go.Scatter(
     x=timeseries.loc["world"].index, y=timeseries.loc["world", "cases"],
@@ -123,7 +124,8 @@ map_trace = go.Choroplethmapbox(
     zmin=0,
     zmax=2000,
     marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-    colorbar={"thickness": 20, "len": 0.6, "x": 0.8, "y": 0.6, "outlinewidth": 0,},
+    colorbar={"thickness": 20, "len": 0.6,
+              "x": 0.8, "y": 0.6, "outlinewidth": 0, },
 )
 
 layout_map = go.Layout(
@@ -144,13 +146,15 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 header = dbc.Row(
     [
         dbc.Col(
-            html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%",),
+            html.Img(src=app.get_asset_url("logo.png"),
+                     height="auto", width="70%",),
             lg=3,
             md=4,
             xs=2,
             style=style.style_center,
         ),
-        dbc.Col(html.H1("COVID-19"), lg=9, md=8, xs=7, style=style.style_center,),
+        dbc.Col(html.H1("COVID-19"), lg=9, md=8,
+                xs=7, style=style.style_center,),
     ]
 )
 
@@ -177,7 +181,8 @@ body = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(id="div-map", children=[dcc.Graph(figure=fig_map)]),
+                    html.Div(id="div-map",
+                             children=[dcc.Graph(figure=fig_map)]),
                     lg=4,
                     md=10,
                     xs=12,
@@ -185,7 +190,8 @@ body = html.Div(
                 dbc.Col(
                     html.Div(
                         id="div-timeline",
-                        children=[dcc.Graph(id="timeline", figure=fig_timeline),],
+                        children=[
+                            dcc.Graph(id="timeline", figure=fig_timeline), ],
                     ),
                     lg=7,
                     md=10,

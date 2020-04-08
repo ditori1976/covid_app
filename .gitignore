@@ -8,6 +8,6 @@ __pycache__/
 !.elasticbeanstalk/*.global.yml
 .vscode/settings.json
 tools/__pycache__/*
-
+.coverage
 
 covid_app.code-workspace
