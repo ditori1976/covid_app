@@ -12,4 +12,10 @@ h1 {
     font-size: 2em;
 }
 
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: top;
+}
+
 

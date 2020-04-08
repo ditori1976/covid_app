@@ -152,17 +152,6 @@ style_dropdown_div["font-size"] = "2.5vh"
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-dropdown_kind = dcc.Dropdown(
-    id="value-selected",
-    value="cases",
-    options=[
-        {"label": "Cases/Mio. capita ", "value": "cases",},
-        {"label": "Deaths/Mio. capita ", "value": "deaths",},
-    ],
-    style=style_dropdown,
-    searchable=False,
-    optionHeight=70,
-)
 
 dropdown_kind = dcc.Dropdown(
     id="value-selected",
