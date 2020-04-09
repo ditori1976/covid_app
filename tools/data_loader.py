@@ -101,8 +101,8 @@ class DataLoader:
         self.timeseries = pd.concat([self.timeseries, self.world])
 
         per_country_max = data_norm[data_norm.date == data_norm.date.max()]
-        per_country_max = per_country_max[per_country_max.cases > parser.getint(
-            "data", "min_cases")].sort_values("cases")
+        # per_country_max = per_country_max[per_country_max.cases > parser.getint(
+        #    "data", "min_cases")].sort_values("cases")
 
         self.per_country_max = per_country_max
 

@@ -20,6 +20,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 from tools import DataLoader, Config, Style
 import pandas as pd
+import numpy as np
 from configparser import ConfigParser
 
 # configuration
@@ -29,18 +30,18 @@ parser.read("settings.ini")
 config = Config()
 style = Style()
 
+values_titles = {"cases": "cases/1M capita",
+                 "deaths": "deaths/1M capita",
+                 "recovered": "recovered/1M capita"}
+
 
 # initialize data load
 data = DataLoader(parser)
 
-# timeline
-scatter = go.Scatter(
-    x=data.timeseries.loc["world"].index, y=data.timeseries.loc["world", "cases"],
-)
+# layout
 layout_timeline = style.layout.copy()
 layout_timeline["height"] = parser.getint("layout", "height_first_row")
-fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
-fig_timeline.update_layout(plot_bgcolor="white",)
+
 
 # dropdown
 dropdown = dcc.Dropdown(
@@ -48,40 +49,11 @@ dropdown = dcc.Dropdown(
     value="cases",
     style={"width": "100%", "margin": 0, "padding": 0},
     options=[
-        {"label": "cases/1M capita", "value": "cases"},
-        {"label": "deaths/1M capita", "value": "deaths"},
-        {"label": "recovered/1M capita", "value": "recovered"},
+        {"label": values_titles["cases"], "value": "cases"},
+        {"label": values_titles["deaths"], "value": "deaths"},
+        {"label": values_titles["recovered"], "value": "recovered"},
     ],
 )
-
-# map
-
-
-# map data
-map_trace = go.Choroplethmapbox(
-    colorscale="Oranges",
-    geojson=data.countries,
-    locations=data.per_country_max["iso_alpha"],
-    z=data.per_country_max["cases/1M capita"],
-    text=data.per_country_max["region"],
-    zmin=0,
-    zmax=2000,
-    marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-    colorbar={"thickness": 20, "len": 0.6,
-              "x": 0.8, "y": 0.6, "outlinewidth": 0, },
-)
-
-layout_map = go.Layout(
-    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-    mapbox_zoom=0.2,
-    height=parser.getint("layout", "height_first_row"),
-    mapbox_center={"lat": 25, "lon": 0},
-    mapbox_accesstoken=config.mapbox,
-    margin={"r": 0, "t": 0, "l": 0, "b": 0},
-)
-# create map
-fig_map = go.Figure(data=[map_trace], layout=layout_map,)
-
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -126,7 +98,7 @@ body = html.Div(
             [
                 dbc.Col(
                     html.Div(id="div-map",
-                             children=[dcc.Graph(figure=fig_map)]),
+                             children=[dcc.Graph(id="map")]),
                     lg=4,
                     md=10,
                     xs=12,
@@ -135,14 +107,14 @@ body = html.Div(
                     html.Div(
                         id="div-timeline",
                         children=[
-                            dcc.Graph(id="timeline", figure=fig_timeline), ],
+                            dcc.Graph(id="timeline"), ],
                     ),
                     lg=7,
                     md=10,
                     xs=12,
                 ),
             ],
-            style={"padding-top": 30},
+            style={"padding-top": parser.getint("layout", "spacer")},
             justify="center",
         ),
     ]
@@ -150,6 +122,52 @@ body = html.Div(
 
 
 app.layout = html.Div([body])
+
+
+@app.callback(
+    [
+        dash.dependencies.Output("map", "figure"),
+        dash.dependencies.Output("timeline", "figure"),
+    ],
+    [dash.dependencies.Input("value-selected", "value")],
+)
+def update_figure(selected):
+
+    # map data
+
+    map_trace = go.Choroplethmapbox(
+        colorscale="BuPu",
+        geojson=data.countries,
+        locations=data.per_country_max["iso_alpha"],
+        z=data.per_country_max[values_titles[selected]],
+        text=data.per_country_max["region"],
+        zmin=0,
+        zmax=data.per_country_max[values_titles[selected]].replace(
+            [np.inf, -np.inf], np.nan).max()*0.3,
+        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+        colorbar={"thickness": 10, "len": 0.5,
+                  "x": 0.85, "y": 0.8, "outlinewidth": 0, },
+    )
+
+    layout_map = go.Layout(
+        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+        mapbox_zoom=0.2,
+        height=parser.getint("layout", "height_first_row"),
+        mapbox_center={"lat": 25, "lon": 0},
+        mapbox_accesstoken=config.mapbox,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    )
+    # create map
+    fig_map = go.Figure(data=[map_trace], layout=layout_map,)
+
+    # timeline
+    scatter = go.Scatter(
+        x=data.timeseries.loc["world"].index, y=data.timeseries.loc["world", selected],
+    )
+    fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
+    fig_timeline.update_layout(plot_bgcolor="white",)
+    return fig_map, fig_timeline
+
 
 application = app.server
 if __name__ == "__main__":
