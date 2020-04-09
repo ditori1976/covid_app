@@ -3,166 +3,75 @@
 """
 Author: Dirk Riemann, 2020
 
-COVID-19 dashboard
-based on dash package,
-using plotly graph objects
-and mapbox API for mapping
+responsive map
+based on dash package
+with bootstrap (responsive) layout
+and Mapbox map
 
 development/debuggin mode
 NOT FOR PRODUCTION
 """
 
 # import packages
-import os
 import dash
-from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
-
-import pandas as pd
 import plotly.graph_objects as go
+from tools import DataLoader, Config, Style
+import pandas as pd
+import numpy as np
+from configparser import ConfigParser
 
-from tools import DataLoader
+# configuration
+parser = ConfigParser()
+parser.read("settings.ini")
 
-if "HOST" in os.environ:
-    host = os.environ.get("HOST")
-else:
-    host = "127.0.0.1"
+config = Config()
+style = Style()
 
-if "PORT" in os.environ:
-    port = os.environ.get("PORT")
-else:
-    port = "8080"
-
-
-MAPBOX = os.environ.get("MAPBOX")
-
-min_cases = 20000
-
-# load data
-def get_data():
-    global data
-    data = DataLoader()
+values_titles = {"cases": "cases/1M capita",
+                 "deaths": "deaths/1M capita",
+                 "recovered": "recovered/1M capita"}
 
 
-get_data()
-
-data.jhu()
-data.geonames()
-
-# prepare data
-data_norm = pd.merge(
-    data.deaths.sort_values(["region", "date"]),
-    data.country_info[["iso_alpha", "population", "continent"]],
-    left_on="iso3",
-    right_on="iso_alpha",
-    how="inner",
-).drop(columns=["iso3", "iso2", "code3"])
-data_norm = pd.merge(
-    data_norm,
-    data.confirmed.sort_values(["region", "date"])[["date", "confirmed", "iso3"]],
-    left_on=["iso_alpha", "date"],
-    right_on=["iso3", "date"],
-    how="inner",
-).drop(columns=["iso3"])
-data_norm = pd.merge(
-    data_norm,
-    data.recovered.sort_values(["region", "date"])[["date", "recovered", "iso3"]],
-    left_on=["iso_alpha", "date"],
-    right_on=["iso3", "date"],
-    how="inner",
-).drop(columns=["iso3"])
-
-data_norm.loc[:, "cases/1M capita"] = (
-    data_norm.confirmed / data_norm.population * 1000000
-).round(0)
-data_norm.loc[:, "deaths/1M capita"] = (
-    data_norm.deaths / data_norm.population * 1000000
-).round(0)
-data_norm.loc[:, "recovered/1M capita"] = (
-    data_norm.recovered / data_norm.population * 1000000
-).round(0)
-
-data_norm.rename(columns={"confirmed": "cases"}, inplace=True)
-
-
-timeseries = data_norm.groupby(["continent", "date"]).sum()
-
-world = timeseries.groupby("date").sum()
-world = pd.DataFrame(
-    index=[pd.Series(data="world").repeat(len(world.index)), world.index],
-    data=world.values,
-    columns=world.columns,
-)
-
-timeseries = pd.concat([timeseries, world])
-
-
-per_country_max = data_norm[data_norm.date == data_norm.date.max()]
-per_country_max = per_country_max[per_country_max.cases > min_cases].sort_values(
-    "cases"
-)
+# initialize data load
+data = DataLoader(parser)
 
 # layout
-layout = go.Layout(yaxis=dict(type="linear", autorange=True))
-layout_log = go.Layout(yaxis=dict(type="linear", autorange=True))
+layout_timeline = style.layout.copy()
+layout_timeline["height"] = parser.getint("layout", "height_first_row")
 
-# figures
-fig = go.Figure(layout=layout)
-fig.update_layout(
-    legend_orientation="h",
-    legend=dict(x=0, y=0.95),
-    plot_bgcolor="white",
-    autosize=True,
-    height=400,
+
+# dropdown
+dropdown = dcc.Dropdown(
+    id="value-selected",
+    value="cases",
+    style={"width": "100%", "margin": 0, "padding": 0},
+    options=[
+        {"label": values_titles["cases"], "value": "cases"},
+        {"label": values_titles["deaths"], "value": "deaths"},
+        {"label": values_titles["recovered"], "value": "recovered"},
+    ],
 )
-
-fig_cc = go.Figure(
-    data=[go.Bar(x=per_country_max.region, y=per_country_max.loc[:, "cases"],)],
-    layout=layout,
-)
-fig_cc.update_layout(
-    legend_orientation="h",
-    legend=dict(x=0, y=0.95),
-    plot_bgcolor="white",
-    autosize=True,
-    height=400,
-)
-
-style_dropdown = {
-    "width": "100%",
-    "border-width": 0,
-    "background-color": "#faf9f7",
-    "height": "4vh",
-    "padding-top": "1vh",
-}
-
-style_center = {
-    "text-align": "center",
-    "display": "flex",
-    "justify-content": "center",
-    "align-items": "center",
-    "verticalAlign": "middle",
-}
-
-style_dropdown_div = style_center
-style_dropdown_div["font-size"] = "2.5vh"
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
-dropdown_kind = dcc.Dropdown(
-    id="value-selected",
-    value="cases",
-    options=[
-        {"label": "Cases/Mio. capita ", "value": "cases",},
-        {"label": "Deaths/Mio. capita ", "value": "deaths",},
-    ],
-    style=style_dropdown,
-    searchable=False,
-    optionHeight=70,
+header = dbc.Row(
+    [
+        dbc.Col(
+            html.Img(src=app.get_asset_url("logo.png"),
+                     height="auto", width="70%",),
+            lg=3,
+            md=4,
+            xs=2,
+            style=style.style_center,
+        ),
+        dbc.Col(html.H1("COVID-19"), lg=9, md=8,
+                xs=7, style=style.style_center,),
+    ]
 )
 
 
@@ -170,182 +79,96 @@ body = html.Div(
     [
         dbc.Row(
             [
-                dbc.Col(
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.Img(
-                                    src=app.get_asset_url("logo.png"),
-                                    height="auto",
-                                    width="100%",
-                                ),
-                                lg=2,
-                                md=2,
-                                xs=2,
-                            ),
-                            dbc.Col(
-                                html.H1("COVID-19"),
-                                lg=5,
-                                md=8,
-                                xs=10,
-                                style=style_center,
-                            ),
-                            dbc.Col(
-                                html.Div(
-                                    id="select-indicator",
-                                    children=[dropdown_kind],
-                                    style=style_dropdown_div,
-                                ),
-                                lg=5,
-                                md=10,
-                                xs=10,
-                            ),
-                        ],
-                        justify="center",
-                    ),
-                    xl=6,
-                    lg=8,
-                    md=10,
-                    xs=12,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [
+                dbc.Col([header], lg=3, md=6, xs=12),
                 dbc.Col(
                     html.Div(
-                        children=[
-                            "This site is to inform about the latested developments regarding the spread of COVID-19. The data being used is provided by ECDC. "
-                        ],
-                        style={"margin-top": "2vh"},
+                        id="select-indicator",
+                        children=[dropdown],
+                        style={"width": "100%", "margin": 0, "padding": 0},
                     ),
-                    lg=6,
-                    md=10,
+                    lg=2,
+                    md=6,
                     xs=10,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    html.Div(
-                        id="div-main-map",
-                        children=[dcc.Graph(id="main-map")],
-                        style={"padding": 0, "margin": 0},
-                    ),
-                    xl=6,
-                    lg=8,
-                    md=10,
-                    xs=12,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [dbc.Col(html.Div(html.H4("Most affected countries")), lg=6, md=10, xs=10)],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-ranking",
-                            children=[dcc.Graph(id="ranking", figure=fig_cc),],
-                        )
-                    ],
-                    xl=6,
-                    lg=8,
-                    md=10,
-                    xs=12,
-                )
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            [dbc.Col(html.Div(html.H4("Timeline")), lg=6, md=10, xs=10)],
-            justify="center",
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        html.Div(
-                            id="div-timeline",
-                            children=[dcc.Graph(id="timeline", figure=fig_cc),],
-                        )
-                    ],
-                    xl=6,
-                    lg=8,
-                    md=10,
-                    xs=12,
+                    style=style.style_center,
                 ),
             ],
             justify="center",
         ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(id="div-map",
+                             children=[dcc.Graph(id="map")]),
+                    lg=4,
+                    md=10,
+                    xs=12,
+                ),
+                dbc.Col(
+                    html.Div(
+                        id="div-timeline",
+                        children=[
+                            dcc.Graph(id="timeline"), ],
+                    ),
+                    lg=7,
+                    md=10,
+                    xs=12,
+                ),
+            ],
+            style={"padding-top": parser.getint("layout", "spacer")},
+            justify="center",
+        ),
     ]
 )
+
 
 app.layout = html.Div([body])
 
 
 @app.callback(
     [
-        dash.dependencies.Output("main-map", "figure"),
+        dash.dependencies.Output("map", "figure"),
         dash.dependencies.Output("timeline", "figure"),
-        dash.dependencies.Output("ranking", "figure"),
     ],
     [dash.dependencies.Input("value-selected", "value")],
 )
 def update_figure(selected):
 
-    dff = per_country_max
+    # map data
 
-    def config(text):
-        if text == "cases":
-            return "cases/1M capita", 2000
-        elif text == "deaths":
-            return "deaths/1M capita", 100
-        else:
-            return "cases/1M capita", 2000
-
-    title, limit = config(selected)
-    trace = go.Choroplethmapbox(
+    map_trace = go.Choroplethmapbox(
+        colorscale="BuPu",
         geojson=data.countries,
-        locations=dff["iso_alpha"],
-        z=dff[title],
-        text=dff["region"],
+        locations=data.per_country_max["iso_alpha"],
+        z=data.per_country_max[values_titles[selected]],
+        text=data.per_country_max["region"],
         zmin=0,
-        zmax=limit,
+        zmax=data.per_country_max[values_titles[selected]].replace(
+            [np.inf, -np.inf], np.nan).max()*0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 20, "len": 0.6, "x": 0.8, "y": 0.6, "outlinewidth": 0},
+        colorbar={"thickness": 10, "len": 0.5,
+                  "x": 0.85, "y": 0.8, "outlinewidth": 0, },
     )
 
+    layout_map = go.Layout(
+        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+        mapbox_zoom=0.2,
+        height=parser.getint("layout", "height_first_row"),
+        mapbox_center={"lat": 25, "lon": 0},
+        mapbox_accesstoken=config.mapbox,
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    )
+    # create map
+    fig_map = go.Figure(data=[map_trace], layout=layout_map,)
+
+    # timeline
     scatter = go.Scatter(
-        x=timeseries.loc["world"].index, y=timeseries.loc["world", selected],
+        x=data.timeseries.loc["world"].index, y=data.timeseries.loc["world", selected],
     )
-
-    bar = go.Bar(x=per_country_max.region, y=per_country_max.loc[:, selected],)
-
-    return [
-        {
-            "data": [trace],
-            "layout": go.Layout(
-                height=500,
-                mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-                mapbox_zoom=0.5,
-                mapbox_center={"lat": 25, "lon": 0},
-                mapbox_accesstoken=MAPBOX,
-                # margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            ),
-        },
-        {"data": [scatter]},
-        {"data": [bar]},
-    ]
+    fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
+    fig_timeline.update_layout(plot_bgcolor="white",)
+    return fig_map, fig_timeline
 
 
 application = app.server
 if __name__ == "__main__":
-    application.run(debug=True, port=port, host=host)
+    application.run(debug=True, port=config.port, host=config.host)
