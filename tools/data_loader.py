@@ -100,11 +100,8 @@ class DataLoader:
 
         self.timeseries = pd.concat([self.timeseries, self.world])
 
-        per_country_max = data_norm[data_norm.date == data_norm.date.max()]
-        # per_country_max = per_country_max[per_country_max.cases > parser.getint(
-        #    "data", "min_cases")].sort_values("cases")
-
-        self.per_country_max = per_country_max
+        self.per_country_max = data_norm[data_norm.date ==
+                                         data_norm.date.max()]
 
     def __read_prepare_data(self, url, id_vars):
         data_raw = pd.read_csv(url)

@@ -63,15 +63,16 @@ header = dbc.Row(
     [
         dbc.Col(
             html.Img(src=app.get_asset_url("logo.png"),
-                     height="auto", width="70%",),
+                     height="auto", width="70%"),
             lg=3,
-            md=4,
+            md=3,
             xs=2,
             style=style.style_center,
         ),
         dbc.Col(html.H1("COVID-19"), lg=9, md=8,
                 xs=7, style=style.style_center,),
-    ]
+    ],
+    justify="center",
 )
 
 
@@ -86,8 +87,9 @@ body = html.Div(
                         children=[dropdown],
                         style={"width": "100%", "margin": 0, "padding": 0},
                     ),
-                    lg=2,
-                    md=6,
+                    xl=3,
+                    lg=4,
+                    md=5,
                     xs=10,
                     style=style.style_center,
                 ),
@@ -99,7 +101,7 @@ body = html.Div(
                 dbc.Col(
                     html.Div(id="div-map",
                              children=[dcc.Graph(id="map")]),
-                    lg=4,
+                    lg=5,
                     md=10,
                     xs=12,
                 ),
@@ -109,7 +111,7 @@ body = html.Div(
                         children=[
                             dcc.Graph(id="timeline"), ],
                     ),
-                    lg=7,
+                    lg=5,
                     md=10,
                     xs=12,
                 ),
@@ -146,18 +148,18 @@ def update_figure(selected):
             [np.inf, -np.inf], np.nan).max()*0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 10, "len": 0.5,
-                  "x": 0.85, "y": 0.8, "outlinewidth": 0, },
+                  "x": 0.85, "y": 0.7, "outlinewidth": 0, },
     )
 
     layout_map = go.Layout(
         mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
         mapbox_zoom=0.2,
         height=parser.getint("layout", "height_first_row"),
-        mapbox_center={"lat": 25, "lon": 0},
+        mapbox_center={"lat": 35, "lon": 0},
         mapbox_accesstoken=config.mapbox,
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
     )
-    # create map
+
     fig_map = go.Figure(data=[map_trace], layout=layout_map,)
 
     # timeline
