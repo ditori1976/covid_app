@@ -99,18 +99,14 @@ body = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(id="div-map",
-                             children=[dcc.Graph(id="map")]),
+                    html.Div(id="map"),
                     lg=5,
                     md=10,
                     xs=12,
                 ),
                 dbc.Col(
-                    html.Div(
-                        id="div-timeline",
-                        children=[
-                            dcc.Graph(id="timeline"), ],
-                    ),
+                    html.Div(id="timeline", children=[]
+                             ),
                     lg=5,
                     md=10,
                     xs=12,
@@ -128,8 +124,8 @@ app.layout = html.Div([body])
 
 @app.callback(
     [
-        dash.dependencies.Output("map", "figure"),
-        dash.dependencies.Output("timeline", "figure"),
+        dash.dependencies.Output("map", "children"),
+        dash.dependencies.Output("timeline", "children"),
     ],
     [dash.dependencies.Input("value-selected", "value")],
 )
@@ -168,7 +164,7 @@ def update_figure(selected):
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
-    return fig_map, fig_timeline
+    return dcc.Graph(figure=fig_map), dcc.Graph(figure=fig_timeline)
 
 
 application = app.server
