@@ -22,6 +22,7 @@ from tools import DataLoader, Config, Style
 import pandas as pd
 import numpy as np
 from configparser import ConfigParser
+from dash.dependencies import Input, State, Output
 
 # configuration
 parser = ConfigParser()
@@ -29,6 +30,8 @@ parser.read("settings.ini")
 
 config = Config()
 style = Style()
+
+region = "world"
 
 values_titles = {"cases": "cases/1M capita",
                  "deaths": "deaths/1M capita",
@@ -57,7 +60,6 @@ dropdown = dcc.Dropdown(
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 
 header = dbc.Row(
     [
@@ -99,22 +101,42 @@ body = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(id="map"),
+                    html.Div(id="map", style={"height": parser.getint(
+                        "layout", "height_first_row")}),
                     lg=5,
                     md=10,
-                    xs=12,
+                    xs=11,
                 ),
                 dbc.Col(
-                    html.Div(id="timeline", children=[]
+                    html.Div(id="timeline",
                              ),
                     lg=5,
                     md=10,
-                    xs=12,
+                    xs=11,
                 ),
             ],
             style={"padding-top": parser.getint("layout", "spacer")},
             justify="center",
         ),
+        dbc.Row(
+            [
+                html.Div(
+                    [
+                        dcc.Tabs(
+                            id="region-selected",
+                            value="World",
+                            children=[
+                                dcc.Tab(
+                                    label=information["name"],
+                                    value=region) for region, information in data.regions.items()
+                            ]
+                        )
+                    ]
+                )
+
+            ],
+            justify="center"
+        )
     ]
 )
 
@@ -124,34 +146,35 @@ app.layout = html.Div([body])
 
 @app.callback(
     [
-        dash.dependencies.Output("map", "children"),
-        dash.dependencies.Output("timeline", "children"),
+        Output("map", "children"),
+        Output("timeline", "children"),
     ],
-    [dash.dependencies.Input("value-selected", "value")],
+    [Input("value-selected", "value"),
+     Input("region-selected", "value")],
 )
-def update_figure(selected):
+def update_figure(selected_value, selected_region):
 
     # map data
+    region = selected_region
 
     map_trace = go.Choroplethmapbox(
         colorscale="BuPu",
         geojson=data.countries,
         locations=data.per_country_max["iso_alpha"],
-        z=data.per_country_max[values_titles[selected]],
+        z=data.per_country_max[values_titles[selected_value]],
         text=data.per_country_max["region"],
         zmin=0,
-        zmax=data.per_country_max[values_titles[selected]].replace(
+        zmax=data.per_country_max[values_titles[selected_value]].replace(
             [np.inf, -np.inf], np.nan).max()*0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 10, "len": 0.5,
                   "x": 0.85, "y": 0.7, "outlinewidth": 0, },
     )
-
     layout_map = go.Layout(
         mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-        mapbox_zoom=0.2,
+        mapbox_zoom=data.regions[region]["zoom"],
         height=parser.getint("layout", "height_first_row"),
-        mapbox_center={"lat": 35, "lon": 0},
+        mapbox_center=data.regions[region]["center"],
         mapbox_accesstoken=config.mapbox,
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
     )
@@ -160,7 +183,8 @@ def update_figure(selected):
 
     # timeline
     scatter = go.Scatter(
-        x=data.timeseries.loc["world"].index, y=data.timeseries.loc["world", selected],
+        x=data.timeseries.loc[region].index, y=data.timeseries.loc[region,
+                                                                   selected_value],
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
