@@ -35,7 +35,8 @@ region = "world"
 
 values_titles = {"cases": "cases/1M capita",
                  "deaths": "deaths/1M capita",
-                 "recovered": "recovered/1M capita"}
+                 "recovered": "recovered/1M capita",
+                 "lethality": "lethality"}
 
 
 # initialize data load
@@ -47,14 +48,16 @@ layout_timeline["height"] = parser.getint("layout", "height_first_row")
 
 
 # dropdown
+# function for options
 dropdown = dcc.Dropdown(
-    id="value-selected",
+    id="indicator-selected",
     value="cases",
     style={"width": "100%", "margin": 0, "padding": 0},
     options=[
         {"label": values_titles["cases"], "value": "cases"},
         {"label": values_titles["deaths"], "value": "deaths"},
         {"label": values_titles["recovered"], "value": "recovered"},
+        {"label": values_titles["lethality"], "value": "lethality"},
     ],
 )
 
@@ -85,7 +88,7 @@ body = html.Div(
                 dbc.Col([header], lg=3, md=6, xs=12),
                 dbc.Col(
                     html.Div(
-                        id="select-indicator",
+                        id="selector",
                         children=[dropdown],
                         style={"width": "100%", "margin": 0, "padding": 0},
                     ),
@@ -128,7 +131,7 @@ body = html.Div(
                             children=[
                                 dcc.Tab(
                                     label=information["name"],
-                                    value=region) for region, information in data.regions.items()
+                                    value=region) for region, information in data..items()
                             ]
                         )
                     ]
@@ -149,10 +152,10 @@ app.layout = html.Div([body])
         Output("map", "children"),
         Output("timeline", "children"),
     ],
-    [Input("value-selected", "value"),
+    [Input("indicator-selected", "value"),
      Input("region-selected", "value")],
 )
-def update_figure(selected_value, selected_region):
+def update_figure(selected_indicator, selected_region):
 
     # map data
     region = selected_region
@@ -161,10 +164,10 @@ def update_figure(selected_value, selected_region):
         colorscale="BuPu",
         geojson=data.countries,
         locations=data.per_country_max["iso_alpha"],
-        z=data.per_country_max[values_titles[selected_value]],
+        z=data.per_country_max[values_titles[selected_indicator]],
         text=data.per_country_max["region"],
         zmin=0,
-        zmax=data.per_country_max[values_titles[selected_value]].replace(
+        zmax=data.per_country_max[values_titles[selected_indicator]].replace(
             [np.inf, -np.inf], np.nan).max()*0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 10, "len": 0.5,
@@ -184,10 +187,11 @@ def update_figure(selected_value, selected_region):
     # timeline
     scatter = go.Scatter(
         x=data.timeseries.loc[region].index, y=data.timeseries.loc[region,
-                                                                   selected_value],
+                                                                   selected_indicator],
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
+
     return dcc.Graph(figure=fig_map), dcc.Graph(figure=fig_timeline)
 
 
