@@ -10,13 +10,12 @@ class Extract:
 
     def __init__(self, parser: ConfigParser):
 
-        self.info = "extract data"
-
         self.data = self.load_jhu(parser)
 
         self.country_info = self.read_geonames_country_info(parser)
 
     def load_jhu(self, parser):
+
         lookup = pd.read_csv(parser.get("urls", "jhu_lookup_url"))
         lookup.rename(columns={"Country_Region": "region"}, inplace=True)
 
@@ -73,7 +72,7 @@ class Extract:
             how="inner",
         )
 
-        self.data = data.rename(columns={"confirmed": "cases"})
+        data.rename(columns={"confirmed": "cases"}, inplace=True)
 
         return data
 
@@ -100,48 +99,54 @@ class Extract:
 
 class Transform(Extract):
 
-    def __init__(self, parser: ConfigParser):
+    def __init__(self, parser: ConfigParser, indicators):
 
         super().__init__(parser)
 
         self.data = self.add_country_info(self.data, self.country_info)
 
-        self.data.loc[:, "cases/1M capita"] = (
-            self.data.confirmed / self.data.population * 1000000
-        ).round(0)
-        self.data.loc[:, "deaths/1M capita"] = (
-            self.data.deaths / self.data.population * 1000000
-        ).round(0)
-        self.data.loc[:, "recovered/1M capita"] = (
-            self.data.recovered / self.data.population * 1000000
-        ).round(0)
+        # timeseries with region for country, continten and wolrd? oder nur operationen auf
 
-        self.data.rename(columns={"confirmed": "cases"}, inplace=True)
+        timeseries_countries = self.data.copy()
+        timeseries = self.create_timeseries(
+            self.data, "continent")
+        world = self.create_timeseries(
+            self.data, [])
 
-        timeseries = self.data.groupby(["continent", "date"]).sum()
+        for i, indicator in indicators().items():
+            timeseries_countries = self.add_indicator(
+                timeseries_countries, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
 
-        timeseries.loc[:, "lethality"] = (
-            100*timeseries.deaths / timeseries.cases
-        ).round(1)
+            timeseries = self.add_indicator(
+                timeseries, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
 
-        world = timeseries.groupby("date").sum()
-        world.loc[:, "lethality"] = (
-            100 * world.deaths / world.cases
-        ).round(1)
+            world = self.add_indicator(
+                world, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
+
         world = pd.DataFrame(
             index=[pd.Series(data="World").repeat(
                 len(world.index)), world.index],
             data=world.values,
             columns=world.columns,
         )
+        world.reset_index(inplace=True)
+        world.rename(columns={"level_0": "continent"}, inplace=True)
 
         self.timeseries = pd.concat([timeseries, world])
 
-        self.per_country_max = self.data[self.data.date ==
-                                         self.data.date.max()]
-        self.per_country_max.loc[:, "lethality"] = (
-            100 * self.per_country_max.deaths / self.per_country_max.cases
-        ).round(1)
+        self.per_country_max = timeseries_countries[timeseries_countries.date ==
+                                                    timeseries_countries.date.max()]
+
+    def add_indicator(self, data_input, name, attributes, norming, digits):
+        '''
+        adds columns with values for indicators as calculated from "attributes"
+        '''
+
+        data = data_input.copy()
+        data.loc[:, name] = (data.loc[:, attributes[0]] /
+                             data.loc[:, attributes[1]] * norming).round(digits)
+
+        return data
 
     def add_country_info(self, data, country_info):
         data = pd.merge(
@@ -154,20 +159,33 @@ class Transform(Extract):
 
         return data
 
-    def by_continent(self, data):
-        pass
+    def create_timeseries(self, data, region):
+
+        if region:
+            timeseries = data.groupby(
+                [region, "date"]).sum()
+
+            timeseries.reset_index(inplace=True)
+        else:
+            timeseries = data.groupby(
+                "date").sum()
+
+            timeseries.reset_index(inplace=True)
+
+        return timeseries
 
 
 class DataLoader(Transform):
     def __init__(self, parser: ConfigParser):
 
-        super().__init__(parser)
+        super().__init__(parser, self.indicators)
 
         self.regions = self.regions()
 
         self.countries = self.countries_geojson(parser)
 
     def countries_geojson(self, parser):
+
         with urlopen(parser.get("urls", "mapbox_countries_url")) as response:
             countries = json.load(response)
 
@@ -177,7 +195,7 @@ class DataLoader(Transform):
 
         regions = {
             "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.2},
-            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 1}, "zoom": 2.5},
+            "EU": {"name": "Europe", "center": {"lat": 52, "lon": 0}, "zoom": 2.5},
             "NA": {"name": "N.America", "center": {"lat": 50, "lon": -95}, "zoom": 2},
             "SA": {"name": "S.America", "center": {"lat": -20, "lon": -70}, "zoom": 1.7},
             "AS": {"name": "Asia", "center": {"lat": 40, "lon": 90}, "zoom": 1.7},
@@ -186,3 +204,35 @@ class DataLoader(Transform):
         }
 
         return regions
+
+    def indicators(self):
+        indicators = {
+            "cases": {
+                "name": "cases/1M capita",
+                "columns": ["cases", "population"],
+                "norming": 100000,
+                "digits": 0
+            },
+            "deaths": {
+                "name": "deaths/1M capita",
+                "columns": ["deaths", "population"],
+                "norming": 100000,
+                "digits": 0},
+            "recovered": {
+                "name": "recovered(%)",
+                "columns": ["recovered", "cases"],
+                "norming": 100,
+                "digits": 0},
+            "lethality": {
+                "name": "lethality(%)",
+                "columns": ["deaths", "cases"],
+                "norming": 100,
+                "digits": 2},
+            "mortality": {
+                "name": "mortality(%)",
+                "columns": ["deaths", "population"],
+                "norming": 100,
+                "digits": 3},
+        }
+
+        return indicators

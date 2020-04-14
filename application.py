@@ -33,14 +33,9 @@ style = Style()
 
 region = "world"
 
-values_titles = {"cases": "cases/1M capita",
-                 "deaths": "deaths/1M capita",
-                 "recovered": "recovered/1M capita",
-                 "lethality": "lethality"}
-
-
 # initialize data load
 data = DataLoader(parser)
+indicators = data.indicators()
 
 # layout
 layout_timeline = style.layout.copy()
@@ -48,17 +43,21 @@ layout_timeline["height"] = parser.getint("layout", "height_first_row")
 
 
 # dropdown
+
+def dropdown_options(indicators):
+    options = []
+    for i, j in indicators.items():
+        options.append({"label": j["name"], "value": i})
+
+    return options
+
+
 # function for options
 dropdown = dcc.Dropdown(
     id="indicator-selected",
     value="cases",
     style={"width": "100%", "margin": 0, "padding": 0},
-    options=[
-        {"label": values_titles["cases"], "value": "cases"},
-        {"label": values_titles["deaths"], "value": "deaths"},
-        {"label": values_titles["recovered"], "value": "recovered"},
-        {"label": values_titles["lethality"], "value": "lethality"},
-    ],
+    options=dropdown_options(indicators),
 )
 
 # create app
@@ -131,7 +130,7 @@ body = html.Div(
                             children=[
                                 dcc.Tab(
                                     label=information["name"],
-                                    value=region) for region, information in data..items()
+                                    value=region) for region, information in data.regions.items()
                             ]
                         )
                     ]
@@ -163,11 +162,11 @@ def update_figure(selected_indicator, selected_region):
     map_trace = go.Choroplethmapbox(
         colorscale="BuPu",
         geojson=data.countries,
-        locations=data.per_country_max["iso_alpha"],
-        z=data.per_country_max[values_titles[selected_indicator]],
+        locations=data.per_country_max["iso3"],
+        z=data.per_country_max[indicators[selected_indicator]["name"]],
         text=data.per_country_max["region"],
         zmin=0,
-        zmax=data.per_country_max[values_titles[selected_indicator]].replace(
+        zmax=data.per_country_max[indicators[selected_indicator]["name"]].replace(
             [np.inf, -np.inf], np.nan).max()*0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 10, "len": 0.5,
@@ -186,8 +185,8 @@ def update_figure(selected_indicator, selected_region):
 
     # timeline
     scatter = go.Scatter(
-        x=data.timeseries.loc[region].index, y=data.timeseries.loc[region,
-                                                                   selected_indicator],
+        x=data.timeseries.loc[data.timeseries.continent == region].date, y=data.timeseries.loc[data.timeseries.continent == region,
+                                                                                               indicators[selected_indicator]["name"]],
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
