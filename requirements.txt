@@ -100,7 +100,6 @@ pipenv==2018.11.26
 plotly==4.5.4
 pluggy==0.13.1
 prompt-toolkit==1.0.18
-protobuf==3.11.4
 pubmed-lookup==0.2.1
 py==1.8.1
 pyasn1==0.4.8
