@@ -105,46 +105,42 @@ class Transform(Extract):
 
         self.data = self.add_country_info(self.data, self.country_info)
 
-        # timeseries with region for country, continten and wolrd? oder nur operationen auf
+        timeseries = self.data.groupby(["date", "continent"]).agg(
+            {"iso3": "max", "deaths": "sum", "cases": "sum", "recovered": "sum", "population": "sum"})
+        timeseries.reset_index(inplace=True)
+        timeseries.rename(columns={"continent": "region"}, inplace=True)
 
-        timeseries_countries = self.data.copy()
-        timeseries = self.create_timeseries(
-            self.data, "continent")
-        world = self.create_timeseries(
-            self.data, [])
+        world = self.data.groupby(["date"]).agg(
+            {"region": "max", "iso3": "max", "deaths": "sum", "cases": "sum", "recovered": "sum", "population": "sum"})
+        world.reset_index(inplace=True)
+        world.loc[:, "region"] = "World"
+
+        timeseries = timeseries.append(world)
+        timeseries.loc[:, "iso3"] = False
+
+        timeseries = timeseries.append(self.data.drop(columns={"continent"}))
 
         for i, indicator in indicators().items():
-            timeseries_countries = self.add_indicator(
-                timeseries_countries, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
-
             timeseries = self.add_indicator(
                 timeseries, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
 
-            world = self.add_indicator(
-                world, indicator["name"], indicator["columns"], indicator["norming"], indicator["digits"])
+        self.timeseries = timeseries
 
-        world = pd.DataFrame(
-            index=[pd.Series(data="World").repeat(
-                len(world.index)), world.index],
-            data=world.values,
-            columns=world.columns,
-        )
-        world.reset_index(inplace=True)
-        world.rename(columns={"level_0": "continent"}, inplace=True)
+        self.per_country_max = timeseries[timeseries.date ==
+                                          timeseries.date.max()]
 
-        self.timeseries = pd.concat([timeseries, world])
-
-        self.per_country_max = timeseries_countries[timeseries_countries.date ==
-                                                    timeseries_countries.date.max()]
-
-    def add_indicator(self, data_input, name, attributes, norming, digits):
+    def add_indicator(self, data, name, attributes, norming, digits):
         '''
         adds columns with values for indicators as calculated from "attributes"
         '''
 
-        data = data_input.copy()
-        data.loc[:, name] = (data.loc[:, attributes[0]] /
-                             data.loc[:, attributes[1]] * norming).round(digits)
+        #data = data_input.copy()
+        if len(attributes) == 2:
+            data.loc[:, name] = (data.loc[:, attributes[0]] /
+                                 data.loc[:, attributes[1]] * norming).round(digits)
+        else:
+            data.loc[:, name] = (
+                data.loc[:, attributes[0]] * norming).round(digits)
 
         return data
 
@@ -156,6 +152,8 @@ class Transform(Extract):
             right_on="iso_alpha",
             how="inner",
         )
+
+        data.drop(columns=["iso_alpha"], inplace=True)
 
         return data
 
@@ -208,17 +206,35 @@ class DataLoader(Transform):
     def indicators(self):
         indicators = {
             "cases": {
+                "name": "cases",
+                "columns": ["cases"],
+                "norming": 1,
+                "digits": 0
+            },
+            "deaths": {
+                "name": "deaths",
+                "columns": ["deaths"],
+                "norming": 1,
+                "digits": 0
+            },
+            "recovered": {
+                "name": "recovered",
+                "columns": ["recovered"],
+                "norming": 1,
+                "digits": 0
+            },
+            "cases_capita": {
                 "name": "cases/1M capita",
                 "columns": ["cases", "population"],
                 "norming": 100000,
                 "digits": 0
             },
-            "deaths": {
+            "deaths_capita": {
                 "name": "deaths/1M capita",
                 "columns": ["deaths", "population"],
                 "norming": 100000,
-                "digits": 0},
-            "recovered": {
+                "digits": 1},
+            "recovered_capita": {
                 "name": "recovered(%)",
                 "columns": ["recovered", "cases"],
                 "norming": 100,
@@ -229,10 +245,10 @@ class DataLoader(Transform):
                 "norming": 100,
                 "digits": 2},
             "mortality": {
-                "name": "mortality(%)",
+                "name": "mortality(‰)",
                 "columns": ["deaths", "population"],
-                "norming": 100,
-                "digits": 3},
+                "norming": 1000,
+                "digits": 2},
         }
 
         return indicators

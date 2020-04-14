@@ -185,8 +185,8 @@ def update_figure(selected_indicator, selected_region):
 
     # timeline
     scatter = go.Scatter(
-        x=data.timeseries.loc[data.timeseries.continent == region].date, y=data.timeseries.loc[data.timeseries.continent == region,
-                                                                                               indicators[selected_indicator]["name"]],
+        x=data.timeseries.loc[data.timeseries.region == region].date, y=data.timeseries.loc[data.timeseries.region == region,
+                                                                                            indicators[selected_indicator]["name"]],
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
