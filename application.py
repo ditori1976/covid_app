@@ -55,7 +55,7 @@ def dropdown_options(indicators):
 # function for options
 dropdown = dcc.Dropdown(
     id="indicator-selected",
-    value="cases",
+    value="cases_capita",
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
 )

@@ -217,12 +217,6 @@ class DataLoader(Transform):
                 "norming": 1,
                 "digits": 0
             },
-            "recovered": {
-                "name": "recovered",
-                "columns": ["recovered"],
-                "norming": 1,
-                "digits": 0
-            },
             "cases_capita": {
                 "name": "cases/1M capita",
                 "columns": ["cases", "population"],
@@ -248,6 +242,11 @@ class DataLoader(Transform):
                 "name": "mortality(‰)",
                 "columns": ["deaths", "population"],
                 "norming": 1000,
+                "digits": 2},
+            "recovered_deaths": {
+                "name": "recovered/deaths(%)",
+                "columns": ["recovered", "deaths"],
+                "norming": 100,
                 "digits": 2},
         }
 
