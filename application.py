@@ -44,6 +44,7 @@ layout_timeline["height"] = parser.getint("layout", "height_first_row")
 
 # dropdown
 
+
 def dropdown_options(indicators):
     options = []
     for i, j in indicators.items():
@@ -59,6 +60,13 @@ dropdown = dcc.Dropdown(
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
 )
+layout_map = go.Layout(
+    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+    height=parser.getint("layout", "height_first_row"),
+    mapbox_accesstoken=config.mapbox,
+    margin={"r": 0, "t": 0, "l": 0, "b": 0},
+)
+fig_map = go.Figure(data=[], layout=layout_map)  # , data=[map_trace],
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -66,15 +74,13 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 header = dbc.Row(
     [
         dbc.Col(
-            html.Img(src=app.get_asset_url("logo.png"),
-                     height="auto", width="70%"),
+            html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
             lg=3,
             md=3,
             xs=2,
             style=style.style_center,
         ),
-        dbc.Col(html.H1("COVID-19"), lg=9, md=8,
-                xs=7, style=style.style_center,),
+        dbc.Col(html.H1("COVID-19"), lg=9, md=8, xs=7, style=style.style_center,),
     ],
     justify="center",
 )
@@ -103,19 +109,16 @@ body = html.Div(
         dbc.Row(
             [
                 dbc.Col(
-                    html.Div(id="map", style={"height": parser.getint(
-                        "layout", "height_first_row")}),
+                    html.Div(
+                        id="map",
+                        style={"height": parser.getint("layout", "height_first_row")},
+                        children=[dcc.Graph(id="mapi", figure=fig_map)],
+                    ),
                     lg=5,
                     md=10,
                     xs=11,
                 ),
-                dbc.Col(
-                    html.Div(id="timeline",
-                             ),
-                    lg=5,
-                    md=10,
-                    xs=11,
-                ),
+                dbc.Col(html.Div(id="timeline",), lg=5, md=10, xs=11,),
             ],
             style={"padding-top": parser.getint("layout", "spacer")},
             justify="center",
@@ -128,17 +131,15 @@ body = html.Div(
                             id="region-selected",
                             value="World",
                             children=[
-                                dcc.Tab(
-                                    label=information["name"],
-                                    value=region) for region, information in data.regions.items()
-                            ]
+                                dcc.Tab(label=information["name"], value=region)
+                                for region, information in data.regions.items()
+                            ],
                         )
                     ]
                 )
-
             ],
-            justify="center"
-        )
+            justify="center",
+        ),
     ]
 )
 
@@ -147,17 +148,24 @@ app.layout = html.Div([body])
 
 
 @app.callback(
+    [Output("map", "children"), Output("timeline", "children"),],
     [
-        Output("map", "children"),
-        Output("timeline", "children"),
+        Input("indicator-selected", "value"),
+        Input("region-selected", "value"),
+        Input("mapi", "clickData"),
     ],
-    [Input("indicator-selected", "value"),
-     Input("region-selected", "value")],
 )
-def update_figure(selected_indicator, selected_region):
+def update_figure(selected_indicator, selected_region, selected_country):
 
     # map data
     region = selected_region
+    continent = region
+
+    if selected_country:
+        region = selected_country["points"][0]["text"]
+        continent = data.per_country_max.loc[
+            data.per_country_max.region == region, "continent"
+        ].values[0]
 
     map_trace = go.Choroplethmapbox(
         colorscale="BuPu",
@@ -166,32 +174,35 @@ def update_figure(selected_indicator, selected_region):
         z=data.per_country_max[indicators[selected_indicator]["name"]],
         text=data.per_country_max["region"],
         zmin=0,
-        zmax=data.per_country_max[indicators[selected_indicator]["name"]].replace(
-            [np.inf, -np.inf], np.nan).max()*0.3,
+        zmax=data.per_country_max[indicators[selected_indicator]["name"]]
+        .replace([np.inf, -np.inf], np.nan)
+        .max()
+        * 0.3,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 10, "len": 0.5,
-                  "x": 0.85, "y": 0.7, "outlinewidth": 0, },
+        colorbar={"thickness": 10, "len": 0.5, "x": 0.85, "y": 0.7, "outlinewidth": 0,},
     )
     layout_map = go.Layout(
         mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-        mapbox_zoom=data.regions[region]["zoom"],
+        mapbox_zoom=data.regions[continent]["zoom"],
         height=parser.getint("layout", "height_first_row"),
-        mapbox_center=data.regions[region]["center"],
+        mapbox_center=data.regions[continent]["center"],
         mapbox_accesstoken=config.mapbox,
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
     )
 
-    fig_map = go.Figure(data=[map_trace], layout=layout_map,)
+    fig_map = go.Figure(data=[map_trace], layout=layout_map)
 
     # timeline
     scatter = go.Scatter(
-        x=data.timeseries.loc[data.timeseries.region == region].date, y=data.timeseries.loc[data.timeseries.region == region,
-                                                                                            indicators[selected_indicator]["name"]],
+        x=data.timeseries.loc[data.timeseries.region == region].date,
+        y=data.timeseries.loc[
+            data.timeseries.region == region, indicators[selected_indicator]["name"]
+        ],
     )
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
 
-    return dcc.Graph(figure=fig_map), dcc.Graph(figure=fig_timeline)
+    return (dcc.Graph(id="mapi", figure=fig_map), dcc.Graph(figure=fig_timeline))
 
 
 application = app.server
