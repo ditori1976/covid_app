@@ -193,8 +193,8 @@ class DataLoader(Transform):
 
         regions = {
             "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.2},
-            "EU": {"name": "Europe", "center": {"lat": 52, "lon": 0}, "zoom": 2.5},
-            "NA": {"name": "N.America", "center": {"lat": 50, "lon": -95}, "zoom": 2},
+            "EU": {"name": "Europe", "center": {"lat": 48, "lon": 0}, "zoom": 2.5},
+            "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
             "SA": {"name": "S.America", "center": {"lat": -20, "lon": -70}, "zoom": 1.7},
             "AS": {"name": "Asia", "center": {"lat": 40, "lon": 90}, "zoom": 1.7},
             "AF": {"name": "Africa", "center": {"lat": 5, "lon": 10}, "zoom": 1.6},
