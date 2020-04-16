@@ -126,7 +126,7 @@ body = html.Div(
                                     html.H3(
                                         continent,
                                         id="title-continent",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.H4(region, id="title-region"),
                                 ],
