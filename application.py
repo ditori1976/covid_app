@@ -32,8 +32,8 @@ parser.read("settings.ini")
 config = Config()
 style = Style()
 
-region = "World"
-continent = region
+region = parser.get("data", "region")
+continent = parser.get("data", "continent")
 
 # initialize data load
 data = DataLoader(parser)
@@ -41,7 +41,8 @@ indicators = data.indicators()
 
 # layout
 layout_timeline = style.layout.copy()
-layout_timeline["height"] = parser.getint("layout", "height_first_row") - 30
+layout_timeline["height"] = parser.getint("layout", "height_first_row") - 50
+layout_timeline["plot_bgcolor"] = "white"
 
 
 # dropdown
@@ -56,7 +57,7 @@ def dropdown_options(indicators):
 # function for options
 dropdown = dcc.Dropdown(
     id="indicator-selected",
-    value="cases_capita",
+    value=parser.get("data", "init_indicator"),
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
 )
@@ -74,8 +75,48 @@ map_trace = go.Choroplethmapbox(
     marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
     colorbar={"thickness": 10, "len": 0.5, "x": 0.85, "y": 0.7, "outlinewidth": 0,},
 )
+
 fig_map = go.Figure(data=[map_trace], layout=layout_map)
 
+
+def update_map(fig, indicator, continent):
+    indicator_name = indicators[indicator]["name"]
+    fig.update_traces(
+        locations=data.latest_data()["iso3"],
+        z=data.latest_data()[indicator_name],
+        text=data.latest_data()["region"],
+        zmax=data.latest_data()[indicator_name].replace([np.inf, -np.inf], np.nan).max()
+        * 0.3,
+    )
+    fig.update_layout(
+        mapbox_center=data.regions[continent]["center"],
+        mapbox_zoom=data.regions[continent]["zoom"],
+    )
+    return fig
+
+
+fig_map = update_map(fig_map, parser.get("data", "init_indicator"), continent)
+
+# timeline
+timeline_trace = go.Scatter()
+
+fig_timeline = go.Figure(data=[timeline_trace], layout=layout_timeline)
+
+
+def update_timeline(fig, indicator, region):
+    indicator_name = indicators[indicator]["name"]
+
+    fig.update_traces(
+        x=data.timeseries.loc[data.timeseries.region == region].date,
+        y=data.timeseries.loc[data.timeseries.region == region, indicator_name],
+    )
+
+    return fig
+
+
+fig_timeline = update_timeline(
+    fig_timeline, parser.get("data", "init_indicator"), region
+)
 
 # create app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -131,15 +172,22 @@ body = html.Div(
                         children=[
                             html.Div(
                                 children=[
-                                    html.H3(
+                                    html.P(
                                         continent,
-                                        id="title-continent",
-                                        # style={"display": "None"},
+                                        id="selected-series",
+                                        style={"display": "None"},
                                     ),
-                                    html.H4(region, id="title-region"),
+                                    html.P(
+                                        region,
+                                        id="title-region",
+                                        style={"display": "None"},
+                                    ),
+                                    html.H4([], id="title"),
                                 ],
                             ),
-                            html.Div(id="timeline"),
+                            html.Div(
+                                children=[dcc.Graph(id="timeline", figure=fig_timeline)]
+                            ),
                         ]
                     ),
                     lg=5,
@@ -156,7 +204,7 @@ body = html.Div(
                     [
                         dcc.Tabs(
                             id="continent-selected",
-                            value="World",
+                            value=continent,
                             children=[
                                 dcc.Tab(label=information["name"], value=region)
                                 for region, information in data.regions.items()
@@ -180,112 +228,55 @@ app.layout = html.Div([body])
 )
 def set_title_region(selected_region):
 
-    continent = "World"
-    region = continent
+    continent = parser.get("data", "continent")
+    region = parser.get("data", "region")
 
     if selected_region:
         region = selected_region["points"][0]["text"]
-        continent = data.latest_data()[
-            data.latest_data().region == region, "continent"
-        ].values[0]
+        continent = (
+            data.latest_data()
+            .loc[data.latest_data().region == region, "continent"]
+            .values[0]
+        )
 
     return [region], continent
 
 
 @app.callback(
-    [Output("title-continent", "children")], [Input("continent-selected", "value")],
+    [Output("selected-series", "children"),],
+    [Input("title-region", "children"), Input("continent-selected", "value")],
 )
-def set_title_continent(selected_continent):
-
-    return [selected_continent]
-
-
-"""
-@app.callback(
-    [Output("title-continent", "children")], [Input("continent-selected", "value")],
-)
-def set_title_continent(selected_continent):
-    print(selected_continent)
-  return [selected_continent]"""
-
-
-"""@app.callback(
-    [
-        Output("map", "figure"),
-        Output("timeline", "children"),
-        #Output("title-region", "children"),
-    ],
-    [
-        Input("indicator-selected", "value"),
-        Input("title-continent", "children"),
-        # Input("title-region", "children"),
-        Input("continent-selected", "value"),
-        #Input("map", "clickData"),
-    ],
-)
-def update_figure(selected_indicator, selected_continent, cont, map):
+def select_display(selected_region, selected_continent):
     ctx = dash.callback_context
 
-    ctx_msg = json.dumps(
-        {"states": ctx.states, "triggered": ctx.triggered, "inputs": ctx.inputs},
-        indent=2,
+    trigger = ctx.triggered[0]["value"]
+    trigger_id = ctx.triggered[0]["prop_id"]
+
+    if type(trigger) == list:
+        trigger = trigger.pop()
+
+    return [trigger]
+
+
+@app.callback(
+    [
+        Output("title", "children"),
+        Output("map", "figure"),
+        Output("timeline", "figure"),
+    ],
+    [Input("selected-series", "children"), Input("indicator-selected", "value"),],
+)
+def select_display(selected_region, selected_indicator):
+
+    continent = data.timeseries[
+        data.timeseries.region == selected_region
+    ].continent.max()
+
+    return (
+        [selected_region],
+        update_map(fig_map, selected_indicator, continent),
+        update_timeline(fig_timeline, selected_indicator, selected_region),
     )
-
-    continent = selected_continent
-    region = continent
-
-    print(ctx.triggered)
-    first_trigger = ctx.triggered[0]
-
-    latest_data = data.latest_data()
-
-    if first_trigger["prop_id"] == "map.clickData":
-        region = first_trigger["value"]["points"][0]["text"]
-        continent = latest_data.loc[latest_data.region == region, "continent"].values[0]
-    if first_trigger["prop_id"] == "continent-selected.value":
-        continent = first_trigger["value"]
-        region = continent
-
-    print(region, continent)
-
-    # print(region, continent, selected_continent_tab)
-
-    map_trace = go.Choroplethmapbox(
-        colorscale="BuPu",
-        geojson=data.countries,
-        locations=latest_data["iso3"],
-        z=latest_data[indicators[selected_indicator]["name"]],
-        text=latest_data["region"],
-        zmin=0,
-        zmax=latest_data[indicators[selected_indicator]["name"]]
-        .replace([np.inf, -np.inf], np.nan)
-        .max()
-        * 0.3,
-        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 10, "len": 0.5, "x": 0.85, "y": 0.7, "outlinewidth": 0,},
-    )
-    layout_map = go.Layout(
-        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-        mapbox_zoom=data.regions[continent]["zoom"],
-        height=parser.getint("layout", "height_first_row"),
-        mapbox_center=data.regions[continent]["center"],
-        mapbox_accesstoken=config.mapbox,
-        margin={"r": 0, "t": 0, "l": 0, "b": 0},
-    )
-
-    fig_map = go.Figure(data=[map_trace], layout=layout_map)
-
-    # timeline
-    scatter = go.Scatter(
-        x=data.timeseries.loc[data.timeseries.region == region].date,
-        y=data.timeseries.loc[
-            data.timeseries.region == region, indicators[selected_indicator]["name"]
-        ],
-    )
-    fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
-    fig_timeline.update_layout(plot_bgcolor="white",)
-
-    return (fig_map, dcc.Graph(figure=fig_timeline), [region])"""
 
 
 application = app.server
