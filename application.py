@@ -60,13 +60,21 @@ dropdown = dcc.Dropdown(
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
 )
+# map
 layout_map = go.Layout(
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     height=parser.getint("layout", "height_first_row"),
     mapbox_accesstoken=config.mapbox,
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
 )
-fig_map = go.Figure(data=[], layout=layout_map)  # , data=[map_trace],
+map_trace = go.Choroplethmapbox(
+    colorscale="BuPu",
+    geojson=data.countries,
+    zmin=0,
+    marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+    colorbar={"thickness": 10, "len": 0.5, "x": 0.85, "y": 0.7, "outlinewidth": 0,},
+)
+fig_map = go.Figure(data=[map_trace], layout=layout_map)
 
 
 # create app
@@ -126,7 +134,7 @@ body = html.Div(
                                     html.H3(
                                         continent,
                                         id="title-continent",
-                                        style={"display": "None"},
+                                        # style={"display": "None"},
                                     ),
                                     html.H4(region, id="title-region"),
                                 ],
@@ -166,40 +174,31 @@ body = html.Div(
 app.layout = html.Div([body])
 
 
-"""@app.callback(
-    [Output("title-region", "children")],
+@app.callback(
+    [Output("title-region", "children"), Output("continent-selected", "value")],
     [Input("map", "clickData")],
 )
 def set_title_region(selected_region):
-    
+
+    continent = "World"
+    region = continent
+
     if selected_region:
         region = selected_region["points"][0]["text"]
-        continent = data.latest_data.loc[
-            data.latest_data.region == region, "continent"
+        continent = data.latest_data()[
+            data.latest_data().region == region, "continent"
         ].values[0]
-    else:
-        region = "World"
 
-    return [region]"""
+    return [region], continent
 
 
-"""@app.callback(
-    [Output("title-continent", "children")],
-    [Input("continent-selected", "value"), Input("title-region", "children")],
+@app.callback(
+    [Output("title-continent", "children")], [Input("continent-selected", "value")],
 )
-def set_title_continent(selected_continent, selected_region):
-    print(selected_continent, selected_region)
-    if selected_continent != selected_region:
-        continent = data.latest_data.loc[
-            data.latest_data.region == selected_region, "continent"
-        ].values[0]
-        print(continent, selected_region)
-    else:
-        continent = selected_continent
+def set_title_continent(selected_continent):
 
-    # continent = selected_continent
+    return [selected_continent]
 
-    return [continent]"""
 
 """
 @app.callback(
@@ -210,18 +209,18 @@ def set_title_continent(selected_continent):
   return [selected_continent]"""
 
 
-@app.callback(
+"""@app.callback(
     [
         Output("map", "figure"),
         Output("timeline", "children"),
-        Output("title-region", "children"),
+        #Output("title-region", "children"),
     ],
     [
         Input("indicator-selected", "value"),
         Input("title-continent", "children"),
         # Input("title-region", "children"),
         Input("continent-selected", "value"),
-        Input("map", "clickData"),
+        #Input("map", "clickData"),
     ],
 )
 def update_figure(selected_indicator, selected_continent, cont, map):
@@ -286,7 +285,7 @@ def update_figure(selected_indicator, selected_continent, cont, map):
     fig_timeline = go.Figure(layout=layout_timeline, data=[scatter])
     fig_timeline.update_layout(plot_bgcolor="white",)
 
-    return (fig_map, dcc.Graph(figure=fig_timeline), [region])
+    return (fig_map, dcc.Graph(figure=fig_timeline), [region])"""
 
 
 application = app.server
