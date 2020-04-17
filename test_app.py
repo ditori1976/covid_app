@@ -1,14 +1,35 @@
-'''
+"""
 Unit test for app.py
-'''
+"""
 import unittest
-import app
+from tools import DataLoader
+from configparser import ConfigParser
 
 
-class TestApp:
-    def test_code(self):
-        assert 20000 == app.min_cases
+# configuration
+parser = ConfigParser()
+parser.read("settings.ini")
+
+data = DataLoader(parser)
 
 
-if __name__ == '__main__':
+class TestLoader(unittest.TestCase):
+    def test_loader(self):
+
+        self.assertTrue(data.regions)
+        self.assertEqual(
+            data.per_country_max.loc[
+                data.per_country_max.region == "France", "continent"
+            ].max(),
+            "EU",
+        )
+
+
+class TestParser(unittest.TestCase):
+    def test_parser(self):
+        geonames_countries_url = "http://download.geonames.org/countries/"
+        assert geonames_countries_url == parser.get("urls", "geonames_countries_url")
+
+
+if __name__ == "__main__":
     unittest.main()

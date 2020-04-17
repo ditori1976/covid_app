@@ -174,8 +174,8 @@ def set_title_region(selected_region):
     
     if selected_region:
         region = selected_region["points"][0]["text"]
-        continent = data.per_country_max.loc[
-            data.per_country_max.region == region, "continent"
+        continent = data.latest_data.loc[
+            data.latest_data.region == region, "continent"
         ].values[0]
     else:
         region = "World"
@@ -190,8 +190,8 @@ def set_title_region(selected_region):
 def set_title_continent(selected_continent, selected_region):
     print(selected_continent, selected_region)
     if selected_continent != selected_region:
-        continent = data.per_country_max.loc[
-            data.per_country_max.region == selected_region, "continent"
+        continent = data.latest_data.loc[
+            data.latest_data.region == selected_region, "continent"
         ].values[0]
         print(continent, selected_region)
     else:
@@ -237,11 +237,12 @@ def update_figure(selected_indicator, selected_continent, cont, map):
 
     print(ctx.triggered)
     first_trigger = ctx.triggered[0]
+
+    latest_data = data.latest_data()
+
     if first_trigger["prop_id"] == "map.clickData":
         region = first_trigger["value"]["points"][0]["text"]
-        continent = data.per_country_max.loc[
-            data.per_country_max.region == region, "continent"
-        ].values[0]
+        continent = latest_data.loc[latest_data.region == region, "continent"].values[0]
     if first_trigger["prop_id"] == "continent-selected.value":
         continent = first_trigger["value"]
         region = continent
@@ -253,11 +254,11 @@ def update_figure(selected_indicator, selected_continent, cont, map):
     map_trace = go.Choroplethmapbox(
         colorscale="BuPu",
         geojson=data.countries,
-        locations=data.per_country_max["iso3"],
-        z=data.per_country_max[indicators[selected_indicator]["name"]],
-        text=data.per_country_max["region"],
+        locations=latest_data["iso3"],
+        z=latest_data[indicators[selected_indicator]["name"]],
+        text=latest_data["region"],
         zmin=0,
-        zmax=data.per_country_max[indicators[selected_indicator]["name"]]
+        zmax=latest_data[indicators[selected_indicator]["name"]]
         .replace([np.inf, -np.inf], np.nan)
         .max()
         * 0.3,

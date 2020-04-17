@@ -111,6 +111,7 @@ class Transform(Extract):
         )
         timeseries.reset_index(inplace=True)
         timeseries.rename(columns={"continent": "region"}, inplace=True)
+        timeseries.loc[:, "continent"] = timeseries.loc[:, "region"]
 
         world = self.data.groupby(["date"]).agg(
             {
@@ -125,11 +126,12 @@ class Transform(Extract):
         )
         world.reset_index(inplace=True)
         world.loc[:, "region"] = "World"
+        world.loc[:, "continent"] = "World"
 
         timeseries = timeseries.append(world)
         timeseries.loc[:, "iso3"] = False
 
-        timeseries = timeseries.append(self.data)  # .drop(columns={"continent"})
+        timeseries = timeseries.append(self.data)
 
         for i, indicator in indicators().items():
             timeseries = self.add_indicator(
@@ -142,14 +144,17 @@ class Transform(Extract):
 
         self.timeseries = timeseries
 
-        self.per_country_max = timeseries[timeseries.date == timeseries.date.max()]
+    def latest_data(self):
+        latest_data = self.timeseries[
+            self.timeseries.date == self.timeseries.date.max()
+        ]
+        return latest_data
 
     def add_indicator(self, data, name, attributes, norming, digits):
-        """
-        adds columns with values for indicators as calculated from "attributes"
-        """
+        #
+        # adds columns with values for indicators as calculated from "attributes"
+        #
 
-        # data = data_input.copy()
         if len(attributes) == 2:
             data.loc[:, name] = (
                 data.loc[:, attributes[0]] / data.loc[:, attributes[1]] * norming
