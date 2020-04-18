@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+import datetime
 import pandas as pd
 from urllib.request import urlopen
 import requests
@@ -133,17 +134,22 @@ class Transform(Extract):
 
         self.timeseries_all = timeseries_all.append(self.data)
 
+        self.latest = self.data[
+            self.data.date >= self.data.date.max() - datetime.timedelta(1)
+        ]
+
         self.timeseries = self.timeseries_all
 
         for i, indicator in indicators().items():
-            self.timeseries = self.add_indicator(
-                self.timeseries,
+            self.latest = self.add_indicator(
+                self.latest,
                 indicator["name"],
                 indicator["columns"],
                 indicator["norming"],
                 indicator["digits"],
                 indicator["function"],
             )
+        self.latest = self.latest.loc[self.latest.date == self.latest.date.max(), :]
 
     def select(self, country, indicator):
         select = self.timeseries_all[self.timeseries_all.region == country]
@@ -158,9 +164,8 @@ class Transform(Extract):
         return select
 
     def latest_data(self):
-        latest_data = self.timeseries_all[
-            self.timeseries_all.date == self.timeseries.date.max()
-        ]
+        latest_data = self.latest
+
         return latest_data
 
     def add_indicator(self, data, name, attributes, norming, digits, function=[]):
@@ -176,7 +181,8 @@ class Transform(Extract):
             data.loc[:, name] = (data.loc[:, attributes[0]] * norming).round(digits)
             if function:
                 if function == "diff":
-                    data.loc[:, name] = data.loc[:, name].diff()
+                    data = data.sort_values(["region", "date"])
+                    data.loc[:, name] = data.loc[:, attributes[0]].diff()
 
         return data
 
@@ -235,7 +241,7 @@ class DataLoader(Transform):
                 "zoom": 1.7,
             },
             "AS": {"name": "Asia", "center": {"lat": 40, "lon": 90}, "zoom": 1.7},
-            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 10}, "zoom": 1.6},
+            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1.6},
             "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 2.2},
         }
 

@@ -81,7 +81,7 @@ fig_map = go.Figure(data=[map_trace], layout=layout_map)
 def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     # data_selected = data.select(region, indicators[indicator])
-    print(data.latest_data())
+    # print(data.latest_data())
     fig.update_traces(
         locations=data.latest_data()["iso3"],
         z=data.latest_data()[indicator_name],
