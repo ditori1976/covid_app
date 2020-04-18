@@ -100,7 +100,7 @@ class Transform(Extract):
 
         self.data = self.add_country_info(self.data, self.country_info)
 
-        timeseries = self.data.groupby(["date", "continent"]).agg(
+        timeseries_all = self.data.groupby(["date", "continent"]).agg(
             {
                 "iso3": "max",
                 "deaths": "sum",
@@ -109,9 +109,9 @@ class Transform(Extract):
                 "population": "sum",
             }
         )
-        timeseries.reset_index(inplace=True)
-        timeseries.rename(columns={"continent": "region"}, inplace=True)
-        timeseries.loc[:, "continent"] = timeseries.loc[:, "region"]
+        timeseries_all.reset_index(inplace=True)
+        timeseries_all.rename(columns={"continent": "region"}, inplace=True)
+        timeseries_all.loc[:, "continent"] = timeseries_all.loc[:, "region"]
 
         world = self.data.groupby(["date"]).agg(
             {
@@ -128,29 +128,42 @@ class Transform(Extract):
         world.loc[:, "region"] = "World"
         world.loc[:, "continent"] = "World"
 
-        timeseries = timeseries.append(world)
-        timeseries.loc[:, "iso3"] = False
+        timeseries_all = timeseries_all.append(world)
+        timeseries_all.loc[:, "iso3"] = False
 
-        timeseries = timeseries.append(self.data)
+        self.timeseries_all = timeseries_all.append(self.data)
+
+        self.timeseries = self.timeseries_all
 
         for i, indicator in indicators().items():
-            timeseries = self.add_indicator(
-                timeseries,
+            self.timeseries = self.add_indicator(
+                self.timeseries,
                 indicator["name"],
                 indicator["columns"],
                 indicator["norming"],
                 indicator["digits"],
+                indicator["function"],
             )
 
-        self.timeseries = timeseries
+    def select(self, country, indicator):
+        select = self.timeseries_all[self.timeseries_all.region == country]
+        select = self.add_indicator(
+            select,
+            indicator["name"],
+            indicator["columns"],
+            indicator["norming"],
+            indicator["digits"],
+            indicator["function"],
+        )
+        return select
 
     def latest_data(self):
-        latest_data = self.timeseries[
-            self.timeseries.date == self.timeseries.date.max()
+        latest_data = self.timeseries_all[
+            self.timeseries_all.date == self.timeseries.date.max()
         ]
         return latest_data
 
-    def add_indicator(self, data, name, attributes, norming, digits):
+    def add_indicator(self, data, name, attributes, norming, digits, function=[]):
         #
         # adds columns with values for indicators as calculated from "attributes"
         #
@@ -161,6 +174,9 @@ class Transform(Extract):
             ).round(digits)
         else:
             data.loc[:, name] = (data.loc[:, attributes[0]] * norming).round(digits)
+            if function:
+                if function == "diff":
+                    data.loc[:, name] = data.loc[:, name].diff()
 
         return data
 
@@ -227,48 +243,75 @@ class DataLoader(Transform):
 
     def indicators(self):
         indicators = {
-            "cases": {"name": "cases", "columns": ["cases"], "norming": 1, "digits": 0},
+            "cases": {
+                "name": "cases",
+                "columns": ["cases"],
+                "norming": 1,
+                "digits": 0,
+                "function": [],
+            },
             "deaths": {
                 "name": "deaths",
                 "columns": ["deaths"],
                 "norming": 1,
                 "digits": 0,
+                "function": [],
+            },
+            "daily_cases": {
+                "name": "daily cases",
+                "columns": ["cases"],
+                "norming": 1,
+                "digits": 0,
+                "function": "diff",
+            },
+            "daily_deaths": {
+                "name": "daily deaths",
+                "columns": ["deaths"],
+                "norming": 1,
+                "digits": 0,
+                "function": "diff",
             },
             "cases_capita": {
                 "name": "cases/1M capita",
                 "columns": ["cases", "population"],
                 "norming": 100000,
                 "digits": 0,
+                "function": [],
             },
             "deaths_capita": {
                 "name": "deaths/1M capita",
                 "columns": ["deaths", "population"],
                 "norming": 100000,
                 "digits": 1,
+                "function": [],
             },
             "recovered_capita": {
                 "name": "recovered(%)",
                 "columns": ["recovered", "cases"],
                 "norming": 100,
                 "digits": 0,
+                "function": [],
             },
             "lethality": {
                 "name": "lethality(%)",
                 "columns": ["deaths", "cases"],
                 "norming": 100,
                 "digits": 2,
+                "function": [],
             },
             "mortality": {
                 "name": "mortality(‰)",
                 "columns": ["deaths", "population"],
                 "norming": 1000,
                 "digits": 2,
+                "function": [],
             },
             "recovered_deaths": {
                 "name": "recovered/deaths(%)",
                 "columns": ["recovered", "deaths"],
                 "norming": 100,
                 "digits": 2,
+                "function": [],
             },
         }
 
