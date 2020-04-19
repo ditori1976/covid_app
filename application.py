@@ -80,13 +80,13 @@ fig_map = go.Figure(data=[map_trace], layout=layout_map)
 
 def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
-    # data_selected = data.select(region, indicators[indicator])
-    # print(data.latest_data())
+    data_selected = data.latest_data(indicators[indicator])
+
     fig.update_traces(
-        locations=data.latest_data()["iso3"],
-        z=data.latest_data()[indicator_name],
-        text=data.latest_data()["region"],
-        zmax=data.latest_data()[indicator_name].replace([np.inf, -np.inf], np.nan).max()
+        locations=data_selected["iso3"],
+        z=data_selected[indicator_name],
+        text=data_selected["region"],
+        zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
         * 0.3,
     )
     fig.update_layout(
@@ -237,9 +237,10 @@ def set_title_region(selected_region):
 
     if selected_region:
         region = selected_region["points"][0]["text"]
+        # implement more robust association of region > continent
         continent = (
-            data.latest_data()
-            .loc[data.latest_data().region == region, "continent"]
+            data.latest_data("cases")
+            .loc[data.latest_data("cases").region == region, "continent"]
             .values[0]
         )
 
@@ -275,9 +276,14 @@ def select_display(selected_region, selected_indicator):
     continent = data.timeseries[
         data.timeseries.region == selected_region
     ].continent.max()
+    regions = data.regions
+    if selected_region in list(data.regions.keys()):
+        selected_region_title = data.regions[selected_region]["name"]
+    else:
+        selected_region_title = selected_region
 
     return (
-        [selected_region],
+        [selected_region_title],
         update_map(fig_map, selected_indicator, continent),
         update_timeline(fig_timeline, selected_indicator, selected_region),
     )
@@ -285,4 +291,4 @@ def select_display(selected_region, selected_indicator):
 
 application = app.server
 if __name__ == "__main__":
-    application.run(debug=True, port=config.port, host=config.host)
+    application.run(debug=Trues, port=config.port, host=config.host)

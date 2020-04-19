@@ -6,6 +6,8 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+pd.options.mode.chained_assignment = None
+
 
 class Extract:
     def __init__(self, parser: ConfigParser):
@@ -132,27 +134,10 @@ class Transform(Extract):
         timeseries_all = timeseries_all.append(world)
         timeseries_all.loc[:, "iso3"] = False
 
-        self.timeseries_all = timeseries_all.append(self.data)
-
-        self.latest = self.data[
-            self.data.date >= self.data.date.max() - datetime.timedelta(1)
-        ]
-
-        self.timeseries = self.timeseries_all
-
-        for i, indicator in indicators().items():
-            self.latest = self.add_indicator(
-                self.latest,
-                indicator["name"],
-                indicator["columns"],
-                indicator["norming"],
-                indicator["digits"],
-                indicator["function"],
-            )
-        self.latest = self.latest.loc[self.latest.date == self.latest.date.max(), :]
+        self.timeseries = timeseries_all.append(self.data)
 
     def select(self, country, indicator):
-        select = self.timeseries_all[self.timeseries_all.region == country]
+        select = self.timeseries[self.timeseries.region == country]
         select = self.add_indicator(
             select,
             indicator["name"],
@@ -163,8 +148,22 @@ class Transform(Extract):
         )
         return select
 
-    def latest_data(self):
-        latest_data = self.latest
+    def latest_data(self, indicator):
+
+        latest_data = self.data[
+            self.data.date >= self.data.date.max() - datetime.timedelta(1)
+        ]
+
+        for i, indicator in self.indicators().items():
+            latest_data = self.add_indicator(
+                latest_data,
+                indicator["name"],
+                indicator["columns"],
+                indicator["norming"],
+                indicator["digits"],
+                indicator["function"],
+            )
+        latest_data = latest_data.loc[latest_data.date == latest_data.date.max(), :]
 
         return latest_data
 
@@ -178,10 +177,10 @@ class Transform(Extract):
                 data.loc[:, attributes[0]] / data.loc[:, attributes[1]] * norming
             ).round(digits)
         else:
-            data.loc[:, name] = (data.loc[:, attributes[0]] * norming).round(digits)
+            data.loc[:, (name)] = norming * data.loc[:, (attributes[0])].round(digits)
             if function:
                 if function == "diff":
-                    data = data.sort_values(["region", "date"])
+                    data.sort_values(["region", "date"], inplace=True)
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
 
         return data
