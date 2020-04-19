@@ -13,7 +13,10 @@ NOT FOR PRODUCTION
 """
 
 # import packages
+import time
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import dash
+
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -24,7 +27,9 @@ import numpy as np
 from configparser import ConfigParser
 from dash.dependencies import Input, State, Output
 import json
+from datetime import date, datetime, timedelta
 
+# UPDADE_INTERVAL = 15
 # configuration
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -35,8 +40,28 @@ style = Style()
 region = parser.get("data", "region")
 continent = parser.get("data", "continent")
 
-# initialize data load
-data = DataLoader(parser)
+
+def get_new_data():
+
+    """Updates the global variable 'data' with new data"""
+    global data, latest_update
+
+    data = DataLoader(parser)
+    print("Data updated at " + datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    latest_update = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+
+
+def get_new_data_every(period=parser.getint("data", "update_interval")):
+    print("get_new_data_every " + str(period) + " seconds")
+    """Update the data every 'period' seconds"""
+    while True:
+        get_new_data()
+        print("data updated")
+        time.sleep(period)
+
+
+get_new_data()
+# data = DataLoader(parser)
 indicators = data.indicators()
 
 # layout
@@ -219,6 +244,7 @@ body = html.Div(
             ],
             justify="center",
         ),
+        dbc.Row(id="update", children=[], justify="center",),
     ]
 )
 
@@ -268,10 +294,13 @@ def select_display(selected_region, selected_continent):
         Output("title", "children"),
         Output("map", "figure"),
         Output("timeline", "figure"),
+        Output("update", "children"),
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
 )
 def select_display(selected_region, selected_indicator):
+
+    print(latest_update)
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
@@ -286,9 +315,23 @@ def select_display(selected_region, selected_indicator):
         [selected_region_title],
         update_map(fig_map, selected_indicator, continent),
         update_timeline(fig_timeline, selected_indicator, selected_region),
+        [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
 
 
+# executor = ThreadPoolExecutor(max_workers=1)
+# executor.submit(update_data)
+
+
 application = app.server
+
+
+def start_multi():
+    executor = ProcessPoolExecutor(max_workers=1)
+    executor.submit(get_new_data_every)
+
+
 if __name__ == "__main__":
-    application.run(debug=Trues, port=config.port, host=config.host)
+
+    start_multi()
+    application.run(debug=True, port=config.port, host=config.host)
