@@ -305,16 +305,16 @@ class DataLoader(Transform):
                 "digits": 2,
                 "function": [],
             },
-            "mortality": {
-                "name": "mortality(‰)",
-                "columns": ["deaths", "population"],
-                "norming": 1000,
+            "recovered_cases": {
+                "name": "recovered/cases(%)",
+                "columns": ["recovered", "cases"],
+                "norming": 100,
                 "digits": 3,
                 "function": [],
             },
-            "recovered_deaths": {
-                "name": "recovered/deaths(%)",
-                "columns": ["recovered", "deaths"],
+            "deaths_recovered": {
+                "name": "deaths/recovered(%)",
+                "columns": ["deaths", "recovered"],
                 "norming": 100,
                 "digits": 2,
                 "function": [],

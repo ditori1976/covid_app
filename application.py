@@ -211,7 +211,7 @@ body = html.Div(
                                         id="title-region",
                                         style={"display": "None"},
                                     ),
-                                    html.H4([], id="title"),
+                                    html.H5([], id="title"),
                                 ],
                             ),
                             html.Div(
@@ -310,6 +310,22 @@ def select_display(selected_region, selected_indicator):
         selected_region_title = data.regions[selected_region]["name"]
     else:
         selected_region_title = selected_region
+
+    data_selected = data.select(selected_region, indicators[selected_indicator])
+    selected_region_title = (
+        selected_region_title
+        + ": "
+        + str(
+            data_selected.loc[
+                data_selected.date == data_selected.date.max(),
+                indicators[selected_indicator]["name"],
+            ].values[0]
+        )
+        + " ("
+        + str(data.timeseries.date.max().strftime("%m/%d/%Y"))
+        + ")"
+    )
+    print(selected_region_title)
 
     return (
         [selected_region_title],
