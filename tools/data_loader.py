@@ -6,6 +6,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+
 pd.options.mode.chained_assignment = None
 
 
@@ -308,7 +309,7 @@ class DataLoader(Transform):
                 "name": "mortality(‰)",
                 "columns": ["deaths", "population"],
                 "norming": 1000,
-                "digits": 2,
+                "digits": 3,
                 "function": [],
             },
             "recovered_deaths": {

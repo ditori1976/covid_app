@@ -18,9 +18,7 @@ class TestLoader(unittest.TestCase):
 
         self.assertTrue(data.regions)
         self.assertEqual(
-            data.per_country_max.loc[
-                data.per_country_max.region == "France", "continent"
-            ].max(),
+            data.timeseries.loc[data.timeseries.region == "France", "continent"].max(),
             "EU",
         )
 
