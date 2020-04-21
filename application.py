@@ -353,5 +353,5 @@ def start_multi():
 
 if __name__ == "__main__":
 
-    # start_multi()
+    start_multi()
     application.run(debug=True, port=config.port, host=config.host)
