@@ -86,7 +86,7 @@ dropdown = dcc.Dropdown(
 
 # title
 def format_title(region, indicator):
-    # use latest_data (need to include continents)
+    # better use latest_data?  (need to include continents)
 
     data_selected = data.select(region, indicators[indicator])
     regions = data.regions
@@ -283,7 +283,7 @@ app.layout = html.Div([body])
 
 
 @app.callback(
-    [Output("title-region", "children"), Output("continent-selected", "value")],
+    [Output("title-region", "children"), Output("continent-selected", "value"),],
     [Input("map", "clickData")],
 )
 def set_title_region(selected_region):
@@ -300,14 +300,15 @@ def set_title_region(selected_region):
             .values[0]
         )
 
-    return [region], continent
+    return [region], None
 
 
 @app.callback(
     [Output("selected-series", "children"),],
-    [Input("title-region", "children"), Input("continent-selected", "value")],
+    [Input("title-region", "children"), Input("continent-selected", "value"),],
 )
 def select_display(selected_region, selected_continent):
+
     ctx = dash.callback_context
 
     trigger = ctx.triggered[0]["value"]
@@ -340,10 +341,6 @@ def select_display(selected_region, selected_indicator):
         update_timeline(fig_timeline, selected_indicator, selected_region),
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
-
-
-# executor = ThreadPoolExecutor(max_workers=1)
-# executor.submit(update_data)
 
 
 application = app.server
