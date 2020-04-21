@@ -52,16 +52,14 @@ def get_new_data():
 
 
 def get_new_data_every(period=parser.getint("data", "update_interval")):
-    print("get_new_data_every " + str(period) + " seconds")
     """Update the data every 'period' seconds"""
     while True:
         get_new_data()
-        print("data updated")
         time.sleep(period)
 
 
 get_new_data()
-# data = DataLoader(parser)
+
 indicators = data.indicators()
 
 # layout
@@ -85,6 +83,32 @@ dropdown = dcc.Dropdown(
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
 )
+
+# title
+def format_title(region, indicator):
+    # use latest_data (need to include continents)
+
+    data_selected = data.select(region, indicators[indicator])
+    regions = data.regions
+    if region in list(data.regions.keys()):
+        region = data.regions[region]["name"]
+    if region == "World":
+        region = "the world"
+
+    title = "{1:.{0}f} {2} in {3} on {4}".format(
+        indicators[indicator]["digits"],
+        data_selected.loc[
+            data_selected.date == data_selected.date.max(),
+            indicators[indicator]["name"],
+        ].values[0],
+        indicators[indicator]["name"],
+        region,
+        str(data_selected.date.max().strftime("%d %b %Y")),
+    )
+
+    return title
+
+
 # map
 layout_map = go.Layout(
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
@@ -97,7 +121,7 @@ map_trace = go.Choroplethmapbox(
     geojson=data.countries,
     zmin=0,
     marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-    colorbar={"thickness": 10, "len": 0.5, "x": 0.85, "y": 0.7, "outlinewidth": 0,},
+    colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
 )
 
 fig_map = go.Figure(data=[map_trace], layout=layout_map)
@@ -132,13 +156,7 @@ fig_timeline = go.Figure(data=[timeline_trace], layout=layout_timeline)
 def update_timeline(fig, indicator, region):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.select(region, indicators[indicator])
-    # print(data_selected.head())
-    fig.update_traces(
-        x=data_selected.date,
-        y=data_selected[indicator_name]
-        # x=data.timeseries.loc[data.timeseries.region == region].date,
-        # y=data.timeseries.loc[data.timeseries.region == region, indicator_name],
-    )
+    fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
 
     return fig
 
@@ -190,7 +208,13 @@ body = html.Div(
                 dbc.Col(
                     html.Div(
                         style={"height": parser.getint("layout", "height_first_row")},
-                        children=[dcc.Graph(id="map", figure=fig_map)],
+                        children=[
+                            dcc.Graph(
+                                id="map",
+                                figure=fig_map,
+                                config={"displayModeBar": False},
+                            )
+                        ],
                     ),
                     lg=5,
                     md=10,
@@ -215,7 +239,13 @@ body = html.Div(
                                 ],
                             ),
                             html.Div(
-                                children=[dcc.Graph(id="timeline", figure=fig_timeline)]
+                                children=[
+                                    dcc.Graph(
+                                        id="timeline",
+                                        figure=fig_timeline,
+                                        config={"displayModeBar": False},
+                                    )
+                                ]
                             ),
                         ]
                     ),
@@ -300,35 +330,12 @@ def select_display(selected_region, selected_continent):
 )
 def select_display(selected_region, selected_indicator):
 
-    print(latest_update)
-
     continent = data.timeseries[
         data.timeseries.region == selected_region
     ].continent.max()
-    regions = data.regions
-    if selected_region in list(data.regions.keys()):
-        selected_region_title = data.regions[selected_region]["name"]
-    else:
-        selected_region_title = selected_region
-
-    data_selected = data.select(selected_region, indicators[selected_indicator])
-    selected_region_title = (
-        selected_region_title
-        + ": "
-        + str(
-            data_selected.loc[
-                data_selected.date == data_selected.date.max(),
-                indicators[selected_indicator]["name"],
-            ].values[0]
-        )
-        + " ("
-        + str(data.timeseries.date.max().strftime("%m/%d/%Y"))
-        + ")"
-    )
-    print(selected_region_title)
 
     return (
-        [selected_region_title],
+        [format_title(selected_region, selected_indicator)],
         update_map(fig_map, selected_indicator, continent),
         update_timeline(fig_timeline, selected_indicator, selected_region),
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
@@ -349,5 +356,5 @@ def start_multi():
 
 if __name__ == "__main__":
 
-    start_multi()
+    # start_multi()
     application.run(debug=True, port=config.port, host=config.host)

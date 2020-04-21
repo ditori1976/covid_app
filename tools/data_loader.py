@@ -183,6 +183,7 @@ class Transform(Extract):
                 if function == "diff":
                     data.sort_values(["region", "date"], inplace=True)
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
+                    data.loc[:, name] = data.loc[:, name].round(digits)
 
         return data
 
@@ -233,7 +234,7 @@ class DataLoader(Transform):
 
         regions = {
             "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.2},
-            "EU": {"name": "Europe", "center": {"lat": 48, "lon": 0}, "zoom": 2.5},
+            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2.5},
             "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
             "SA": {
                 "name": "S.America",
@@ -292,28 +293,28 @@ class DataLoader(Transform):
                 "function": [],
             },
             "recovered_capita": {
-                "name": "recovered(%)",
+                "name": "% recovered",
                 "columns": ["recovered", "cases"],
                 "norming": 100,
                 "digits": 0,
                 "function": [],
             },
             "lethality": {
-                "name": "lethality(%)",
+                "name": "% lethality",
                 "columns": ["deaths", "cases"],
                 "norming": 100,
                 "digits": 2,
                 "function": [],
             },
             "recovered_cases": {
-                "name": "recovered/cases(%)",
+                "name": "% recovered/cases",
                 "columns": ["recovered", "cases"],
                 "norming": 100,
                 "digits": 3,
                 "function": [],
             },
             "deaths_recovered": {
-                "name": "deaths/recovered(%)",
+                "name": "% deaths/recovered",
                 "columns": ["deaths", "recovered"],
                 "norming": 100,
                 "digits": 2,
