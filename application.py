@@ -166,7 +166,33 @@ fig_timeline = update_timeline(
 )
 
 # create app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
+app.index_string = """<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-EY291WCM2T"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-EY291WCM2T');
+        </script>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
 
 header = dbc.Row(
     [
@@ -185,6 +211,10 @@ header = dbc.Row(
 
 body = html.Div(
     [
+        html.Header(
+            className="app-header",
+            children=[html.Div("Plotly Dash", className="app-header--title")],
+        ),
         dbc.Row(
             [
                 dbc.Col([header], lg=3, md=6, xs=12),
