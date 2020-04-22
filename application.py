@@ -166,7 +166,12 @@ fig_timeline = update_timeline(
 )
 
 # create app
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    meta_tags=[{"title": "COVID-19"}],
+)
+app.title = "COVID-19"
 app.index_string = """<!DOCTYPE html>
 <html>
     <head>
@@ -212,10 +217,6 @@ header = dbc.Row(
 
 body = html.Div(
     [
-        html.Header(
-            className="app-header",
-            children=[html.Div("Plotly Dash", className="app-header--title")],
-        ),
         dbc.Row(
             [
                 dbc.Col([header], lg=3, md=6, xs=12),
@@ -378,8 +379,9 @@ application = app.server
 
 
 def start_multi():
-    executor = ProcessPoolExecutor(max_workers=1)
-    executor.submit(get_new_data_every)
+    if UPDATE:
+        executor = ProcessPoolExecutor(max_workers=1)
+        executor.submit(get_new_data_every)
 
 
 if __name__ == "__main__":

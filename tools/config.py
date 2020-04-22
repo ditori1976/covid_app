@@ -13,6 +13,12 @@ class Config:
         else:
             port = "8080"
 
+        if "UPDATE" in os.environ:
+            UPDATE = os.environ.get("UPDATE")
+        else:
+            UPDATE = True
+
         self.port = port
         self.host = host
         self.mapbox = os.getenv("MAPBOX")
+        self.UPDATE = UPDATE
