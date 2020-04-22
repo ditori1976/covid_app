@@ -171,14 +171,15 @@ app.index_string = """<!DOCTYPE html>
 <html>
     <head>
         <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-EY291WCM2T"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
         <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
 
-          gtag('config', 'G-EY291WCM2T');
+        gtag('config', 'UA-164129496-1');
         </script>
+
         {%metas%}
         <title>{%title%}</title>
         {%favicon%}
