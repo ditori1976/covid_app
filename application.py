@@ -14,6 +14,7 @@ NOT FOR PRODUCTION
 
 # import packages
 import time
+
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import dash
 
@@ -64,7 +65,7 @@ indicators = data.indicators()
 
 # layout
 layout_timeline = style.layout.copy()
-layout_timeline["height"] = parser.getint("layout", "height_first_row") - 50
+layout_timeline["height"] = parser.getint("layout", "height_first_row") - 20
 layout_timeline["plot_bgcolor"] = "white"
 
 # dropdown
@@ -115,6 +116,7 @@ layout_map = go.Layout(
     height=parser.getint("layout", "height_first_row"),
     mapbox_accesstoken=config.mapbox,
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
+    geo={"fitbounds": False},
 )
 map_trace = go.Choroplethmapbox(
     colorscale="BuPu",
@@ -138,10 +140,15 @@ def update_map(fig, indicator, continent):
         zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
         * 0.3,
     )
-    fig.update_layout(
-        mapbox_center=data.regions[continent]["center"],
-        mapbox_zoom=data.regions[continent]["zoom"],
-    )
+
+    if continent:
+        print(continent)
+        fig.update_layout(
+            mapbox_center=data.regions[continent]["center"],
+            mapbox_zoom=data.regions[continent]["zoom"],
+        )
+    else:
+        fig.update_layout(geo={"fitbounds": False})
     return fig
 
 
@@ -239,21 +246,6 @@ body = html.Div(
             [
                 dbc.Col(
                     html.Div(
-                        style={"height": parser.getint("layout", "height_first_row")},
-                        children=[
-                            dcc.Graph(
-                                id="map",
-                                figure=fig_map,
-                                config={"displayModeBar": False},
-                            )
-                        ],
-                    ),
-                    lg=5,
-                    md=10,
-                    xs=11,
-                ),
-                dbc.Col(
-                    html.Div(
                         children=[
                             html.Div(
                                 children=[
@@ -285,27 +277,55 @@ body = html.Div(
                     md=10,
                     xs=11,
                 ),
+                dbc.Col(
+                    children=[
+                        dbc.Row(
+                            children=[
+                                dbc.Col(
+                                    style={
+                                        "height": parser.getint(
+                                            "layout", "height_first_row"
+                                        )
+                                    },
+                                    children=[
+                                        dcc.Graph(
+                                            id="map",
+                                            figure=fig_map,
+                                            config={"displayModeBar": False},
+                                        )
+                                    ],
+                                    width=9,
+                                ),
+                                dbc.Col(
+                                    [
+                                        dcc.Tabs(
+                                            id="continent-selected",
+                                            value=continent,
+                                            vertical=True,
+                                            children=[
+                                                dcc.Tab(
+                                                    label=information["name"],
+                                                    value=region,
+                                                )
+                                                for region, information in data.regions.items()
+                                            ],
+                                        )
+                                    ],
+                                    width=3,
+                                ),
+                            ],
+                            no_gutters=True,
+                        )
+                    ],
+                    lg=6,
+                    md=10,
+                    xs=11,
+                ),
             ],
             style={"padding-top": parser.getint("layout", "spacer")},
             justify="center",
         ),
-        dbc.Row(
-            [
-                html.Div(
-                    [
-                        dcc.Tabs(
-                            id="continent-selected",
-                            value=continent,
-                            children=[
-                                dcc.Tab(label=information["name"], value=region)
-                                for region, information in data.regions.items()
-                            ],
-                        )
-                    ]
-                )
-            ],
-            justify="center",
-        ),
+        dbc.Row([], justify="center",),
         dbc.Row(id="update", children=[], justify="center",),
     ]
 )
@@ -367,6 +387,9 @@ def select_display(selected_region, selected_indicator):
         data.timeseries.region == selected_region
     ].continent.max()
 
+    if selected_region not in list(data.regions.keys()):
+        continent = None
+
     return (
         [format_title(selected_region, selected_indicator)],
         update_map(fig_map, selected_indicator, continent),
@@ -379,7 +402,7 @@ application = app.server
 
 
 def start_multi():
-    if UPDATE:
+    if config.UPDATE:
         executor = ProcessPoolExecutor(max_workers=1)
         executor.submit(get_new_data_every)
 

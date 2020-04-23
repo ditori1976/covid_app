@@ -1,3 +1,9 @@
-class Test:
-    def __init__(self):
-        self.test = "test"
+{
+    "region": "max",
+    "iso3": "max",
+    "deaths": "sum",
+    "cases": "sum",
+    "recovered": "sum",
+    "population": "sum",
+    "continent": "max",
+}
