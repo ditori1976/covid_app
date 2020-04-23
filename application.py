@@ -245,6 +245,50 @@ body = html.Div(
         dbc.Row(
             [
                 dbc.Col(
+                    children=[
+                        dbc.Row(
+                            children=[
+                                dbc.Col(
+                                    [
+                                        dcc.Tabs(
+                                            id="continent-selected",
+                                            value=continent,
+                                            vertical=True,
+                                            children=[
+                                                dcc.Tab(
+                                                    label=information["name"],
+                                                    value=region,
+                                                )
+                                                for region, information in data.regions.items()
+                                            ],
+                                        )
+                                    ],
+                                    width=3,
+                                ),
+                                dbc.Col(
+                                    style={
+                                        "height": parser.getint(
+                                            "layout", "height_first_row"
+                                        )
+                                    },
+                                    children=[
+                                        dcc.Graph(
+                                            id="map",
+                                            figure=fig_map,
+                                            config={"displayModeBar": False},
+                                        )
+                                    ],
+                                    width=9,
+                                ),
+                            ],
+                            no_gutters=True,
+                        )
+                    ],
+                    lg=6,
+                    md=10,
+                    xs=11,
+                ),
+                dbc.Col(
                     html.Div(
                         children=[
                             html.Div(
@@ -274,50 +318,6 @@ body = html.Div(
                         ]
                     ),
                     lg=5,
-                    md=10,
-                    xs=11,
-                ),
-                dbc.Col(
-                    children=[
-                        dbc.Row(
-                            children=[
-                                dbc.Col(
-                                    style={
-                                        "height": parser.getint(
-                                            "layout", "height_first_row"
-                                        )
-                                    },
-                                    children=[
-                                        dcc.Graph(
-                                            id="map",
-                                            figure=fig_map,
-                                            config={"displayModeBar": False},
-                                        )
-                                    ],
-                                    width=9,
-                                ),
-                                dbc.Col(
-                                    [
-                                        dcc.Tabs(
-                                            id="continent-selected",
-                                            value=continent,
-                                            vertical=True,
-                                            children=[
-                                                dcc.Tab(
-                                                    label=information["name"],
-                                                    value=region,
-                                                )
-                                                for region, information in data.regions.items()
-                                            ],
-                                        )
-                                    ],
-                                    width=3,
-                                ),
-                            ],
-                            no_gutters=True,
-                        )
-                    ],
-                    lg=6,
                     md=10,
                     xs=11,
                 ),
@@ -387,8 +387,8 @@ def select_display(selected_region, selected_indicator):
         data.timeseries.region == selected_region
     ].continent.max()
 
-    if selected_region not in list(data.regions.keys()):
-        continent = None
+    # if selected_region not in list(data.regions.keys()):
+    #   continent = None
 
     return (
         [format_title(selected_region, selected_indicator)],
