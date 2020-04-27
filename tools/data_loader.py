@@ -219,7 +219,7 @@ class DataLoader(Transform):
 
         super().__init__(parser, self.indicators)
 
-        self.regions = self.regions()
+        self.regions = self.definition_regions()
 
         self.countries = self.countries_geojson(parser)
 
@@ -230,11 +230,11 @@ class DataLoader(Transform):
 
         return countries
 
-    def regions(self):
+    def definition_regions(self):
 
         regions = {
             "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.2},
-            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2.5},
+            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
             "SA": {
                 "name": "S.America",

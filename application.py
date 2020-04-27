@@ -90,7 +90,7 @@ def format_title(region, indicator):
     # better use latest_data?  (need to include continents)
 
     data_selected = data.select(region, indicators[indicator])
-    regions = data.regions
+    # regions = data.regions
     if region in list(data.regions.keys()):
         region = data.regions[region]["name"]
     if region == "World":
@@ -124,6 +124,7 @@ map_trace = go.Choroplethmapbox(
     zmin=0,
     marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
     colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
+    uirevision="same",
 )
 
 fig_map = go.Figure(data=[map_trace], layout=layout_map)
@@ -133,6 +134,16 @@ def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
 
+    if continent:
+
+        fig.update_layout(
+            mapbox_center=data.regions[continent]["center"],
+            mapbox_zoom=data.regions[continent]["zoom"],
+        )
+        print(data.regions[continent]["center"])
+    else:
+        fig.update_layout(uirevision="same",)
+
     fig.update_traces(
         locations=data_selected["iso3"],
         z=data_selected[indicator_name],
@@ -141,18 +152,8 @@ def update_map(fig, indicator, continent):
         * 0.3,
     )
 
-    if continent:
-        print(continent)
-        fig.update_layout(
-            mapbox_center=data.regions[continent]["center"],
-            mapbox_zoom=data.regions[continent]["zoom"],
-        )
-    else:
-        fig.update_layout(geo={"fitbounds": False})
     return fig
 
-
-fig_map = update_map(fig_map, parser.get("data", "init_indicator"), continent)
 
 # timeline
 timeline_trace = go.Bar()
@@ -168,10 +169,6 @@ def update_timeline(fig, indicator, region):
     return fig
 
 
-fig_timeline = update_timeline(
-    fig_timeline, parser.get("data", "init_indicator"), region
-)
-
 # create app
 app = dash.Dash(
     __name__,
@@ -180,8 +177,9 @@ app = dash.Dash(
 )
 app.title = "COVID-19"
 app.index_string = """<!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
+    <meta charset="utf-8">
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
         <script>
@@ -296,12 +294,12 @@ body = html.Div(
                                     html.P(
                                         continent,
                                         id="selected-series",
-                                        style={"display": "None"},
+                                        # style={"display": "None"},
                                     ),
                                     html.P(
                                         region,
                                         id="title-region",
-                                        style={"display": "None"},
+                                        # style={"display": "None"},
                                     ),
                                     html.H5([], id="title"),
                                 ],
@@ -340,19 +338,12 @@ app.layout = html.Div([body])
 )
 def set_title_region(selected_region):
 
-    continent = parser.get("data", "continent")
     region = parser.get("data", "region")
 
     if selected_region:
         region = selected_region["points"][0]["text"]
-        # implement more robust association of region > continent
-        continent = (
-            data.latest_data("cases")
-            .loc[data.latest_data("cases").region == region, "continent"]
-            .values[0]
-        )
 
-    return [region], None
+    return [region], []
 
 
 @app.callback(
@@ -387,8 +378,10 @@ def select_display(selected_region, selected_indicator):
         data.timeseries.region == selected_region
     ].continent.max()
 
-    # if selected_region not in list(data.regions.keys()):
-    #   continent = None
+    if selected_region not in list(data.regions.keys()):
+        continent = []
+
+    print(selected_region, selected_indicator, continent)
 
     return (
         [format_title(selected_region, selected_indicator)],
