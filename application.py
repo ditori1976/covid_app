@@ -294,12 +294,12 @@ body = html.Div(
                                     html.P(
                                         continent,
                                         id="selected-series",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.P(
                                         region,
                                         id="title-region",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.H5([], id="title"),
                                 ],
