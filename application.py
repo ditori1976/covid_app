@@ -14,7 +14,7 @@ from datetime import date, datetime, timedelta
 parser = ConfigParser()
 parser.read("settings.ini")
 
-config = Config()
+configuration = Config()
 
 
 def get_new_data():
@@ -85,7 +85,7 @@ indicators = data.indicators()
 """layout_map = go.Layout(
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     height=parser.getint("layout", "height_first_row"),
-    mapbox_accesstoken=config.mapbox,
+    mapbox_accesstoken=configuration.mapbox,
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
 )
 map_trace = go.Choroplethmapbox(
@@ -130,7 +130,7 @@ def bbox(continent):
             # geo={"fitbounds": False},
             template="plotly",
             mapbox=go.layout.Mapbox(
-                accesstoken=config.mapbox,
+                accesstoken=configuration.mapbox,
                 style="light",
                 # The direction you're facing, measured clockwise as an angle from true north on a compass
                 bearing=0,
@@ -335,7 +335,7 @@ def select_bbox(selected_continent):
         # transition={"duration": 500},
         # geo={"fitbounds": False},
         mapbox=go.layout.Mapbox(
-            accesstoken=config.mapbox,
+            accesstoken=configuration.mapbox,
             style="light",
             # The direction you're facing, measured clockwise as an angle from true north on a compass
             bearing=0,
@@ -404,7 +404,7 @@ application = app.server
 
 
 def start_multi():
-    if config.UPDATE:
+    if configuration.UPDATE:
         executor = ProcessPoolExecutor(max_workers=1)
         executor.submit(get_new_data_every)
 
@@ -412,4 +412,4 @@ def start_multi():
 if __name__ == "__main__":
 
     start_multi()
-    application.run(debug=True, port=config.port, host=config.host)
+    application.run(debug=True, port=configuration.port, host=configuration.host)
