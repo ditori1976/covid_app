@@ -41,6 +41,26 @@ style = Style()
 region = parser.get("data", "region")
 continent = parser.get("data", "continent")
 
+tabs_styles = {
+    "height": "35px",
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "100%",
+    "padding": "0px",
+}
+tab_styles = {
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "35px",
+    "padding": "0px",
+}
+
 
 def get_new_data():
 
@@ -133,14 +153,16 @@ fig_map = go.Figure(data=[map_trace], layout=layout_map)
 def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
+    print(continent)
 
     if continent:
 
         fig.update_layout(
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
+            transition={"duration": 500},
         )
-        print(data.regions[continent]["center"])
+
     else:
         fig.update_layout(uirevision="same",)
 
@@ -256,12 +278,17 @@ body = html.Div(
                                                 dcc.Tab(
                                                     label=information["name"],
                                                     value=region,
+                                                    className="custom-tab",
+                                                    selected_className="custom-tab--selected",
                                                 )
                                                 for region, information in data.regions.items()
                                             ],
+                                            parent_className="custom-tabs",
+                                            className="custom-tabs-container",
                                         )
                                     ],
-                                    width=3,
+                                    width=2,
+                                    style={"margin": 0, "width": "100%"},
                                 ),
                                 dbc.Col(
                                     style={
@@ -276,7 +303,7 @@ body = html.Div(
                                             config={"displayModeBar": False},
                                         )
                                     ],
-                                    width=9,
+                                    width=10,
                                 ),
                             ],
                             no_gutters=True,
@@ -294,12 +321,12 @@ body = html.Div(
                                     html.P(
                                         continent,
                                         id="selected-series",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.P(
                                         region,
                                         id="title-region",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.H5([], id="title"),
                                 ],
@@ -355,7 +382,7 @@ def select_display(selected_region, selected_continent):
     ctx = dash.callback_context
 
     trigger = ctx.triggered[0]["value"]
-    trigger_id = ctx.triggered[0]["prop_id"]
+    # trigger_id = ctx.triggered[0]["prop_id"]
 
     if type(trigger) == list:
         trigger = trigger.pop()
@@ -372,7 +399,7 @@ def select_display(selected_region, selected_continent):
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
 )
-def select_display(selected_region, selected_indicator):
+def create_output(selected_region, selected_indicator):
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
@@ -380,12 +407,13 @@ def select_display(selected_region, selected_indicator):
 
     if selected_region not in list(data.regions.keys()):
         continent = []
+    fig = update_map(fig_map, selected_indicator, continent)
 
-    print(selected_region, selected_indicator, continent)
+    print(fig.layout)
 
     return (
         [format_title(selected_region, selected_indicator)],
-        update_map(fig_map, selected_indicator, continent),
+        fig,
         update_timeline(fig_timeline, selected_indicator, selected_region),
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
