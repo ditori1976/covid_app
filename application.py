@@ -121,6 +121,7 @@ fig_map.update_layout(
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
     geo={"fitbounds": False},
     uirevision="same",
+    autosize=False,
 )
 
 
@@ -134,6 +135,7 @@ def update_map(fig, indicator, continent):
             uirevision="same",
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
+            autosize=False,
         )
 
     fig.update_traces(
