@@ -41,6 +41,26 @@ style = Style()
 region = parser.get("data", "region")
 continent = parser.get("data", "continent")
 
+tabs_styles = {
+    "height": "35px",
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "100%",
+    "padding": "0px",
+}
+tab_styles = {
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "35px",
+    "padding": "0px",
+}
+
 
 def get_new_data():
 
@@ -256,12 +276,17 @@ body = html.Div(
                                                 dcc.Tab(
                                                     label=information["name"],
                                                     value=region,
+                                                    className="custom-tab",
+                                                    selected_className="custom-tab--selected",
                                                 )
                                                 for region, information in data.regions.items()
                                             ],
+                                            parent_className="custom-tabs",
+                                            className="custom-tabs-container",
                                         )
                                     ],
-                                    width=3,
+                                    width=2,
+                                    style={"margin": 0, "width": "100%"},
                                 ),
                                 dbc.Col(
                                     style={
@@ -276,7 +301,7 @@ body = html.Div(
                                             config={"displayModeBar": False},
                                         )
                                     ],
-                                    width=9,
+                                    width=10,
                                 ),
                             ],
                             no_gutters=True,
@@ -380,8 +405,6 @@ def select_display(selected_region, selected_indicator):
 
     if selected_region not in list(data.regions.keys()):
         continent = []
-
-    print(selected_region, selected_indicator, continent)
 
     return (
         [format_title(selected_region, selected_indicator)],
