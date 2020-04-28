@@ -357,6 +357,8 @@ def select_display(selected_region, selected_continent):
     if type(trigger) == list:
         trigger = trigger.pop()
 
+    print(trigger)
+
     return [trigger]
 
 
@@ -378,6 +380,7 @@ def create_output(selected_region, selected_indicator):
     if selected_region not in list(data.regions.keys()):
         continent = []
     fig = update_map(fig_map, selected_indicator, continent)
+    print(fig.layout)
 
     return (
         [format_title(selected_region, selected_indicator)],
