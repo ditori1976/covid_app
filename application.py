@@ -160,6 +160,7 @@ def update_map(fig, indicator, continent):
         fig.update_layout(
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
+            transition={"duration": 500},
         )
 
     else:
@@ -381,7 +382,7 @@ def select_display(selected_region, selected_continent):
     ctx = dash.callback_context
 
     trigger = ctx.triggered[0]["value"]
-    trigger_id = ctx.triggered[0]["prop_id"]
+    # trigger_id = ctx.triggered[0]["prop_id"]
 
     if type(trigger) == list:
         trigger = trigger.pop()
@@ -398,7 +399,7 @@ def select_display(selected_region, selected_continent):
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
 )
-def select_display(selected_region, selected_indicator):
+def create_output(selected_region, selected_indicator):
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
