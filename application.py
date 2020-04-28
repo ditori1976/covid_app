@@ -1,59 +1,30 @@
-#!/usr/bin/env python3
-
-"""
-Author: Dirk Riemann, 2020
-
-responsive map
-based on dash package
-with bootstrap (responsive) layout
-and Mapbox map
-
-development/debuggin mode
-NOT FOR PRODUCTION
-"""
-
-# import packages
 import time
-
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import dash
-
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import plotly.graph_objects as go
 from tools import DataLoader, Config, Style
 import pandas as pd
-import numpy as np
 from configparser import ConfigParser
-from dash.dependencies import Input, State, Output
-import json
+from dash.dependencies import Input, Output
 from datetime import date, datetime, timedelta
 
-# UPDADE_INTERVAL = 15
-# configuration
 parser = ConfigParser()
 parser.read("settings.ini")
 
 config = Config()
-style = Style()
-
-region = parser.get("data", "region")
-continent = parser.get("data", "continent")
 
 
 def get_new_data():
-
-    """Updates the global variable 'data' with new data"""
     global data, latest_update
 
     data = DataLoader(parser)
-    print("Data updated at " + datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
     latest_update = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
 
 
 def get_new_data_every(period=parser.getint("data", "update_interval")):
-    """Update the data every 'period' seconds"""
     while True:
         get_new_data()
         time.sleep(period)
@@ -64,29 +35,29 @@ get_new_data()
 indicators = data.indicators()
 
 # layout
-layout_timeline = style.layout.copy()
-layout_timeline["height"] = parser.getint("layout", "height_first_row") - 20
-layout_timeline["plot_bgcolor"] = "white"
+# layout_timeline = style.layout.copy()
+# layout_timeline["height"] = parser.getint("layout", "height_first_row") - 20
+# layout_timeline["plot_bgcolor"] = "white"
 
 # dropdown
-def dropdown_options(indicators):
+"""def dropdown_options(indicators):
     options = []
     for i, j in indicators.items():
         options.append({"label": j["name"], "value": i})
 
-    return options
+    return options"""
 
 
 # function for dropdown selector
-dropdown = dcc.Dropdown(
+"""dropdown = dcc.Dropdown(
     id="indicator-selected",
     value=parser.get("data", "init_indicator"),
     style={"width": "100%", "margin": 0, "padding": 0},
     options=dropdown_options(indicators),
-)
+)"""
 
 # title
-def format_title(region, indicator):
+"""def format_title(region, indicator):
     # better use latest_data?  (need to include continents)
 
     data_selected = data.select(region, indicators[indicator])
@@ -108,15 +79,14 @@ def format_title(region, indicator):
     )
 
     return title
-
+"""
 
 # map
-layout_map = go.Layout(
+"""layout_map = go.Layout(
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     height=parser.getint("layout", "height_first_row"),
     mapbox_accesstoken=config.mapbox,
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
-    geo={"fitbounds": False},
 )
 map_trace = go.Choroplethmapbox(
     colorscale="BuPu",
@@ -124,13 +94,63 @@ map_trace = go.Choroplethmapbox(
     zmin=0,
     marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
     colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
-    uirevision="same",
+    # uirevision="same",
 )
 
-fig_map = go.Figure(data=[map_trace], layout=layout_map)
+fig_map = go.Figure(data=[map_trace], layout=layout_map)"""
 
 
-def update_map(fig, indicator, continent):
+def bbox(continent):
+
+    if continent:
+        fig = go.Figure(
+            go.Choroplethmapbox(
+                colorscale="BuPu",
+                geojson=data.countries,
+                zmin=0,
+                marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+                # colorbar={
+                #    "thickness": 10,
+                #    "len": 0.4,
+                #    "x": 0,
+                #    "y": 0.3,
+                #    "outlinewidth": 0,
+                # },
+                # uirevision="same",
+            )
+        )
+        # fig.update_layout(mapbox_center=data.regions["NA"]["center"])
+        fig.update_layout(
+            # height=parser.getint("layout", "height_first_row"),
+            # margin=go.layout.Margin(b=10, t=10),
+            # mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+            # autosize=False,
+            margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+            # transition={"duration": 500},
+            # geo={"fitbounds": False},
+            template="plotly",
+            mapbox=go.layout.Mapbox(
+                accesstoken=config.mapbox,
+                style="light",
+                # The direction you're facing, measured clockwise as an angle from true north on a compass
+                bearing=0,
+                center=go.layout.mapbox.Center(
+                    lat=data.regions[continent]["center"]["lat"],
+                    lon=data.regions[continent]["center"]["lon"],
+                ),
+                pitch=0,
+                zoom=data.regions[continent]["zoom"],
+            )
+            # mapbox_center=data.regions[continent]["center"],
+        )
+
+    return fig
+
+
+# fig_map = bbox(fig_map, "World")
+
+
+"""def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
 
@@ -140,7 +160,7 @@ def update_map(fig, indicator, continent):
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
         )
-        print(data.regions[continent]["center"])
+        #print(data.regions[continent]["center"])
     else:
         fig.update_layout(uirevision="same",)
 
@@ -152,11 +172,11 @@ def update_map(fig, indicator, continent):
         * 0.3,
     )
 
-    return fig
+    return fig"""
 
 
 # timeline
-timeline_trace = go.Bar()
+"""timeline_trace = go.Bar()
 
 fig_timeline = go.Figure(data=[timeline_trace], layout=layout_timeline)
 
@@ -167,7 +187,7 @@ def update_timeline(fig, indicator, region):
     fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
 
     return fig
-
+"""
 
 # create app
 app = dash.Dash(
@@ -175,7 +195,8 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     meta_tags=[{"title": "COVID-19"}],
 )
-app.title = "COVID-19"
+
+'''app.title = "COVID-19"
 app.index_string = """<!DOCTYPE html>
 <html lang="en">
     <head>
@@ -204,8 +225,8 @@ app.index_string = """<!DOCTYPE html>
         </footer>
     </body>
 </html>"""
-
-header = dbc.Row(
+'''
+"""header = dbc.Row(
     [
         dbc.Col(
             html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
@@ -217,29 +238,11 @@ header = dbc.Row(
         dbc.Col(html.H1("COVID-19"), lg=9, md=8, xs=7, style=style.style_center,),
     ],
     justify="center",
-)
+)"""
 
 
 body = html.Div(
     [
-        dbc.Row(
-            [
-                dbc.Col([header], lg=3, md=6, xs=12),
-                dbc.Col(
-                    html.Div(
-                        id="selector",
-                        children=[dropdown],
-                        style={"width": "100%", "margin": 0, "padding": 0},
-                    ),
-                    xl=3,
-                    lg=4,
-                    md=5,
-                    xs=10,
-                    style=style.style_center,
-                ),
-            ],
-            justify="center",
-        ),
         dbc.Row(
             [
                 dbc.Col(
@@ -250,7 +253,7 @@ body = html.Div(
                                     [
                                         dcc.Tabs(
                                             id="continent-selected",
-                                            value=continent,
+                                            value=parser.get("data", "continent"),
                                             vertical=True,
                                             children=[
                                                 dcc.Tab(
@@ -261,61 +264,29 @@ body = html.Div(
                                             ],
                                         )
                                     ],
-                                    width=3,
+                                    width=2,
                                 ),
                                 dbc.Col(
-                                    style={
-                                        "height": parser.getint(
-                                            "layout", "height_first_row"
-                                        )
-                                    },
                                     children=[
-                                        dcc.Graph(
-                                            id="map",
-                                            figure=fig_map,
-                                            config={"displayModeBar": False},
+                                        html.Div(
+                                            dcc.Graph(
+                                                style={
+                                                    "height": parser.getint(
+                                                        "layout", "height_first_row"
+                                                    )
+                                                },
+                                                id="map",
+                                                config={"displayModeBar": False},
+                                            )
                                         )
                                     ],
-                                    width=9,
+                                    width=6,
                                 ),
                             ],
-                            no_gutters=True,
+                            # no_gutters=True,
                         )
                     ],
                     lg=6,
-                    md=10,
-                    xs=11,
-                ),
-                dbc.Col(
-                    html.Div(
-                        children=[
-                            html.Div(
-                                children=[
-                                    html.P(
-                                        continent,
-                                        id="selected-series",
-                                        # style={"display": "None"},
-                                    ),
-                                    html.P(
-                                        region,
-                                        id="title-region",
-                                        # style={"display": "None"},
-                                    ),
-                                    html.H5([], id="title"),
-                                ],
-                            ),
-                            html.Div(
-                                children=[
-                                    dcc.Graph(
-                                        id="timeline",
-                                        figure=fig_timeline,
-                                        config={"displayModeBar": False},
-                                    )
-                                ]
-                            ),
-                        ]
-                    ),
-                    lg=5,
                     md=10,
                     xs=11,
                 ),
@@ -324,7 +295,7 @@ body = html.Div(
             justify="center",
         ),
         dbc.Row([], justify="center",),
-        dbc.Row(id="update", children=[], justify="center",),
+        #       dbc.Row(id="update", children=[], justify="center",),
     ]
 )
 
@@ -332,7 +303,57 @@ body = html.Div(
 app.layout = html.Div([body])
 
 
-@app.callback(
+@app.callback(Output("map", "figure"), [Input("continent-selected", "value")])
+def select_bbox(selected_continent):
+    continent = "World"
+    if selected_continent:
+        continent = selected_continent
+
+    fig = go.Figure(
+        go.Choroplethmapbox(
+            colorscale="BuPu",
+            # geojson=data.countries,
+            # zmin=0,
+            # marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+            # colorbar={
+            #    "thickness": 10,
+            #    "len": 0.4,
+            #    "x": 0,
+            #    "y": 0.3,
+            #    "outlinewidth": 0,
+            # },
+            # uirevision="same",
+        )
+    )
+    # fig.update_layout(mapbox_center=data.regions["NA"]["center"])
+    fig.update_layout(
+        # height=parser.getint("layout", "height_first_row"),
+        # margin=go.layout.Margin(b=10, t=10),
+        # mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+        # autosize=False,
+        # margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+        # transition={"duration": 500},
+        # geo={"fitbounds": False},
+        mapbox=go.layout.Mapbox(
+            accesstoken=config.mapbox,
+            style="light",
+            # The direction you're facing, measured clockwise as an angle from true north on a compass
+            bearing=0,
+            center=go.layout.mapbox.Center(
+                lat=data.regions[continent]["center"]["lat"],
+                lon=data.regions[continent]["center"]["lon"],
+            ),
+            pitch=0,
+            zoom=data.regions[continent]["zoom"],
+        )
+        # mapbox_center=data.regions[continent]["center"],
+    )
+    # fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},)
+
+    return fig
+
+
+"""@app.callback(
     [Output("title-region", "children"), Output("continent-selected", "value"),],
     [Input("map", "clickData")],
 )
@@ -344,25 +365,13 @@ def set_title_region(selected_region):
         region = selected_region["points"][0]["text"]
 
     return [region], []
+"""
 
 
-@app.callback(
-    [Output("selected-series", "children"),],
-    [Input("title-region", "children"), Input("continent-selected", "value"),],
-)
-def select_display(selected_region, selected_continent):
-
-    ctx = dash.callback_context
-
-    trigger = ctx.triggered[0]["value"]
-    trigger_id = ctx.triggered[0]["prop_id"]
-
-    if type(trigger) == list:
-        trigger = trigger.pop()
-
-    return [trigger]
+# dash.no_update  # bbox(fig_map, continent)
 
 
+"""
 @app.callback(
     [
         Output("title", "children"),
@@ -390,7 +399,7 @@ def select_display(selected_region, selected_indicator):
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
 
-
+"""
 application = app.server
 
 
