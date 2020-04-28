@@ -1,83 +1,65 @@
-# Environment used: dash1_8_0_env
-import pandas as pd  # (version 1.0.0)
-import plotly  # (version 4.5.0)
-import plotly.express as px
-
-import dash  # (version 1.8.0)
+import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output, State
-from dash.exceptions import PreventUpdate
+import plotly.graph_objects as go
+import pandas as pd
+from dash.dependencies import Input, Output
 
-# print(px.data.gapminder()[:15])
 
-external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
+regions = {
+    "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
+    "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
+    "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
+    "SA": {"name": "S.America", "center": {"lat": -20, "lon": -70}, "zoom": 1.7,},
+    "AS": {"name": "Asia", "center": {"lat": 40, "lon": 90}, "zoom": 1.7},
+    "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1.6},
+    "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 2.2},
+}
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__)
 
-# ---------------------------------------------------------------
-app.layout = html.Div(
-    [
-        html.Div([dcc.Graph(id="the_graph")]),
-        html.Div(
-            [
-                dcc.Input(
-                    id="input_state",
-                    type="number",
-                    inputMode="numeric",
-                    value=2007,
-                    max=2007,
-                    min=1952,
-                    step=5,
-                    required=True,
-                ),
-                html.Button(id="submit_button", n_clicks=0, children="Submit"),
-                html.Div(id="output_state"),
-            ],
-            style={"text-align": "center"},
-        ),
-    ]
-)
+body = [
+    dcc.Graph(id="map", config={"displayModeBar": False},),
+    dcc.Tabs(
+        id="continent-selected",
+        value="World",
+        children=[
+            dcc.Tab(label=information["name"], value=region,)
+            for region, information in regions.items()
+        ],
+    ),
+]
 
-# ---------------------------------------------------------------
-@app.callback(
-    [
-        Output("output_state", "children"),
-        Output(component_id="the_graph", component_property="figure"),
-    ],
-    [Input(component_id="submit_button", component_property="n_clicks")],
-    [State(component_id="input_state", component_property="value")],
-)
-def update_output(num_clicks, val_selected):
-    if val_selected is None:
-        raise PreventUpdate
-    else:
-        df = px.data.gapminder().query("year=={}".format(val_selected))
-        # print(df[:3])
+app.layout = html.Div(body)
 
-        fig = px.choropleth(
-            df,
-            locations="iso_alpha",
-            color="lifeExp",
-            hover_name="country",
-            projection="natural earth",
-            title="Life Expectancy by Year",
-            color_continuous_scale=px.colors.sequential.Plasma,
-        )
 
-        fig.update_layout(
-            title=dict(font=dict(size=28), x=0.5, xanchor="center"),
-            margin=dict(l=60, r=60, t=50, b=50),
-        )
+@app.callback(Output("map", "figure"), [Input("continent-selected", "value")])
+def select_bbox(selected_continent):
 
-        return (
-            'The input value was "{}" and the button has been \
-                clicked {} times'.format(
-                val_selected, num_clicks
+    if selected_continent:
+        continent = selected_continent
+
+    fig = go.Figure(go.Choroplethmapbox(colorscale="BuPu",))
+
+    fig.update_layout(
+        margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+        mapbox=go.layout.Mapbox(
+            accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
+            style="light",
+            center=go.layout.mapbox.Center(
+                lat=regions[selected_continent]["center"]["lat"],
+                lon=regions[selected_continent]["center"]["lon"],
             ),
-            fig,
-        )
+            pitch=0,
+            zoom=regions[continent]["zoom"],
+        ),
+    )
+
+    return fig
+
+
+application = app.server
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    application.run(debug=True)

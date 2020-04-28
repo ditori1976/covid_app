@@ -14,8 +14,10 @@ NOT FOR PRODUCTION
 
 # import packages
 import time
+
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import dash
+
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -24,15 +26,45 @@ from tools import DataLoader, Config, Style
 import pandas as pd
 import numpy as np
 from configparser import ConfigParser
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, State, Output
+import json
 from datetime import date, datetime, timedelta
 
+# UPDADE_INTERVAL = 15
+# configuration
 parser = ConfigParser()
 parser.read("settings.ini")
+
+config = Config()
+style = Style()
+
+region = parser.get("data", "region")
+continent = parser.get("data", "continent")
+
+tabs_styles = {
+    "height": "35px",
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "100%",
+    "padding": "0px",
+}
+tab_styles = {
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "35px",
+    "padding": "0px",
+}
 
 
 def get_new_data():
 
+    """Updates the global variable 'data' with new data"""
     global data, latest_update
 
     data = DataLoader(parser)
@@ -41,17 +73,13 @@ def get_new_data():
 
 
 def get_new_data_every(period=parser.getint("data", "update_interval")):
-
+    """Update the data every 'period' seconds"""
     while True:
         get_new_data()
         time.sleep(period)
 
 
 get_new_data()
-
-# configuration
-config = Config()
-style = Style()
 
 indicators = data.indicators()
 
@@ -103,38 +131,40 @@ def format_title(region, indicator):
 
 
 # map
-fig_map = go.Figure(
-    go.Choroplethmapbox(
-        colorscale="BuPu",
-        geojson=data.countries,
-        zmin=0,
-        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
-        uirevision="same",
-    )
-)
-
-fig_map.update_layout(
+layout_map = go.Layout(
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     height=parser.getint("layout", "height_first_row"),
     mapbox_accesstoken=config.mapbox,
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
     geo={"fitbounds": False},
+)
+map_trace = go.Choroplethmapbox(
+    colorscale="BuPu",
+    geojson=data.countries,
+    zmin=0,
+    marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+    colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
     uirevision="same",
 )
+
+fig_map = go.Figure(data=[map_trace], layout=layout_map)
 
 
 def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
+    print(continent)
 
     if continent:
 
         fig.update_layout(
-            uirevision="same",
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
+            transition={"duration": 500},
         )
+
+    else:
+        fig.update_layout(uirevision="same",)
 
     fig.update_traces(
         locations=data_selected["iso3"],
@@ -142,7 +172,6 @@ def update_map(fig, indicator, continent):
         text=data_selected["region"],
         zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
         * 0.3,
-        uirevision="same",
     )
 
     return fig
@@ -243,7 +272,7 @@ body = html.Div(
                                     [
                                         dcc.Tabs(
                                             id="continent-selected",
-                                            value=parser.get("data", "continent"),
+                                            value=continent,
                                             vertical=True,
                                             children=[
                                                 dcc.Tab(
@@ -269,7 +298,9 @@ body = html.Div(
                                     },
                                     children=[
                                         dcc.Graph(
-                                            id="map", config={"displayModeBar": False},
+                                            id="map",
+                                            figure=fig_map,
+                                            config={"displayModeBar": False},
                                         )
                                     ],
                                     width=10,
@@ -288,12 +319,12 @@ body = html.Div(
                             html.Div(
                                 children=[
                                     html.P(
-                                        parser.get("data", "continent"),
+                                        continent,
                                         id="selected-series",
                                         style={"display": "None"},
                                     ),
                                     html.P(
-                                        parser.get("data", "region"),
+                                        region,
                                         id="title-region",
                                         style={"display": "None"},
                                     ),
@@ -303,7 +334,9 @@ body = html.Div(
                             html.Div(
                                 children=[
                                     dcc.Graph(
-                                        id="timeline", config={"displayModeBar": False},
+                                        id="timeline",
+                                        figure=fig_timeline,
+                                        config={"displayModeBar": False},
                                     )
                                 ]
                             ),
@@ -365,11 +398,8 @@ def select_display(selected_region, selected_continent):
         Output("update", "children"),
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
-    [State("map", "relayoutData")],
 )
-def create_output(selected_region, selected_indicator, layout_map):
-
-    print(layout_map)
+def create_output(selected_region, selected_indicator):
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
