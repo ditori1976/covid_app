@@ -321,12 +321,12 @@ body = html.Div(
                                     html.P(
                                         continent,
                                         id="selected-series",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.P(
                                         region,
                                         id="title-region",
-                                        # style={"display": "None"},
+                                        style={"display": "None"},
                                     ),
                                     html.H5([], id="title"),
                                 ],
@@ -407,10 +407,13 @@ def create_output(selected_region, selected_indicator):
 
     if selected_region not in list(data.regions.keys()):
         continent = []
+    fig = update_map(fig_map, selected_indicator, continent)
+
+    print(fig.layout_map)
 
     return (
         [format_title(selected_region, selected_indicator)],
-        update_map(fig_map, selected_indicator, continent),
+        fig,
         update_timeline(fig_timeline, selected_indicator, selected_region),
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
