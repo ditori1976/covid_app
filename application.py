@@ -153,6 +153,7 @@ fig_map = go.Figure(data=[map_trace], layout=layout_map)
 def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
+    print(continent)
 
     if continent:
 
@@ -160,7 +161,7 @@ def update_map(fig, indicator, continent):
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
         )
-        print(data.regions[continent]["center"])
+
     else:
         fig.update_layout(uirevision="same",)
 
