@@ -16,6 +16,26 @@ parser.read("settings.ini")
 
 configuration = Config()
 
+tabs_styles = {
+    "height": "35px",
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "100%",
+    "padding": "0px",
+}
+tab_styles = {
+    "width": "100%",
+    "margin": "0px",
+    "display": "flex",
+    "justify-content": "center",
+    "vertical-align": "middle",
+    "line-height": "35px",
+    "padding": "0px",
+}
+
 
 def get_new_data():
     global data, latest_update
@@ -153,14 +173,20 @@ def bbox(continent):
 """def update_map(fig, indicator, continent):
     indicator_name = indicators[indicator]["name"]
     data_selected = data.latest_data(indicators[indicator])
+    print(continent)
 
     if continent:
 
         fig.update_layout(
             mapbox_center=data.regions[continent]["center"],
             mapbox_zoom=data.regions[continent]["zoom"],
+            transition={"duration": 500},
         )
+<<<<<<< HEAD
         #print(data.regions[continent]["center"])
+=======
+
+>>>>>>> master
     else:
         fig.update_layout(uirevision="same",)
 
@@ -259,12 +285,20 @@ body = html.Div(
                                                 dcc.Tab(
                                                     label=information["name"],
                                                     value=region,
+                                                    className="custom-tab",
+                                                    selected_className="custom-tab--selected",
                                                 )
                                                 for region, information in data.regions.items()
                                             ],
+                                            parent_className="custom-tabs",
+                                            className="custom-tabs-container",
                                         )
                                     ],
                                     width=2,
+<<<<<<< HEAD
+=======
+                                    style={"margin": 0, "width": "100%"},
+>>>>>>> master
                                 ),
                                 dbc.Col(
                                     children=[
@@ -280,7 +314,11 @@ body = html.Div(
                                             )
                                         )
                                     ],
+<<<<<<< HEAD
                                     width=6,
+=======
+                                    width=10,
+>>>>>>> master
                                 ),
                             ],
                             # no_gutters=True,
@@ -290,6 +328,42 @@ body = html.Div(
                     md=10,
                     xs=11,
                 ),
+<<<<<<< HEAD
+=======
+                dbc.Col(
+                    html.Div(
+                        children=[
+                            html.Div(
+                                children=[
+                                    html.P(
+                                        continent,
+                                        id="selected-series",
+                                        style={"display": "None"},
+                                    ),
+                                    html.P(
+                                        region,
+                                        id="title-region",
+                                        style={"display": "None"},
+                                    ),
+                                    html.H5([], id="title"),
+                                ],
+                            ),
+                            html.Div(
+                                children=[
+                                    dcc.Graph(
+                                        id="timeline",
+                                        figure=fig_timeline,
+                                        config={"displayModeBar": False},
+                                    )
+                                ]
+                            ),
+                        ]
+                    ),
+                    lg=5,
+                    md=10,
+                    xs=11,
+                ),
+>>>>>>> master
             ],
             style={"padding-top": parser.getint("layout", "spacer")},
             justify="center",
@@ -368,7 +442,25 @@ def set_title_region(selected_region):
 """
 
 
+<<<<<<< HEAD
 # dash.no_update  # bbox(fig_map, continent)
+=======
+@app.callback(
+    [Output("selected-series", "children"),],
+    [Input("title-region", "children"), Input("continent-selected", "value"),],
+)
+def select_display(selected_region, selected_continent):
+
+    ctx = dash.callback_context
+
+    trigger = ctx.triggered[0]["value"]
+    # trigger_id = ctx.triggered[0]["prop_id"]
+
+    if type(trigger) == list:
+        trigger = trigger.pop()
+
+    return [trigger]
+>>>>>>> master
 
 
 """
@@ -381,7 +473,7 @@ def set_title_region(selected_region):
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
 )
-def select_display(selected_region, selected_indicator):
+def create_output(selected_region, selected_indicator):
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
@@ -389,12 +481,13 @@ def select_display(selected_region, selected_indicator):
 
     if selected_region not in list(data.regions.keys()):
         continent = []
+    fig = update_map(fig_map, selected_indicator, continent)
 
-    print(selected_region, selected_indicator, continent)
+    print(fig.layout)
 
     return (
         [format_title(selected_region, selected_indicator)],
-        update_map(fig_map, selected_indicator, continent),
+        fig,
         update_timeline(fig_timeline, selected_indicator, selected_region),
         [html.P(latest_update, style={"font-size": 8, "color": "grey"})],
     )
