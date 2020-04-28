@@ -122,6 +122,7 @@ fig_map.update_layout(
     geo={"fitbounds": False},
     uirevision="same",
     autosize=False,
+    transition={"duration": 500},
 )
 
 
@@ -367,11 +368,8 @@ def select_display(selected_region, selected_continent):
         Output("update", "children"),
     ],
     [Input("selected-series", "children"), Input("indicator-selected", "value"),],
-    [State("map", "relayoutData")],
 )
-def create_output(selected_region, selected_indicator, layout_map):
-
-    print(layout_map)
+def create_output(selected_region, selected_indicator):
 
     continent = data.timeseries[
         data.timeseries.region == selected_region
@@ -380,8 +378,6 @@ def create_output(selected_region, selected_indicator, layout_map):
     if selected_region not in list(data.regions.keys()):
         continent = []
     fig = update_map(fig_map, selected_indicator, continent)
-
-    print(fig.layout)
 
     return (
         [format_title(selected_region, selected_indicator)],
