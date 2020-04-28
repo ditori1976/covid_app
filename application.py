@@ -409,7 +409,7 @@ def create_output(selected_region, selected_indicator):
         continent = []
     fig = update_map(fig_map, selected_indicator, continent)
 
-    print(fig.layout_map)
+    print(fig.layout)
 
     return (
         [format_title(selected_region, selected_indicator)],
