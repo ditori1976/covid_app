@@ -41,26 +41,6 @@ style = Style()
 region = parser.get("data", "region")
 continent = parser.get("data", "continent")
 
-tabs_styles = {
-    "height": "35px",
-    "width": "100%",
-    "margin": "0px",
-    "display": "flex",
-    "justify-content": "center",
-    "vertical-align": "middle",
-    "line-height": "100%",
-    "padding": "0px",
-}
-tab_styles = {
-    "width": "100%",
-    "margin": "0px",
-    "display": "flex",
-    "justify-content": "center",
-    "vertical-align": "middle",
-    "line-height": "35px",
-    "padding": "0px",
-}
-
 
 def get_new_data():
 
