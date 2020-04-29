@@ -37,20 +37,15 @@ title_div = dbc.Row(
 )
 
 # sub-title
-def sub_title(continent, indicator, country):
-
-    if continent:
-        region = continent
-    else:
-        region = country[0]
+def sub_title(indicator, region):
 
     data_selected = data.select(region, data.indicators()[indicator])
     latest_value = data_selected.loc[
         data_selected.date == data_selected.date.max(),
         data.indicators()[indicator]["name"],
     ].values[0]
-    if continent:
-        region = data.regions[continent]["name"]
+    if region in list(data.regions.keys()):
+        region = data.regions[region]["name"]
     if region == "World":
         region = "the world"
 
@@ -203,11 +198,11 @@ body = html.Div(
             children=[
                 html.P(
                     parser.get("data", "continent"),
-                    id="selected-continent",
-                    # style={"display": "None"},
+                    id="selected-region",
+                    style={"display": "None"},
                 ),
                 html.P(
-                    children=[], id="selected-countries",  # style={"display": "None"},
+                    children=[], id="selected-countries", style={"display": "None"},
                 ),
                 html.P(children=[], id="sub-title"),
             ],
@@ -219,7 +214,7 @@ body = html.Div(
 
 app.layout = body
 
-
+# IN: map OUT: reset tabs, country
 @app.callback(
     [Output("selected-countries", "children"), Output("select-continent", "value")],
     [Input("map", "clickData")],
@@ -228,29 +223,31 @@ def select_countries(select_country):
 
     if select_country:
         region = select_country["points"][0]["text"]
-        return [region], []
+        return region, []
     else:
         return dash.no_update, dash.no_update
 
 
+# IN: tabs OUT: continent
 @app.callback(
-    Output("selected-continent", "children"), [Input("select-continent", "value"),],
+    Output("selected-region", "children"),
+    [Input("select-continent", "value"), Input("selected-countries", "children")],
 )
-def select_continents(selected_continent):
-    time.sleep(0.5)
-    return selected_continent
+def select_region(selected_continent, selected_countries):
+
+    selected_region = selected_countries
+    if selected_continent:
+        selected_region = selected_continent
+
+    return selected_region
 
 
+# IN: indicator, continent_state, OUT: map (bbox, indicator)
 @app.callback(
     Output("map", "figure"),
-    [
-        Input("selected-continent", "children"),
-        Input("indicator-selected", "value"),
-        Input("selected-countries", "children"),
-    ],
+    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
-def draw_map(selected_continent, selected_indicator, selected_countries):
-    print(selected_continent, selected_indicator, selected_countries)
+def draw_map(selected_indicator, selected_region):
 
     indicator_name = data.indicators()[selected_indicator]["name"]
     data_selected = data.latest_data(data.indicators()[selected_indicator])
@@ -263,12 +260,12 @@ def draw_map(selected_continent, selected_indicator, selected_countries):
         * 0.3,
     )
 
-    if selected_continent:
+    if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
             uirevision="same",
-            mapbox_center=data.regions[selected_continent]["center"],
-            mapbox_zoom=data.regions[selected_continent]["zoom"],
+            mapbox_center=data.regions[selected_region]["center"],
+            mapbox_zoom=data.regions[selected_region]["zoom"],
         )
     else:
         fig_map.update_layout(uirevision="same")
@@ -278,18 +275,12 @@ def draw_map(selected_continent, selected_indicator, selected_countries):
 
 @app.callback(
     Output("timeline", "figure"),
-    [
-        Input("selected-continent", "children"),
-        Input("indicator-selected", "value"),
-        Input("selected-countries", "children"),
-    ],
+    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
-def draw_timeline(selected_continent, selected_indicator, selected_countries):
+def draw_timeline(selected_indicator, selected_region):
+    print(selected_region)
 
-    if selected_continent:
-        selected_region = selected_continent
-    else:
-        selected_region = selected_countries[0]
+    # selected_region = selected_region[0]
 
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
@@ -303,15 +294,41 @@ def draw_timeline(selected_continent, selected_indicator, selected_countries):
 
 @app.callback(
     Output("sub-title", "children"),
-    [
-        Input("selected-continent", "children"),
-        Input("indicator-selected", "value"),
-        Input("selected-countries", "children"),
-    ],
+    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
-def write_sub_title(selected_continent, selected_indicator, selected_countries):
-    return sub_title(selected_continent, selected_indicator, selected_countries)
+def write_sub_title(selected_indicator, selected_region):
+    return sub_title(selected_indicator, selected_region)
 
+
+app.title = "COVID-19"
+app.index_string = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8">
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-164129496-1');
+        </script>
+
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>"""
 
 application = app.server
 
