@@ -145,6 +145,7 @@ fig_map.update_layout(
     ),
     uirevision=True,
 )
+fig_map.layout.uirevision = True
 
 # timeline
 timeline_div = dbc.Col(
@@ -269,6 +270,8 @@ def draw_map(selected_indicator, selected_region):
         )
     else:
         fig_map.update_layout(uirevision=True)
+
+    fig_map.layout.uirevision = True
 
     return fig_map
 
