@@ -29,6 +29,7 @@
 }
 .custom-tab--selected {
     color: black;
+    background-color: white;
     box-shadow: 1px 1px 0px white;
     border-left: 3px solid #ad97c7 !important;
     border-right: none !important;
@@ -36,9 +37,7 @@
     border-bottom: none !important;
 }
 
-.custom-tab-container--vert {
-    border-bottom: none !important;
-}
-.custom-tab:last-of-type {
+
+.tab-container--vert .tab:last-of-type {
     border-bottom: none !important;
 }

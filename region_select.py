@@ -5,13 +5,11 @@ import dash_html_components as html
 import plotly.graph_objects as go
 import pandas as pd
 from dash.dependencies import Input, Output
-from tools import DataLoader, Config
+from tools import DataLoader
 from configparser import ConfigParser
 
 parser = ConfigParser()
 parser.read("settings.ini")
-
-configuration = Config()
 
 data = DataLoader(parser)
 
@@ -141,5 +139,4 @@ application = app.server
 
 
 if __name__ == "__main__":
-
-    application.run(debug=True, port=configuration.port, host=configuration.host)
+    application.run(debug=True)
