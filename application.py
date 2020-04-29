@@ -35,6 +35,36 @@ title_div = dbc.Row(
     ]
 )
 
+# sub-title
+def sub_title(continent, indicator, country):
+
+    if continent:
+        region = continent
+    else:
+        region = country[0]
+
+    print(region)
+
+    data_selected = data.select(region, data.indicators()[indicator])
+    latest_value = data_selected.loc[
+        data_selected.date == data_selected.date.max(),
+        data.indicators()[indicator]["name"],
+    ].values[0]
+
+    if region == "World":
+        region = "the world"
+
+    title = "{1:.{0}f} {2} in {3} on {4}".format(
+        data.indicators()[indicator]["digits"],
+        latest_value,
+        data.indicators()[indicator]["name"],
+        region,
+        str(data_selected.date.max().strftime("%d %b %Y")),
+    )
+
+    return title
+
+
 # dropdown
 def dropdown_options(indicators):
     options = []
@@ -173,8 +203,15 @@ body = html.Div(
         ),
         dbc.Row(
             children=[
-                html.P(parser.get("data", "continent"), id="selected-continent"),
-                html.P(children=[], id="selected-countries"),
+                html.P(
+                    parser.get("data", "continent"),
+                    id="selected-continent",
+                    style={"display": "None"},
+                ),
+                html.P(
+                    children=[], id="selected-countries", style={"display": "None"},
+                ),
+                html.P(children=[], id="sub-title"),
             ],
             justify="center",
         ),
@@ -265,6 +302,18 @@ def draw_timeline(selected_continent, selected_indicator, selected_countries):
     fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
 
     return fig
+
+
+@app.callback(
+    Output("sub-title", "children"),
+    [
+        Input("selected-continent", "children"),
+        Input("indicator-selected", "value"),
+        Input("selected-countries", "children"),
+    ],
+)
+def write_sub_title(selected_continent, selected_indicator, selected_countries):
+    return sub_title(selected_continent, selected_indicator, selected_countries)
 
 
 application = app.server
