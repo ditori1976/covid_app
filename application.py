@@ -70,7 +70,7 @@ dropdown_div = dbc.Col(
 tabs_div = dbc.Col(
     children=[
         dcc.Tabs(
-            id="continent-selected",
+            id="select-continent",
             value=parser.get("data", "continent"),
             style={"height": parser.getint("layout", "height_first_row")},
             vertical=True,
@@ -124,7 +124,34 @@ timeline_div = dbc.Col(
     xs=11,
 )
 
+# map
+fig_map = go.Figure(
+    go.Choroplethmapbox(
+        colorscale="BuPu",
+        geojson=data.countries,
+        zmin=0,
+        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+        colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
+        uirevision="same",
+    )
+)
 
+fig_map.update_layout(
+    margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+    mapbox=go.layout.Mapbox(
+        accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
+        style="light",
+        # center=go.layout.mapbox.Center(
+        #    lat=data.regions[selected_continent]["center"]["lat"],
+        #    lon=data.regions[selected_continent]["center"]["lon"],
+        # ),
+        pitch=0,
+        # zoom=data.regions[selected_continent]["zoom"],
+    ),
+)
+
+# layout
 body = html.Div(
     [
         dbc.Row(children=[title_div, dropdown_div], justify="center"),
@@ -145,7 +172,10 @@ body = html.Div(
             style={"padding-top": parser.getint("layout", "spacer")},
         ),
         dbc.Row(
-            children=[html.H4(children=["World"], id="selected-regions")],
+            children=[
+                html.P(parser.get("data", "continent"), id="selected-continent"),
+                html.P(children=[], id="selected-countries"),
+            ],
             justify="center",
         ),
     ]
@@ -156,50 +186,40 @@ app.layout = body
 
 
 @app.callback(
-    [Output("map", "figure"), Output("selected-regions", "children")],
-    [Input("continent-selected", "value"), Input("indicator-selected", "value")],
+    [Output("selected-countries", "children"), Output("select-continent", "value")],
+    [Input("map", "clickData")],
 )
-def draw_map(selected_continent, selected_indicator):
+def select_countries(select_country):
 
-    if selected_continent:
-        continent = selected_continent
+    if select_country:
+        region = select_country["points"][0]["text"]
+        return [region], []
+    else:
+        return dash.no_update, dash.no_update
 
-    fig = go.Figure(
-        go.Choroplethmapbox(
-            colorscale="BuPu",
-            geojson=data.countries,
-            zmin=0,
-            marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-            colorbar={
-                "thickness": 10,
-                "len": 0.4,
-                "x": 0,
-                "y": 0.3,
-                "outlinewidth": 0,
-            },
-            uirevision="same",
-        )
-    )
 
-    fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
-        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-        mapbox=go.layout.Mapbox(
-            accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
-            style="light",
-            center=go.layout.mapbox.Center(
-                lat=data.regions[selected_continent]["center"]["lat"],
-                lon=data.regions[selected_continent]["center"]["lon"],
-            ),
-            pitch=0,
-            zoom=data.regions[continent]["zoom"],
-        ),
-    )
+@app.callback(
+    Output("selected-continent", "children"), [Input("select-continent", "value"),],
+)
+def select_continents(selected_continent):
+    return selected_continent
+
+
+@app.callback(
+    Output("map", "figure"),
+    [
+        Input("selected-continent", "children"),
+        Input("indicator-selected", "value"),
+        Input("selected-countries", "children"),
+    ],
+)
+def draw_map(selected_continent, selected_indicator, selected_countries):
+    print(selected_continent, selected_indicator, selected_countries)
 
     indicator_name = data.indicators()[selected_indicator]["name"]
     data_selected = data.latest_data(data.indicators()[selected_indicator])
 
-    fig.update_traces(
+    fig_map.update_traces(
         locations=data_selected["iso3"],
         z=data_selected[indicator_name],
         text=data_selected["region"],
@@ -207,14 +227,35 @@ def draw_map(selected_continent, selected_indicator):
         * 0.3,
     )
 
-    return fig, [continent]
+    if selected_continent:
+        selected_region = selected_continent
+        fig_map.update_layout(
+            uirevision="same",
+            mapbox_center=data.regions[selected_continent]["center"],
+            mapbox_zoom=data.regions[selected_continent]["zoom"],
+        )
+    else:
+        fig_map.update_layout(uirevision="same")
+
+    return fig_map
 
 
 @app.callback(
     Output("timeline", "figure"),
-    [Input("continent-selected", "value"), Input("indicator-selected", "value")],
+    [
+        Input("selected-continent", "children"),
+        Input("indicator-selected", "value"),
+        Input("selected-countries", "children"),
+    ],
 )
-def draw_timeline(selected_region, selected_indicator):
+def draw_timeline(selected_continent, selected_indicator, selected_countries):
+
+    if selected_continent:
+        selected_region = selected_continent
+    else:
+        selected_region = selected_countries[0]
+
+    print(selected_region)
 
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
