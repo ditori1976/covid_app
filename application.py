@@ -8,6 +8,7 @@ import numpy as np
 from dash.dependencies import Input, Output
 from tools import DataLoader, Config
 from configparser import ConfigParser
+import time
 
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -39,18 +40,17 @@ title_div = dbc.Row(
 def sub_title(continent, indicator, country):
 
     if continent:
-        region = data.regions[continent]["name"]
+        region = continent
     else:
         region = country[0]
-
-    print(region)
 
     data_selected = data.select(region, data.indicators()[indicator])
     latest_value = data_selected.loc[
         data_selected.date == data_selected.date.max(),
         data.indicators()[indicator]["name"],
     ].values[0]
-
+    if continent:
+        region = data.regions[continent]["name"]
     if region == "World":
         region = "the world"
 
@@ -204,10 +204,10 @@ body = html.Div(
                 html.P(
                     parser.get("data", "continent"),
                     id="selected-continent",
-                    style={"display": "None"},
+                    # style={"display": "None"},
                 ),
                 html.P(
-                    children=[], id="selected-countries", style={"display": "None"},
+                    children=[], id="selected-countries",  # style={"display": "None"},
                 ),
                 html.P(children=[], id="sub-title"),
             ],
@@ -237,6 +237,7 @@ def select_countries(select_country):
     Output("selected-continent", "children"), [Input("select-continent", "value"),],
 )
 def select_continents(selected_continent):
+    time.sleep(0.5)
     return selected_continent
 
 
@@ -289,8 +290,6 @@ def draw_timeline(selected_continent, selected_indicator, selected_countries):
         selected_region = selected_continent
     else:
         selected_region = selected_countries[0]
-
-    print(selected_region)
 
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
