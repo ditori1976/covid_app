@@ -138,6 +138,7 @@ fig_map.update_layout(
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     mapbox=go.layout.Mapbox(
+        uirevision=True,
         accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
         style="light",
         pitch=0,
