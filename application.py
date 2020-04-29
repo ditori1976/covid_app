@@ -279,8 +279,6 @@ def draw_map(selected_indicator, selected_region):
 def draw_timeline(selected_indicator, selected_region):
     print(selected_region)
 
-    # selected_region = selected_region[0]
-
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
 
