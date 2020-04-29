@@ -142,6 +142,7 @@ fig_map.update_layout(
         style="light",
         pitch=0,
     ),
+    uirevision=True
 )
 
 # timeline
@@ -261,11 +262,12 @@ def draw_map(selected_indicator, selected_region):
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
+            uirevision=True,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
-    # else:
-    #   fig_map.update_layout(uirevision="same")
+     else:
+       fig_map.update_layout(uirevision=True)
 
     return fig_map
 
