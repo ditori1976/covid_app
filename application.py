@@ -130,7 +130,6 @@ fig_map = go.Figure(
         zmin=0,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
         colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
-        uirevision="same",
     )
 )
 
@@ -138,7 +137,6 @@ fig_map.update_layout(
     transition={"duration": 500},
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-    uirevision="same",
     mapbox=go.layout.Mapbox(
         accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
         style="light",
@@ -263,12 +261,11 @@ def draw_map(selected_indicator, selected_region):
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
-            uirevision="same",
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
-    else:
-        fig_map.update_layout(uirevision="same")
+    # else:
+    #   fig_map.update_layout(uirevision="same")
 
     return fig_map
 
