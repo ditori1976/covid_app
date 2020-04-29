@@ -20,6 +20,52 @@ layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
 # create app, do not forget to add necessary external stylesheets, such as dbc.themes.BOOTSTRAP
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
 
+# title
+title_div = dbc.Row(
+    children=[
+        dbc.Col(
+            html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
+            lg=3,
+            md=3,
+            xs=2,
+            className="style_center",
+        ),
+        dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=10,),
+    ]
+)
+
+# dropdown
+def dropdown_options(indicators):
+    options = []
+    for i, j in indicators.items():
+        options.append({"label": j["name"], "value": i})
+
+    return options
+
+
+dropdown = dcc.Dropdown(
+    id="indicator-selected",
+    value=parser.get("data", "init_indicator"),
+    style={"width": "100%", "margin": 0, "padding": 0},
+    options=dropdown_options(data.indicators()),
+    searchable=False,
+    clearable=False,
+    className="stlye_center",
+)
+
+dropdown_div = dbc.Col(
+    html.Div(
+        id="selector",
+        children=[dropdown],
+        style={"width": "100%", "margin": 0, "padding": 0},
+    ),
+    xl=3,
+    lg=4,
+    md=5,
+    xs=10,
+)
+
+# continent select via tabs
 tabs_div = dbc.Col(
     children=[
         dcc.Tabs(
@@ -44,6 +90,7 @@ tabs_div = dbc.Col(
     style={"margin": 0, "width": "100%"},
 )
 
+# draw map
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False})],
     style={"height": parser.getint("layout", "height_first_row")},
@@ -79,6 +126,7 @@ timeline_div = dbc.Col(
 
 body = html.Div(
     [
+        dbc.Row(children=[title_div, dropdown_div], justify="center"),
         dbc.Row(
             children=[
                 dbc.Col(
@@ -93,7 +141,12 @@ body = html.Div(
             ],
             justify="center",
             no_gutters=True,
-        )
+            style={"padding-top": parser.getint("layout", "spacer")},
+        ),
+        dbc.Row(
+            children=[html.H4(children=["World"], id="selected-regions")],
+            justify="center",
+        ),
     ]
 )
 
@@ -101,7 +154,10 @@ body = html.Div(
 app.layout = body
 
 
-@app.callback(Output("map", "figure"), [Input("continent-selected", "value")])
+@app.callback(
+    [Output("map", "figure"), Output("selected-regions", "children")],
+    [Input("continent-selected", "value")],
+)
 def select_bbox(selected_continent):
 
     if selected_continent:
@@ -123,7 +179,7 @@ def select_bbox(selected_continent):
         ),
     )
 
-    return fig
+    return fig, [continent]
 
 
 @app.callback(Output("timeline", "figure"), [Input("continent-selected", "value")])

@@ -1,5 +1,5 @@
 * {
-    font-family: Georgia, Times, "Times New Roman", serif;
+    font-family: Georgia, Times, Times New Roman, serif;
 }
 
 
@@ -18,6 +18,15 @@ h1 {
     align-items: top;
 }
 
+.style_center  {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    verticalAlign: middle;
+    margin: 0;
+    padding: 0;
+}
 
 
 
