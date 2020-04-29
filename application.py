@@ -142,7 +142,7 @@ fig_map.update_layout(
         style="light",
         pitch=0,
     ),
-    uirevision=True
+    uirevision=True,
 )
 
 # timeline
@@ -266,8 +266,8 @@ def draw_map(selected_indicator, selected_region):
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
-     else:
-       fig_map.update_layout(uirevision=True)
+    else:
+        fig_map.update_layout(uirevision=True)
 
     return fig_map
 
