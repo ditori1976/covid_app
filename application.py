@@ -301,6 +301,7 @@ def draw_map(selected_indicator, selected_region):
                 .max()
                 * 0.3,
             )
+            fig_map.layout.uirevision = True
 
         # if selected_region in list(data.regions.keys()):
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
@@ -312,7 +313,7 @@ def draw_map(selected_indicator, selected_region):
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
-        fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = True
 
         # else:
         #   region_data = data.latest_data("cases")[
