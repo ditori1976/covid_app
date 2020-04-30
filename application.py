@@ -141,7 +141,7 @@ fig_map.update_layout(
         pitch=0,
     ),
 )
-fig_map.layout.uirevision = True
+# fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False})],
