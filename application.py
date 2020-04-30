@@ -254,6 +254,7 @@ def draw_map(selected_indicator, selected_region):
     data_selected = data.latest_data(data.indicators()[selected_indicator])
 
     fig_map.update_traces(
+        uirevision=True,
         locations=data_selected["iso3"],
         z=data_selected[indicator_name],
         text=data_selected["region"],
@@ -262,14 +263,15 @@ def draw_map(selected_indicator, selected_region):
     )
 
     if selected_region in list(data.regions.keys()):
+        print(selected_region)
 
         fig_map.update_layout(
             uirevision=True,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
-    else:
-        fig_map.update_layout(uirevision=True)
+    # else:
+    #    fig_map.update_layout(uirevision=True)
 
     fig_map.layout.uirevision = True
 
@@ -281,7 +283,6 @@ def draw_map(selected_indicator, selected_region):
     [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
 def draw_timeline(selected_indicator, selected_region):
-    print(selected_region)
 
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
