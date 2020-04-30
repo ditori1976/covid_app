@@ -141,7 +141,26 @@ tabs_div = dbc.Col(
 )
 
 # map
+fig_map = go.Figure(
+    go.Choroplethmapbox(
+        colorscale="BuPu",
+        geojson=data.countries,
+        zmin=0,
+        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+        colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
+    )
+)
 
+fig_map.update_layout(
+    autosize=False,
+    margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+    mapbox=go.layout.Mapbox(
+        accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
+        style="light",
+        pitch=0,
+    ),
+)
 # fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
@@ -254,75 +273,61 @@ def select_region(selected_continent, selected_countries):
 
 @app.callback(
     [Output("map", "figure"), Output("update", "children")],
-    [Input("indicator-selected", "value"), Input("selected-region", "children")],
-    [State("map", "relayoutData")],
+    [Input("indicator-selected", "value"), Input("select-continent", "value")],
 )
-def draw_map(selected_indicator, selected_region, state_map):
+def draw_map(selected_indicator, selected_region):
 
-    fig_map = go.Figure(
-        go.Choroplethmapbox(
-            colorscale="BuPu",
-            geojson=data.countries,
-            zmin=0,
-            marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-            colorbar={
-                "thickness": 10,
-                "len": 0.4,
-                "x": 0,
-                "y": 0.3,
-                "outlinewidth": 0,
-            },
-        )
-    )
+    ctx = dash.callback_context
 
-    fig_map.update_layout(
-        autosize=False,
-        margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
-        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-        mapbox=go.layout.Mapbox(
-            accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
-            style="light",
-            pitch=0,
-        ),
-    )
-
-    if selected_region in list(data.regions.keys()):
-
-        fig_map.update_layout(
-            transition={"duration": 5000, "easing": "elastic"},
-            mapbox_center=data.regions[selected_region]["center"],
-            mapbox_zoom=data.regions[selected_region]["zoom"],
-        )
-
+    print(ctx.triggered)
+    if ctx.triggered[0]["value"] == []:
+        return dash.no_update
     else:
-        region_data = data.latest_data("cases")[
-            data.latest_data("cases").region == selected_region
-        ]
-        center = {
-            "lon": region_data.Lon.max(),
-            "lat": region_data.Lat.max(),
-        }
 
-        zoom = 17.5 - math.log(region_data.area.max() + 200000)
+        if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
+            ctx.triggered[0]["prop_id"] == "."
+        ):
 
-        fig_map.update_layout(
-            mapbox_center=center, mapbox_zoom=zoom,
-        )
+            indicator_name = data.indicators[selected_indicator]["name"]
+            data_selected = data.latest_data(data.indicators[selected_indicator])
 
-    indicator_name = data.indicators[selected_indicator]["name"]
-    data_selected = data.latest_data(data.indicators[selected_indicator])
+            fig_map.update_traces(
+                locations=data_selected["iso3"],
+                z=data_selected[indicator_name],
+                text=data_selected["region"],
+                zmax=data_selected[indicator_name]
+                .replace([np.inf, -np.inf], np.nan)
+                .max()
+                * 0.3,
+            )
 
-    fig_map.update_traces(
-        locations=data_selected["iso3"],
-        z=data_selected[indicator_name],
-        text=data_selected["region"],
-        zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
-        * 0.3,
-    )
+        # if selected_region in list(data.regions.keys()):
+        if ctx.triggered[0]["prop_id"] == "select-continent.value":
 
-    # fig_map.layout.uirevision = True
+            fig_map.update_layout(
+                transition={"duration": 5000, "easing": "elastic"},
+                mapbox_center=data.regions[selected_region]["center"],
+                mapbox_zoom=data.regions[selected_region]["zoom"],
+            )
 
-    return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
+        # else:
+        #   region_data = data.latest_data("cases")[
+        #       data.latest_data("cases").region == selected_region
+        #    ]
+        #   center = {
+        #        "lon": region_data.Lon.max(),
+        #        "lat": region_data.Lat.max(),
+        #   }
+
+        #   zoom = 17.5 - math.log(region_data.area.max() + 200000)
+
+        #   fig_map.update_layout(
+        #      mapbox_center=center, mapbox_zoom=zoom,
+        #   )
+
+        # fig_map.layout.uirevision = True
+
+        return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
 
 @app.callback(
