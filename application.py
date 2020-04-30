@@ -264,23 +264,10 @@ def draw_map(selected_indicator, selected_region, state_map):
     ctx = dash.callback_context
     trigger = ctx.triggered[0]["prop_id"]
 
-    if (trigger == "indicator-selected.value") or (trigger == "."):
-
-        indicator_name = data.indicators()[selected_indicator]["name"]
-        data_selected = data.latest_data(data.indicators()[selected_indicator])
-
-        fig_map.update_traces(
-            locations=data_selected["iso3"],
-            z=data_selected[indicator_name],
-            text=data_selected["region"],
-            zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
-            * 0.3,
-        )
-
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
-            autosize=False,
+            # autosize=False,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
@@ -296,17 +283,29 @@ def draw_map(selected_indicator, selected_region, state_map):
         }
         print(center)
         fig_map.update_layout(
-            autosize=False,
+            # autosize=False,
             mapbox_center=center,
             # mapbox_zoom=state_map["mapbox.zoom"],
         )
-        if not "autosize" in list(state_map.keys()):
-            fig_map.update_layout(
-                # mapbox_center=state_map["mapbox.center"],
-                mapbox_zoom=state_map["mapbox.zoom"],
-            )
+        # if not "autosize" in list(state_map.keys()):
+        #    fig_map.update_layout(
+        #        # mapbox_center=state_map["mapbox.center"],
+        #        mapbox_zoom=state_map["mapbox.zoom"],
+        #    )
+    if (trigger == "indicator-selected.value") or (trigger == "."):
 
-    fig_map.layout.uirevision = True
+        indicator_name = data.indicators()[selected_indicator]["name"]
+        data_selected = data.latest_data(data.indicators()[selected_indicator])
+
+        fig_map.update_traces(
+            locations=data_selected["iso3"],
+            z=data_selected[indicator_name],
+            text=data_selected["region"],
+            zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
+            * 0.3,
+        )
+
+    # fig_map.layout.uirevision = True
 
     return fig_map
 
