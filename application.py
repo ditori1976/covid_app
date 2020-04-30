@@ -252,10 +252,9 @@ def select_region(selected_continent, selected_countries):
 def draw_map(selected_indicator, selected_region, state_indicator, state_map):
     ctx = dash.callback_context
     trigger = ctx.triggered[0]["prop_id"]
-    print(trigger)
 
     if (trigger == "indicator-selected.value") or (trigger == "."):
-        print(trigger)
+
         indicator_name = data.indicators()[selected_indicator]["name"]
         data_selected = data.latest_data(data.indicators()[selected_indicator])
 
@@ -269,17 +268,14 @@ def draw_map(selected_indicator, selected_region, state_indicator, state_map):
         )
 
     if selected_region in list(data.regions.keys()):
-        print(selected_region)
 
         fig_map.update_layout(
             uirevision=True,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
-    # else:
-    #    fig_map.update_layout(uirevision=True)
 
-    fig_map.layout.uirevision = True
+        fig_map.layout.uirevision = True
 
     return fig_map
 
