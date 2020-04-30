@@ -264,6 +264,7 @@ def draw_map(selected_indicator, selected_region, state_indicator, state_map):
             zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
             * 0.3,
         )
+        fig_map.layout.uirevision = True
 
     if selected_region in list(data.regions.keys()):
 
@@ -273,7 +274,7 @@ def draw_map(selected_indicator, selected_region, state_indicator, state_map):
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
 
-    fig_map.layout.uirevision = True
+        fig_map.layout.uirevision = False
 
     return fig_map
 
