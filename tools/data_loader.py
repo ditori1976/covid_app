@@ -162,7 +162,7 @@ class Transform(Extract):
             self.data.date >= self.data.date.max() - datetime.timedelta(1)
         ]
 
-        for i, indicator in self.indicators().items():
+        for i, indicator in self.indicators.items():
             latest_data = self.add_indicator(
                 latest_data,
                 indicator["name"],
@@ -225,11 +225,13 @@ class DataLoader(Transform):
     def __init__(self, parser: ConfigParser):
         print("loader")
 
-        super().__init__(parser, self.indicators)
+        super().__init__(parser, self.definition_indicators)
 
         self.regions = self.definition_regions()
 
         self.countries = self.countries_geojson(parser)
+
+        self.indicators = self.definition_indicators()
 
     def countries_geojson(self, parser):
 
@@ -256,7 +258,7 @@ class DataLoader(Transform):
 
         return regions
 
-    def indicators(self):
+    def definition_indicators(self):
         indicators = {
             "cases": {
                 "name": "cases",

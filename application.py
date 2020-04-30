@@ -63,20 +63,20 @@ title_div = dbc.Row(
 # sub-title
 def sub_title(indicator, region):
 
-    data_selected = data.select(region, data.indicators()[indicator])
+    data_selected = data.select(region, data.indicators[indicator])
     latest_value = data_selected.loc[
         data_selected.date == data_selected.date.max(),
-        data.indicators()[indicator]["name"],
-    ].values[0]
+        data.indicators[indicator]["name"],
+    ].max()
     if region in list(data.regions.keys()):
         region = data.regions[region]["name"]
     if region == "World":
         region = "the world"
 
     title = "{1:.{0}f} {2} in {3} on {4}".format(
-        data.indicators()[indicator]["digits"],
+        data.indicators[indicator]["digits"],
         latest_value,
-        data.indicators()[indicator]["name"],
+        data.indicators[indicator]["name"],
         region,
         str(data_selected.date.max().strftime("%d %b %Y")),
     )
@@ -97,7 +97,7 @@ dropdown = dcc.Dropdown(
     id="indicator-selected",
     value=parser.get("data", "init_indicator"),
     style={"width": "100%", "margin": 0, "padding": 0},
-    options=dropdown_options(data.indicators()),
+    options=dropdown_options(data.indicators),
     searchable=False,
     clearable=False,
     className="stlye_center",
@@ -309,8 +309,8 @@ def draw_map(selected_indicator, selected_region, state_map):
             mapbox_center=center, mapbox_zoom=zoom,
         )
 
-    indicator_name = data.indicators()[selected_indicator]["name"]
-    data_selected = data.latest_data(data.indicators()[selected_indicator])
+    indicator_name = data.indicators[selected_indicator]["name"]
+    data_selected = data.latest_data(data.indicators[selected_indicator])
 
     fig_map.update_traces(
         locations=data_selected["iso3"],
@@ -334,8 +334,8 @@ def draw_timeline(selected_indicator, selected_region):
     fig = go.Figure(go.Bar(), layout=layout)
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
 
-    indicator_name = data.indicators()[selected_indicator]["name"]
-    data_selected = data.select(selected_region, data.indicators()[selected_indicator])
+    indicator_name = data.indicators[selected_indicator]["name"]
+    data_selected = data.select(selected_region, data.indicators[selected_indicator])
     fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
 
     return fig
