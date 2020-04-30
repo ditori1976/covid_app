@@ -120,27 +120,7 @@ tabs_div = dbc.Col(
 )
 
 # map
-fig_map = go.Figure(
-    go.Choroplethmapbox(
-        colorscale="BuPu",
-        geojson=data.countries,
-        zmin=0,
-        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
-    )
-)
 
-fig_map.update_layout(
-    autosize=False,
-    transition={"duration": 500},
-    margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
-    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-    mapbox=go.layout.Mapbox(
-        accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
-        style="light",
-        pitch=0,
-    ),
-)
 # fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
@@ -260,6 +240,33 @@ def select_region(selected_continent, selected_countries):
 )
 def draw_map(selected_indicator, selected_region, state_map):
     print(state_map)
+    fig_map = go.Figure(
+        go.Choroplethmapbox(
+            colorscale="BuPu",
+            geojson=data.countries,
+            zmin=0,
+            marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+            colorbar={
+                "thickness": 10,
+                "len": 0.4,
+                "x": 0,
+                "y": 0.3,
+                "outlinewidth": 0,
+            },
+        )
+    )
+
+    fig_map.update_layout(
+        autosize=False,
+        transition={"duration": 500},
+        margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+        mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+        mapbox=go.layout.Mapbox(
+            accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
+            style="light",
+            pitch=0,
+        ),
+    )
 
     ctx = dash.callback_context
     trigger = ctx.triggered[0]["prop_id"]
@@ -281,29 +288,34 @@ def draw_map(selected_indicator, selected_region, state_map):
                 data.latest_data("cases").region == selected_region
             ].Lat.max(),
         }
-        print(center)
+        if select_region in ["US", "Russia", "Canada", "China"]:
+            zoom = 3
+        if select_region == "Russia":
+            zoom = 1
+        else:
+            zoom = 2
         fig_map.update_layout(
             # autosize=False,
             mapbox_center=center,
-            # mapbox_zoom=state_map["mapbox.zoom"],
+            mapbox_zoom=zoom,
         )
         # if not "autosize" in list(state_map.keys()):
         #    fig_map.update_layout(
         #        # mapbox_center=state_map["mapbox.center"],
         #        mapbox_zoom=state_map["mapbox.zoom"],
         #    )
-    if (trigger == "indicator-selected.value") or (trigger == "."):
+    # if (trigger == "indicator-selected.value") or (trigger == "."):
 
-        indicator_name = data.indicators()[selected_indicator]["name"]
-        data_selected = data.latest_data(data.indicators()[selected_indicator])
+    indicator_name = data.indicators()[selected_indicator]["name"]
+    data_selected = data.latest_data(data.indicators()[selected_indicator])
 
-        fig_map.update_traces(
-            locations=data_selected["iso3"],
-            z=data_selected[indicator_name],
-            text=data_selected["region"],
-            zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
-            * 0.3,
-        )
+    fig_map.update_traces(
+        locations=data_selected["iso3"],
+        z=data_selected[indicator_name],
+        text=data_selected["region"],
+        zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
+        * 0.3,
+    )
 
     # fig_map.layout.uirevision = True
 
