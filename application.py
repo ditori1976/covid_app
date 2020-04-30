@@ -11,6 +11,8 @@ from configparser import ConfigParser
 import time
 import json
 import math
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
@@ -19,7 +21,25 @@ parser.read("settings.ini")
 
 configuration = Config()
 
-data = DataLoader(parser)
+
+def get_new_data():
+
+    global data, latest_update
+
+    data = DataLoader(parser)
+    print("Data updated at " + datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    latest_update = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+
+
+def get_new_data_every(period=parser.getint("data", "update_interval")):
+
+    while True:
+        get_new_data()
+        time.sleep(period)
+
+
+get_new_data()
+
 
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
 
@@ -193,6 +213,7 @@ body = html.Div(
             ],
             justify="center",
         ),
+        dbc.Row(id="update", children=[], justify="center",),
     ]
 )
 
@@ -205,13 +226,11 @@ app.layout = body
 #    return json.dumps(relayoutData, indent=2)
 
 
-# IN: map OUT: reset tabs, country
 @app.callback(
     [Output("selected-countries", "children"), Output("select-continent", "value")],
     [Input("map", "clickData")],
 )
 def select_countries(select_country):
-    print(select_country)
 
     if select_country:
         region = select_country["points"][0]["text"]
@@ -220,7 +239,6 @@ def select_countries(select_country):
         return dash.no_update, dash.no_update
 
 
-# IN: tabs OUT: continent
 @app.callback(
     Output("selected-region", "children"),
     [Input("select-continent", "value"), Input("selected-countries", "children")],
@@ -234,14 +252,13 @@ def select_region(selected_continent, selected_countries):
     return selected_region
 
 
-# IN: indicator, continent_state, OUT: map (bbox, indicator)
 @app.callback(
-    Output("map", "figure"),
+    [Output("map", "figure"), Output("update", "children")],
     [Input("indicator-selected", "value"), Input("selected-region", "children")],
     [State("map", "relayoutData")],
 )
 def draw_map(selected_indicator, selected_region, state_map):
-    # print(state_map)
+
     fig_map = go.Figure(
         go.Choroplethmapbox(
             colorscale="BuPu",
@@ -260,7 +277,6 @@ def draw_map(selected_indicator, selected_region, state_map):
 
     fig_map.update_layout(
         autosize=False,
-        transition={"duration": 500},
         margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
         mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
         mapbox=go.layout.Mapbox(
@@ -270,13 +286,10 @@ def draw_map(selected_indicator, selected_region, state_map):
         ),
     )
 
-    # ctx = dash.callback_context
-    # trigger = ctx.triggered[0]["prop_id"]
-
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
-            # autosize=False,
+            transition={"duration": 5000, "easing": "elastic"},
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
@@ -289,28 +302,12 @@ def draw_map(selected_indicator, selected_region, state_map):
             "lon": region_data.Lon.max(),
             "lat": region_data.Lat.max(),
         }
-        print(selected_region)
-        if selected_region in ["US"]:
-            zoom = 2
-        elif selected_region in ["Canada", "China"]:
-            zoom = 1
-        elif selected_region == "Russia":
-            zoom = 0.5
-        else:
-            zoom = 3
-        zoom = 17.5 - math.log(region_data.area.max() + 100000)
-        print(zoom)
+
+        zoom = 17.5 - math.log(region_data.area.max() + 200000)
+
         fig_map.update_layout(
-            # autosize=False,
-            mapbox_center=center,
-            mapbox_zoom=zoom,
+            mapbox_center=center, mapbox_zoom=zoom,
         )
-        # if not "autosize" in list(state_map.keys()):
-        #    fig_map.update_layout(
-        #        # mapbox_center=state_map["mapbox.center"],
-        #        mapbox_zoom=state_map["mapbox.zoom"],
-        #    )
-    # if (trigger == "indicator-selected.value") or (trigger == "."):
 
     indicator_name = data.indicators()[selected_indicator]["name"]
     data_selected = data.latest_data(data.indicators()[selected_indicator])
@@ -325,7 +322,7 @@ def draw_map(selected_indicator, selected_region, state_map):
 
     # fig_map.layout.uirevision = True
 
-    return fig_map
+    return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
 
 @app.callback(
@@ -385,6 +382,13 @@ app.index_string = """<!DOCTYPE html>
 application = app.server
 
 
+def start_multi():
+    if configuration.UPDATE:
+        executor = ProcessPoolExecutor(max_workers=1)
+        executor.submit(get_new_data_every)
+
+
 if __name__ == "__main__":
 
+    start_multi()
     application.run(debug=True, port=configuration.port, host=configuration.host)

@@ -18,6 +18,7 @@ class Extract:
         self.country_info = self.read_geonames_country_info(parser)
 
     def load_jhu(self, parser):
+        print("jhu")
 
         lookup = pd.read_csv(parser.get("urls", "jhu_lookup_url"))
         lookup.rename(
@@ -81,6 +82,7 @@ class Extract:
         return data
 
     def read_geonames_country_info(self, parser):
+        print("geonames")
 
         res = requests.get(parser.get("urls", "geonames_countries_url"))
         soup = BeautifulSoup(res.content, "lxml")
@@ -221,6 +223,7 @@ class Transform(Extract):
 
 class DataLoader(Transform):
     def __init__(self, parser: ConfigParser):
+        print("loader")
 
         super().__init__(parser, self.indicators)
 
