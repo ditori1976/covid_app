@@ -140,7 +140,7 @@ fig_map.update_layout(
 fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False}, figure=fig_map)],
+    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
     style={"height": parser.getint("layout", "height_first_row")},
     width=10,
 )
@@ -245,9 +245,10 @@ def select_region(selected_continent, selected_countries):
 @app.callback(
     Output("map", "figure"),
     [Input("indicator-selected", "value"), Input("selected-region", "children")],
-    [State("indicator-selected", "n_clicks"), State("map", "figure")],
+    [State("map", "figure")],
 )
-def draw_map(selected_indicator, selected_region, state_indicator, state_map):
+def draw_map(selected_indicator, selected_region, state_map):
+
     ctx = dash.callback_context
     trigger = ctx.triggered[0]["prop_id"]
 
@@ -257,24 +258,27 @@ def draw_map(selected_indicator, selected_region, state_indicator, state_map):
         data_selected = data.latest_data(data.indicators()[selected_indicator])
 
         fig_map.update_traces(
-            uirevision=True,
             locations=data_selected["iso3"],
             z=data_selected[indicator_name],
             text=data_selected["region"],
             zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
             * 0.3,
         )
-        fig_map.layout.uirevision = True
+        if state_map:
+            print(state_map["layout"]["mapbox"])
+            fig_map.update_layout(
+                mapbox_center=state_map["layout"]["mapbox"]["center"],
+                mapbox_zoom=state_map["layout"]["mapbox"]["zoom"],
+            )
 
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
-            uirevision=True,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
 
-        fig_map.layout.uirevision = False
+    fig_map.layout.uirevision = True
 
     return fig_map
 
