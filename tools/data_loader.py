@@ -18,11 +18,14 @@ class Extract:
         self.country_info = self.read_geonames_country_info(parser)
 
     def load_jhu(self, parser):
+        print("jhu")
 
         lookup = pd.read_csv(parser.get("urls", "jhu_lookup_url"))
-        lookup.rename(columns={"Country_Region": "region"}, inplace=True)
+        lookup.rename(
+            columns={"Country_Region": "region", "Long_": "Lon"}, inplace=True
+        )
 
-        country_info = self.read_geonames_country_info(parser)
+        # country_info = self.read_geonames_country_info(parser)
 
         def read_prepare_data(url):
             data_raw = pd.read_csv(parser.get("urls", url))
@@ -43,7 +46,9 @@ class Extract:
                 data, id_vars=id_vars, var_name=var_name, value_name=value_name
             )
             timeseries = pd.merge(
-                lookup[["iso2", "iso3", "code3", id_vars]].groupby(id_vars).first(),
+                lookup[["iso2", "iso3", "code3", "Lat", "Lon", id_vars]]
+                .groupby(id_vars)
+                .first(),
                 timeseries,
                 on=id_vars,
                 how="inner",
@@ -60,7 +65,7 @@ class Extract:
         recovered = create_timeseries(recovered_data, lookup, "recovered")
 
         data = pd.merge(
-            deaths[["date", "region", "iso3", "deaths"]],
+            deaths[["date", "region", "iso3", "Lat", "Lon", "deaths"]],
             confirmed[["date", "confirmed", "iso3"]],
             on=["iso3", "date"],
             how="inner",
@@ -77,6 +82,7 @@ class Extract:
         return data
 
     def read_geonames_country_info(self, parser):
+        print("geonames")
 
         res = requests.get(parser.get("urls", "geonames_countries_url"))
         soup = BeautifulSoup(res.content, "lxml")
@@ -90,6 +96,7 @@ class Extract:
                 "Country": "region",
                 "Population": "population",
                 "Continent": "continent",
+                "Area in km²": "area",
             },
             inplace=True,
         )
@@ -155,7 +162,7 @@ class Transform(Extract):
             self.data.date >= self.data.date.max() - datetime.timedelta(1)
         ]
 
-        for i, indicator in self.indicators().items():
+        for i, indicator in self.indicators.items():
             latest_data = self.add_indicator(
                 latest_data,
                 indicator["name"],
@@ -190,7 +197,7 @@ class Transform(Extract):
     def add_country_info(self, data, country_info):
         data = pd.merge(
             data,
-            country_info[["iso_alpha", "population", "continent"]],
+            country_info[["iso_alpha", "population", "continent", "area"]],
             left_on="iso3",
             right_on="iso_alpha",
             how="inner",
@@ -216,12 +223,15 @@ class Transform(Extract):
 
 class DataLoader(Transform):
     def __init__(self, parser: ConfigParser):
+        print("loader")
 
-        super().__init__(parser, self.indicators)
+        super().__init__(parser, self.definition_indicators)
 
         self.regions = self.definition_regions()
 
         self.countries = self.countries_geojson(parser)
+
+        self.indicators = self.definition_indicators()
 
     def countries_geojson(self, parser):
 
@@ -233,7 +243,7 @@ class DataLoader(Transform):
     def definition_regions(self):
 
         regions = {
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
             "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
             "SA": {
@@ -248,7 +258,7 @@ class DataLoader(Transform):
 
         return regions
 
-    def indicators(self):
+    def definition_indicators(self):
         indicators = {
             "cases": {
                 "name": "cases",
