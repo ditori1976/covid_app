@@ -19,7 +19,6 @@ cffi==1.14.0
 chardet==3.0.4
 click==7.1.1
 colorama==0.4.3
--e git+https://github.com/ditori1976/covid_app.git@1664e2cef929f5a567e70964f1ca434519076b5a#egg=covid_app
 cryptography==2.9.2
 dash==1.11.0
 dash-bootstrap-components==0.9.2
