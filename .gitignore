@@ -13,3 +13,4 @@ tools/__pycache__/*
 .coverage
 
 covid_app.code-workspace
+notebooks/~$interactions.pptx
