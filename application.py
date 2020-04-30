@@ -5,7 +5,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from tools import DataLoader, Config
 from configparser import ConfigParser
 import time
@@ -246,21 +246,27 @@ def select_region(selected_continent, selected_countries):
 # IN: indicator, continent_state, OUT: map (bbox, indicator)
 @app.callback(
     Output("map", "figure"),
-    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
+    [Input("indicator-selected", "value"), Input("selected-region", "children")],
+    [State("indicator-selected", "n_clicks"), State("map", "figure")],
 )
-def draw_map(selected_indicator, selected_region):
+def draw_map(selected_indicator, selected_region, state_indicator, state_map):
+    ctx = dash.callback_context
+    trigger = ctx.triggered[0]["prop_id"]
+    print(trigger)
 
-    indicator_name = data.indicators()[selected_indicator]["name"]
-    data_selected = data.latest_data(data.indicators()[selected_indicator])
+    if (trigger == "indicator-selected.value") or (trigger == "."):
+        print(trigger)
+        indicator_name = data.indicators()[selected_indicator]["name"]
+        data_selected = data.latest_data(data.indicators()[selected_indicator])
 
-    fig_map.update_traces(
-        uirevision=True,
-        locations=data_selected["iso3"],
-        z=data_selected[indicator_name],
-        text=data_selected["region"],
-        zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
-        * 0.3,
-    )
+        fig_map.update_traces(
+            uirevision=True,
+            locations=data_selected["iso3"],
+            z=data_selected[indicator_name],
+            text=data_selected["region"],
+            zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
+            * 0.3,
+        )
 
     if selected_region in list(data.regions.keys()):
         print(selected_region)
