@@ -312,6 +312,7 @@ def draw_map(selected_indicator, selected_region):
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
+        fig_map.layout.uirevision = True
 
         # else:
         #   region_data = data.latest_data("cases")[
