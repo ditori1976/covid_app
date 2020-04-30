@@ -117,12 +117,6 @@ tabs_div = dbc.Col(
 )
 
 # map
-map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
-    style={"height": parser.getint("layout", "height_first_row")},
-    width=10,
-)
-
 fig_map = go.Figure(
     go.Choroplethmapbox(
         colorscale="BuPu",
@@ -138,14 +132,18 @@ fig_map.update_layout(
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     mapbox=go.layout.Mapbox(
-        uirevision=True,
         accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
         style="light",
         pitch=0,
     ),
-    uirevision=True,
 )
 fig_map.layout.uirevision = True
+
+map_div = dbc.Col(
+    children=[dcc.Graph(id="map", config={"displayModeBar": False}, figure=fig_map)],
+    style={"height": parser.getint("layout", "height_first_row")},
+    width=10,
+)
 
 # timeline
 timeline_div = dbc.Col(
@@ -275,7 +273,7 @@ def draw_map(selected_indicator, selected_region, state_indicator, state_map):
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
 
-        fig_map.layout.uirevision = True
+    fig_map.layout.uirevision = True
 
     return fig_map
 
