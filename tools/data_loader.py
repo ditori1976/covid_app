@@ -24,7 +24,7 @@ class Extract:
             columns={"Country_Region": "region", "Long_": "Lon"}, inplace=True
         )
 
-        country_info = self.read_geonames_country_info(parser)
+        # country_info = self.read_geonames_country_info(parser)
 
         def read_prepare_data(url):
             data_raw = pd.read_csv(parser.get("urls", url))
@@ -94,6 +94,7 @@ class Extract:
                 "Country": "region",
                 "Population": "population",
                 "Continent": "continent",
+                "Area in km²": "area",
             },
             inplace=True,
         )
@@ -194,7 +195,7 @@ class Transform(Extract):
     def add_country_info(self, data, country_info):
         data = pd.merge(
             data,
-            country_info[["iso_alpha", "population", "continent"]],
+            country_info[["iso_alpha", "population", "continent", "area"]],
             left_on="iso3",
             right_on="iso_alpha",
             how="inner",
@@ -237,7 +238,7 @@ class DataLoader(Transform):
     def definition_regions(self):
 
         regions = {
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
             "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
             "SA": {

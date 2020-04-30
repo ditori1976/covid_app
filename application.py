@@ -10,6 +10,7 @@ from tools import DataLoader, Config
 from configparser import ConfigParser
 import time
 import json
+import math
 
 styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
@@ -210,6 +211,7 @@ app.layout = body
     [Input("map", "clickData")],
 )
 def select_countries(select_country):
+    print(select_country)
 
     if select_country:
         region = select_country["points"][0]["text"]
@@ -239,7 +241,7 @@ def select_region(selected_continent, selected_countries):
     [State("map", "relayoutData")],
 )
 def draw_map(selected_indicator, selected_region, state_map):
-    print(state_map)
+    # print(state_map)
     fig_map = go.Figure(
         go.Choroplethmapbox(
             colorscale="BuPu",
@@ -268,8 +270,8 @@ def draw_map(selected_indicator, selected_region, state_map):
         ),
     )
 
-    ctx = dash.callback_context
-    trigger = ctx.triggered[0]["prop_id"]
+    # ctx = dash.callback_context
+    # trigger = ctx.triggered[0]["prop_id"]
 
     if selected_region in list(data.regions.keys()):
 
@@ -280,20 +282,24 @@ def draw_map(selected_indicator, selected_region, state_map):
         )
 
     else:
+        region_data = data.latest_data("cases")[
+            data.latest_data("cases").region == selected_region
+        ]
         center = {
-            "lon": data.latest_data("cases")[
-                data.latest_data("cases").region == selected_region
-            ].Lon.max(),
-            "lat": data.latest_data("cases")[
-                data.latest_data("cases").region == selected_region
-            ].Lat.max(),
+            "lon": region_data.Lon.max(),
+            "lat": region_data.Lat.max(),
         }
-        if select_region in ["US", "Russia", "Canada", "China"]:
-            zoom = 3
-        if select_region == "Russia":
-            zoom = 1
-        else:
+        print(selected_region)
+        if selected_region in ["US"]:
             zoom = 2
+        elif selected_region in ["Canada", "China"]:
+            zoom = 1
+        elif selected_region == "Russia":
+            zoom = 0.5
+        else:
+            zoom = 3
+        zoom = 18 - math.log(region_data.area.max() + 100000)
+        print(zoom)
         fig_map.update_layout(
             # autosize=False,
             mapbox_center=center,
