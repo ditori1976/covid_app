@@ -20,7 +20,9 @@ class Extract:
     def load_jhu(self, parser):
 
         lookup = pd.read_csv(parser.get("urls", "jhu_lookup_url"))
-        lookup.rename(columns={"Country_Region": "region"}, inplace=True)
+        lookup.rename(
+            columns={"Country_Region": "region", "Long_": "Lon"}, inplace=True
+        )
 
         country_info = self.read_geonames_country_info(parser)
 
@@ -43,7 +45,9 @@ class Extract:
                 data, id_vars=id_vars, var_name=var_name, value_name=value_name
             )
             timeseries = pd.merge(
-                lookup[["iso2", "iso3", "code3", id_vars]].groupby(id_vars).first(),
+                lookup[["iso2", "iso3", "code3", "Lat", "Lon", id_vars]]
+                .groupby(id_vars)
+                .first(),
                 timeseries,
                 on=id_vars,
                 how="inner",
@@ -60,7 +64,7 @@ class Extract:
         recovered = create_timeseries(recovered_data, lookup, "recovered")
 
         data = pd.merge(
-            deaths[["date", "region", "iso3", "deaths"]],
+            deaths[["date", "region", "iso3", "Lat", "Lon", "deaths"]],
             confirmed[["date", "confirmed", "iso3"]],
             on=["iso3", "date"],
             how="inner",

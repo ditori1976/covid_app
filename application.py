@@ -9,6 +9,9 @@ from dash.dependencies import Input, Output, State
 from tools import DataLoader, Config
 from configparser import ConfigParser
 import time
+import json
+
+styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -128,6 +131,7 @@ fig_map = go.Figure(
 )
 
 fig_map.update_layout(
+    autosize=False,
     transition={"duration": 500},
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
@@ -204,6 +208,7 @@ body = html.Div(
                     children=[], id="selected-countries", style={"display": "None"},
                 ),
                 html.P(children=[], id="sub-title"),
+                # html.Div([html.Pre(id="relayout-data", style=styles["pre"]),]),
             ],
             justify="center",
         ),
@@ -212,6 +217,12 @@ body = html.Div(
 
 
 app.layout = body
+
+
+# @app.callback(Output("relayout-data", "children"), [Input("map", "selectedData")])
+# def display_relayout_data(relayoutData):
+#    return json.dumps(relayoutData, indent=2)
+
 
 # IN: map OUT: reset tabs, country
 @app.callback(
@@ -245,9 +256,10 @@ def select_region(selected_continent, selected_countries):
 @app.callback(
     Output("map", "figure"),
     [Input("indicator-selected", "value"), Input("selected-region", "children")],
-    [State("map", "figure")],
+    [State("map", "relayoutData")],
 )
 def draw_map(selected_indicator, selected_region, state_map):
+    print(state_map)
 
     ctx = dash.callback_context
     trigger = ctx.triggered[0]["prop_id"]
@@ -264,19 +276,35 @@ def draw_map(selected_indicator, selected_region, state_map):
             zmax=data_selected[indicator_name].replace([np.inf, -np.inf], np.nan).max()
             * 0.3,
         )
-        if state_map:
-            print(state_map["layout"]["mapbox"])
-            fig_map.update_layout(
-                mapbox_center=state_map["layout"]["mapbox"]["center"],
-                mapbox_zoom=state_map["layout"]["mapbox"]["zoom"],
-            )
 
     if selected_region in list(data.regions.keys()):
 
         fig_map.update_layout(
+            autosize=False,
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
+
+    else:
+        center = {
+            "lon": data.latest_data("cases")[
+                data.latest_data("cases").region == selected_region
+            ].Lon.max(),
+            "lat": data.latest_data("cases")[
+                data.latest_data("cases").region == selected_region
+            ].Lat.max(),
+        }
+        print(center)
+        fig_map.update_layout(
+            autosize=False,
+            mapbox_center=center,
+            # mapbox_zoom=state_map["mapbox.zoom"],
+        )
+        if not "autosize" in list(state_map.keys()):
+            fig_map.update_layout(
+                # mapbox_center=state_map["mapbox.center"],
+                mapbox_zoom=state_map["mapbox.zoom"],
+            )
 
     fig_map.layout.uirevision = True
 
