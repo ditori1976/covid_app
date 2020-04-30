@@ -161,10 +161,10 @@ fig_map.update_layout(
         pitch=0,
     ),
 )
-# fig_map.layout.uirevision = True
+fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
+    children=[dcc.Graph(id="map", config={"displayModeBar": False}, figure=fig_map)],
     style={"height": parser.getint("layout", "height_first_row")},
     width=10,
 )
@@ -281,9 +281,10 @@ def draw_map(selected_indicator, selected_region):
 
     print(ctx.triggered)
     if ctx.triggered[0]["value"] == []:
+        print("no update")
         return dash.no_update
     else:
-
+        print(ctx.triggered)
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
@@ -302,7 +303,9 @@ def draw_map(selected_indicator, selected_region):
             )
 
         # if selected_region in list(data.regions.keys()):
-        if ctx.triggered[0]["prop_id"] == "select-continent.value":
+        if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
+            ctx.triggered[0]["prop_id"] == "."
+        ):
 
             fig_map.update_layout(
                 transition={"duration": 5000, "easing": "elastic"},
