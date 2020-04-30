@@ -298,7 +298,7 @@ def draw_map(selected_indicator, selected_region, state_map):
             zoom = 0.5
         else:
             zoom = 3
-        zoom = 18 - math.log(region_data.area.max() + 100000)
+        zoom = 17.5 - math.log(region_data.area.max() + 100000)
         print(zoom)
         fig_map.update_layout(
             # autosize=False,
