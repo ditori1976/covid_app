@@ -14,6 +14,8 @@ import math
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+# -e git+https://github.com/ditori1976/covid_app.git@1664e2cef929f5a567e70964f1ca434519076b5a#egg=covid_app
+
 styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
 parser = ConfigParser()
