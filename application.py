@@ -281,11 +281,12 @@ def draw_map(selected_indicator, selected_region):
     ctx = dash.callback_context
 
     print(ctx.triggered)
-    if ctx.triggered[0]["value"] == None:
-        print("no update")
+    if (ctx.triggered[0]["value"] == None) and (
+        ctx.triggered[0]["prop_id"] == "select-continent.value"
+    ):
         return dash.no_update
     else:
-        print(ctx.triggered)
+        print()
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
