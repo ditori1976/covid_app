@@ -14,7 +14,6 @@ import math
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
-# -e git+https://github.com/ditori1976/covid_app.git@1664e2cef929f5a567e70964f1ca434519076b5a#egg=covid_app
 
 styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
@@ -46,13 +45,15 @@ get_new_data()
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
 
 # create app, do not forget to add necessary external stylesheets, such as dbc.themes.BOOTSTRAP
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
+application = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
 
 # title
 title_div = dbc.Row(
     children=[
         dbc.Col(
-            html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
+            html.Img(
+                src=application.get_asset_url("logo.png"), height="auto", width="70%"
+            ),
             lg=3,
             md=3,
             xs=2,
@@ -238,15 +239,15 @@ body = html.Div(
 )
 
 
-app.layout = body
+application.layout = body
 
 
-# @app.callback(Output("relayout-data", "children"), [Input("map", "selectedData")])
+# @application.callback(Output("relayout-data", "children"), [Input("map", "selectedData")])
 # def display_relayout_data(relayoutData):
 #    return json.dumps(relayoutData, indent=2)
 
 
-@app.callback(
+@application.callback(
     [Output("selected-countries", "children"), Output("select-continent", "value")],
     [Input("map", "clickData")],
 )
@@ -259,7 +260,7 @@ def select_countries(select_country):
         return dash.no_update, dash.no_update
 
 
-@app.callback(
+@application.callback(
     Output("selected-region", "children"),
     [Input("select-continent", "value"), Input("selected-countries", "children")],
 )
@@ -272,7 +273,7 @@ def select_region(selected_continent, selected_countries):
     return selected_region
 
 
-@app.callback(
+@application.callback(
     [Output("map", "figure"), Output("update", "children")],
     [Input("indicator-selected", "value"), Input("select-continent", "value")],
 )
@@ -286,10 +287,11 @@ def draw_map(selected_indicator, selected_region):
     ):
         return dash.no_update
     else:
-        print()
+
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
+            print("trace")
 
             indicator_name = data.indicators[selected_indicator]["name"]
             data_selected = data.latest_data(data.indicators[selected_indicator])
@@ -309,6 +311,7 @@ def draw_map(selected_indicator, selected_region):
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
+            print("bbox")
 
             fig_map.update_layout(
                 transition={"duration": 5000, "easing": "elastic"},
@@ -320,7 +323,7 @@ def draw_map(selected_indicator, selected_region):
         return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
 
-@app.callback(
+@application.callback(
     Output("timeline", "figure"),
     [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
@@ -336,7 +339,7 @@ def draw_timeline(selected_indicator, selected_region):
     return fig
 
 
-@app.callback(
+@application.callback(
     Output("sub-title", "children"),
     [Input("indicator-selected", "value"), Input("selected-region", "children"),],
 )
@@ -344,8 +347,8 @@ def write_sub_title(selected_indicator, selected_region):
     return sub_title(selected_indicator, selected_region)
 
 
-app.title = "COVID-19"
-app.index_string = """<!DOCTYPE html>
+application.title = "COVID-19"
+application.index_string = """<!DOCTYPE html>
 <html lang="en">
     <head>
     <meta charset="utf-8">
@@ -374,7 +377,7 @@ app.index_string = """<!DOCTYPE html>
     </body>
 </html>"""
 
-server = app.server
+server = application.server
 
 
 def start_multi():
@@ -386,4 +389,4 @@ def start_multi():
 if __name__ == "__main__":
 
     start_multi()
-    app.run_server(debug=True, port=configuration.port, host=configuration.host)
+    application.run_server(debug=True, port=configuration.port, host=configuration.host)
