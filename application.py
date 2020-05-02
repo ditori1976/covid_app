@@ -154,7 +154,6 @@ fig_map = go.Figure(
 )
 
 fig_map.update_layout(
-    autosize=False,
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     mapbox=go.layout.Mapbox(
@@ -167,7 +166,7 @@ fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False}, figure=fig_map)],
-    style={"height": parser.getint("layout", "height_first_row")},
+    style={"height": parser.getint("layout", "height_first_row"), "width": "100%"},
     width=10,
 )
 
@@ -255,7 +254,7 @@ def select_countries(select_country):
 
     if select_country:
         region = select_country["points"][0]["text"]
-        return region, []
+        return region, None
     else:
         return dash.no_update, dash.no_update
 
@@ -282,7 +281,7 @@ def draw_map(selected_indicator, selected_region):
     ctx = dash.callback_context
 
     print(ctx.triggered)
-    if ctx.triggered[0]["value"] == []:
+    if ctx.triggered[0]["value"] == None:
         print("no update")
         return dash.no_update
     else:
@@ -316,23 +315,6 @@ def draw_map(selected_indicator, selected_region):
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
             fig_map.layout.uirevision = True
-
-        # else:
-        #   region_data = data.latest_data("cases")[
-        #       data.latest_data("cases").region == selected_region
-        #    ]
-        #   center = {
-        #        "lon": region_data.Lon.max(),
-        #        "lat": region_data.Lat.max(),
-        #   }
-
-        #   zoom = 17.5 - math.log(region_data.area.max() + 200000)
-
-        #   fig_map.update_layout(
-        #      mapbox_center=center, mapbox_zoom=zoom,
-        #   )
-
-        # fig_map.layout.uirevision = True
 
         return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
@@ -391,7 +373,7 @@ app.index_string = """<!DOCTYPE html>
     </body>
 </html>"""
 
-application = app.server
+server = app.server
 
 
 def start_multi():
@@ -403,4 +385,4 @@ def start_multi():
 if __name__ == "__main__":
 
     start_multi()
-    application.run(debug=True, port=configuration.port, host=configuration.host)
+    app.run_server(debug=True, port=configuration.port, host=configuration.host)
