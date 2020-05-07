@@ -165,7 +165,7 @@ fig_map.update_layout(
 fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False}, figure=fig_map)],
+    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
     style={"height": parser.getint("layout", "height_first_row"), "width": "100%"},
     width=10,
 )
@@ -304,7 +304,7 @@ def draw_map(selected_indicator, selected_region):
                 .max()
                 * 0.3,
             )
-            fig_map.layout.uirevision = True
+            # fig_map.layout.uirevision = True
 
         # if selected_region in list(data.regions.keys()):
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
