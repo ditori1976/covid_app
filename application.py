@@ -14,6 +14,7 @@ import math
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
+
 styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
 parser = ConfigParser()
@@ -152,7 +153,6 @@ fig_map = go.Figure(
 )
 
 fig_map.update_layout(
-    autosize=False,
     margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
     mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
     mapbox=go.layout.Mapbox(
@@ -161,11 +161,12 @@ fig_map.update_layout(
         pitch=0,
     ),
 )
-# fig_map.layout.uirevision = True
+
+fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False})],
-    style={"height": parser.getint("layout", "height_first_row")},
+    style={"height": parser.getint("layout", "height_first_row"), "width": "100%"},
     width=10,
 )
 
@@ -253,7 +254,7 @@ def select_countries(select_country):
 
     if select_country:
         region = select_country["points"][0]["text"]
-        return region, []
+        return region, None
     else:
         return dash.no_update, dash.no_update
 
@@ -280,13 +281,16 @@ def draw_map(selected_indicator, selected_region):
     ctx = dash.callback_context
 
     print(ctx.triggered)
-    if ctx.triggered[0]["value"] == []:
+    if (ctx.triggered[0]["value"] == None) and (
+        ctx.triggered[0]["prop_id"] == "select-continent.value"
+    ):
         return dash.no_update
     else:
 
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
+            print("trace")
 
             indicator_name = data.indicators[selected_indicator]["name"]
             data_selected = data.latest_data(data.indicators[selected_indicator])
@@ -300,32 +304,20 @@ def draw_map(selected_indicator, selected_region):
                 .max()
                 * 0.3,
             )
+            # fig_map.layout.uirevision = True
 
         # if selected_region in list(data.regions.keys()):
-        if ctx.triggered[0]["prop_id"] == "select-continent.value":
+        if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
+            ctx.triggered[0]["prop_id"] == "."
+        ):
+            print("bbox")
 
             fig_map.update_layout(
                 transition={"duration": 5000, "easing": "elastic"},
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
-
-        # else:
-        #   region_data = data.latest_data("cases")[
-        #       data.latest_data("cases").region == selected_region
-        #    ]
-        #   center = {
-        #        "lon": region_data.Lon.max(),
-        #        "lat": region_data.Lat.max(),
-        #   }
-
-        #   zoom = 17.5 - math.log(region_data.area.max() + 200000)
-
-        #   fig_map.update_layout(
-        #      mapbox_center=center, mapbox_zoom=zoom,
-        #   )
-
-        # fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = True
 
         return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
@@ -396,4 +388,4 @@ def start_multi():
 if __name__ == "__main__":
 
     start_multi()
-    application.run(debug=True, port=configuration.port, host=configuration.host)
+    app.run_server(debug=True, port=configuration.port, host=configuration.host)
