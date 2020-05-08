@@ -53,7 +53,8 @@ class Extract:
                 on=id_vars,
                 how="inner",
             )
-            timeseries.loc[:, var_name] = pd.to_datetime(timeseries.loc[:, var_name])
+            timeseries.loc[:, var_name] = pd.to_datetime(
+                timeseries.loc[:, var_name])
             return timeseries
 
         confirmed_data = read_prepare_data("jhu_confirmed_url")
@@ -162,30 +163,34 @@ class Transform(Extract):
             self.data.date >= self.data.date.max() - datetime.timedelta(1)
         ]
 
-        for i, indicator in self.indicators.items():
-            latest_data = self.add_indicator(
-                latest_data,
-                indicator["name"],
-                indicator["columns"],
-                indicator["norming"],
-                indicator["digits"],
-                indicator["function"],
-            )
-        latest_data = latest_data.loc[latest_data.date == latest_data.date.max(), :]
+        # for i, indicator in self.indicators.items():
+        latest_data = self.add_indicator(
+            latest_data,
+            indicator["name"],
+            indicator["columns"],
+            indicator["norming"],
+            indicator["digits"],
+            indicator["function"],
+        )
+        latest_data = latest_data.loc[latest_data.date ==
+                                      latest_data.date.max(), :]
 
         return latest_data
 
-    def add_indicator(self, data, name, attributes, norming, digits, function=[]):
+    def add_indicator(self, data, name, attributes,
+                      norming, digits, function=[]):
         #
         # adds columns with values for indicators as calculated from "attributes"
         #
 
         if len(attributes) == 2:
             data.loc[:, name] = (
-                data.loc[:, attributes[0]] / data.loc[:, attributes[1]] * norming
+                data.loc[:, attributes[0]] /
+                data.loc[:, attributes[1]] * norming
             ).round(digits)
         else:
-            data.loc[:, (name)] = norming * data.loc[:, (attributes[0])].round(digits)
+            data.loc[:, (name)] = norming * data.loc[:,
+                                                     (attributes[0])].round(digits)
             if function:
                 if function == "diff":
                     data.sort_values(["region", "date"], inplace=True)
@@ -207,7 +212,8 @@ class Transform(Extract):
 
         return data
 
-    def create_timeseries(self, data, region):
+
+"""    def create_timeseries(self, data, region):
 
         if region:
             timeseries = data.groupby([region, "date"]).sum()
@@ -218,7 +224,7 @@ class Transform(Extract):
 
             timeseries.reset_index(inplace=True)
 
-        return timeseries
+        return timeseries"""
 
 
 class DataLoader(Transform):
