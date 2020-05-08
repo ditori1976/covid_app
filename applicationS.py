@@ -44,14 +44,18 @@ get_new_data()
 
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
 
-# create app, do not forget to add necessary external stylesheets, such as dbc.themes.BOOTSTRAP
+# create app, do not forget to add necessary external stylesheets, such as
+# dbc.themes.BOOTSTRAP
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
 
 # title
 title_div = dbc.Row(
     children=[
         dbc.Col(
-            html.Img(src=app.get_asset_url("logo.png"), height="auto", width="70%"),
+            html.Img(
+                src=app.get_asset_url("logo.png"),
+                height="auto",
+                width="70%"),
             lg=3,
             md=3,
             xs=2,
@@ -62,6 +66,8 @@ title_div = dbc.Row(
 )
 
 # sub-title
+
+
 def sub_title(indicator, region):
 
     data_selected = data.select(region, data.indicators[indicator])
@@ -148,7 +154,13 @@ fig_map = go.Figure(
         geojson=data.countries,
         zmin=0,
         marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={"thickness": 10, "len": 0.4, "x": 0, "y": 0.3, "outlinewidth": 0,},
+        colorbar={
+            "thickness": 10,
+            "len": 0.4,
+            "x": 0,
+            "y": 0.3,
+            "outlinewidth": 0,
+        },
     )
 )
 
@@ -166,7 +178,11 @@ fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False})],
-    style={"height": parser.getint("layout", "height_first_row"), "width": "100%"},
+    style={
+        "height": parser.getint(
+            "layout",
+            "height_first_row"),
+        "width": "100%"},
     width=10,
 )
 
@@ -189,7 +205,12 @@ timeline_div = dbc.Col(
             ],
         ),
         html.Div(
-            children=[dcc.Graph(id="timeline", config={"displayModeBar": False},)]
+            children=[
+                dcc.Graph(
+                    id="timeline",
+                    config={
+                        "displayModeBar": False},
+                )]
         ),
     ],
     lg=5,
@@ -247,7 +268,8 @@ app.layout = body
 
 
 @app.callback(
-    [Output("selected-countries", "children"), Output("select-continent", "value")],
+    [Output("selected-countries", "children"),
+     Output("select-continent", "value")],
     [Input("map", "clickData")],
 )
 def select_countries(select_country):
@@ -261,7 +283,8 @@ def select_countries(select_country):
 
 @app.callback(
     Output("selected-region", "children"),
-    [Input("select-continent", "value"), Input("selected-countries", "children")],
+    [Input("select-continent", "value"),
+     Input("selected-countries", "children")],
 )
 def select_region(selected_continent, selected_countries):
 
@@ -281,7 +304,7 @@ def draw_map(selected_indicator, selected_region):
     ctx = dash.callback_context
 
     print(ctx.triggered)
-    if (ctx.triggered[0]["value"] == None) and (
+    if (ctx.triggered[0]["value"] is None) and (
         ctx.triggered[0]["prop_id"] == "select-continent.value"
     ):
         return dash.no_update
@@ -293,7 +316,8 @@ def draw_map(selected_indicator, selected_region):
             print("trace")
 
             indicator_name = data.indicators[selected_indicator]["name"]
-            data_selected = data.latest_data(data.indicators[selected_indicator])
+            data_selected = data.latest_data(
+                data.indicators[selected_indicator])
 
             fig_map.update_traces(
                 locations=data_selected["iso3"],
@@ -319,12 +343,14 @@ def draw_map(selected_indicator, selected_region):
             )
             fig_map.layout.uirevision = True
 
-        return fig_map, [html.P(latest_update, style={"font-size": 8, "color": "grey"})]
+        return fig_map, [
+            html.P(latest_update, style={"font-size": 8, "color": "grey"})]
 
 
 @app.callback(
     Output("timeline", "figure"),
-    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
+    [Input("indicator-selected", "value"),
+     Input("selected-region", "children"), ],
 )
 def draw_timeline(selected_indicator, selected_region):
 
@@ -332,7 +358,9 @@ def draw_timeline(selected_indicator, selected_region):
     fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
 
     indicator_name = data.indicators[selected_indicator]["name"]
-    data_selected = data.select(selected_region, data.indicators[selected_indicator])
+    data_selected = data.select(
+        selected_region,
+        data.indicators[selected_indicator])
     fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
 
     return fig
@@ -340,7 +368,8 @@ def draw_timeline(selected_indicator, selected_region):
 
 @app.callback(
     Output("sub-title", "children"),
-    [Input("indicator-selected", "value"), Input("selected-region", "children"),],
+    [Input("indicator-selected", "value"),
+     Input("selected-region", "children"), ],
 )
 def write_sub_title(selected_indicator, selected_region):
     return sub_title(selected_indicator, selected_region)
@@ -388,4 +417,7 @@ def start_multi():
 if __name__ == "__main__":
 
     start_multi()
-    app.run_server(debug=True, port=configuration.port, host=configuration.host)
+    app.run_server(
+        debug=True,
+        port=configuration.port,
+        host=configuration.host)
