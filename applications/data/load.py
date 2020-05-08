@@ -11,7 +11,7 @@ class Load(Transform):
 
     def select(self, country, indicator):
         try:
-            select = self.timeseries[self.timeseries.region == country]
+            select = self.timeseries[self.timeseries.region == country].copy()
             select = self.add_indicator(
                 select,
                 indicator["name"],
@@ -51,7 +51,7 @@ class Load(Transform):
         try:
             latest_data = self.data[
                 self.data.date >= self.data.date.max() - datetime.timedelta(1)
-            ]
+            ].copy()
 
             latest_data = self.add_indicator(
                 latest_data,
