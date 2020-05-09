@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+
+  dash_app:
+    container_name: covid_app
+    restart: always
+    build: .
+    ports:
+      - "8080:8080"
+    command: gunicorn -w 1 -b :8080 application.__main__:application
