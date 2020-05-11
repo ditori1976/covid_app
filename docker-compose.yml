@@ -6,6 +6,8 @@ services:
     container_name: covid_app
     restart: always
     build: .
+    volumes:
+      - .:/app
     ports:
-      - "8080:8080"
-    command: gunicorn -w 1 -b :8080 application.__main__:application
+      - "8050:8050"
+    command: gunicorn -w 1 -b :8050 application.__main__:application
