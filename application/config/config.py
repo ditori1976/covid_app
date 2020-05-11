@@ -22,32 +22,3 @@ class Config:
         self.host = host
         self.mapbox = os.getenv("MAPBOX")
         self.UPDATE = UPDATE
-
-        self.header = """<!DOCTYPE html>
-                            <html lang="en">
-                                <head>
-                                <meta charset="utf-8">
-                                    <!-- Global site tag (gtag.js) - Google Analytics -->
-                                    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
-                                    <script>
-                                    window.dataLayer = window.dataLayer || [];
-                                    function gtag(){dataLayer.push(arguments);}
-                                    gtag('js', new Date());
-
-                                    gtag('config', 'UA-164129496-1');
-                                    </script>
-
-                                    {%metas%}
-                                    <title>{%title%}</title>
-                                    {%favicon%}
-                                    {%css%}
-                                </head>
-                                <body>
-                                    {%app_entry%}
-                                    <footer>
-                                        {%config%}
-                                        {%scripts%}
-                                        {%renderer%}
-                                    </footer>
-                                </body>
-                            </html>"""

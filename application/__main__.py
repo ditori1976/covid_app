@@ -106,7 +106,8 @@ tabs_div = dbc.Col(
         dcc.Tabs(
             id="select-continent",
             value=parser.get("data", "continent"),
-            style={"height": parser.getint("layout", "height_first_row")},
+            style={"height": 200},
+            # parser.getint("layout", "height_first_row")
             vertical=True,
             children=[
                 dcc.Tab(
@@ -157,9 +158,7 @@ fig_map.layout.uirevision = True
 map_div = dbc.Col(
     children=[dcc.Graph(id="map", config={"displayModeBar": False})],
     style={
-        "height": parser.getint(
-            "layout",
-            "height_first_row"),
+        "height": 200,  # parser.getint("layout", "height_first_row")
         "width": "100%"},
     width=10,
 )
@@ -224,43 +223,54 @@ def sub_title(indicator, region):
 
 # layout
 body = html.Div(
-    [
-        # title & dropdown
-        dbc.Row(children=[title_div, dropdown_div], justify="center"),
-        # tabs & figures
-        dbc.Row(
-            children=[
-                dbc.Col(
+    dbc.Container(
+        [
+            # title & dropdown
+            dbc.Row(children=[title_div, dropdown_div], justify="center"),
+            # tabs & figures
+            dbc.Container(
+                [
                     dbc.Row(
-                        children=[tabs_div, map_div], justify="center", no_gutters=True,
+                        children=[
+                            dbc.Col(
+                                dbc.Row(
+                                    children=[tabs_div, map_div], justify="center", no_gutters=True,
+                                ),
+                                lg=5,
+                                md=10,
+                                xs=11,
+                            ),
+                            timeline_div,
+                        ],
+                        justify="center",
+                        no_gutters=True,
+                        style={
+                            "paddingTop": parser.getint(
+                                "layout", "spacer")},
+                    )
+                ],
+                style={"height": "100vh"},
+            ),
+            # hidden elements & subtitle
+            dbc.Row(
+                children=[
+                    html.P(
+                        parser.get("data", "continent"),
+                        id="selected-region",
+                        style={"display": "None"},
                     ),
-                    lg=5,
-                    md=10,
-                    xs=11,
-                ),
-                timeline_div,
-            ],
-            justify="center",
-            no_gutters=True,
-            style={"padding-top": parser.getint("layout", "spacer")},
-        ),
-        # hidden elements & subtitle
-        dbc.Row(
-            children=[
-                html.P(
-                    parser.get("data", "continent"),
-                    id="selected-region",
-                    style={"display": "None"},
-                ),
-                html.P(
-                    children=[], id="selected-countries", style={"display": "None"},
-                ),
-                html.P(children=[], id="sub-title"),
-            ],
-            justify="center",
-        ),
-        dbc.Row(id="update", children=[], justify="center",),
-    ]
+                    html.P(
+                        children=[], id="selected-countries", style={"display": "None"},
+                    ),
+                    html.P(children=[], id="sub-title"),
+                ],
+                justify="center",
+            ),
+            dbc.Row(id="update", children=[], justify="center",),
+        ],
+
+        style={"height": "100vh"},)
+
 )
 
 
@@ -313,8 +323,6 @@ def draw_map(selected_indicator, selected_region):
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
-            print("trace")
-
             indicator_name = data.indicators[selected_indicator]["name"]
             data_selected = data.latest_data(
                 data.indicators[selected_indicator])
@@ -330,21 +338,17 @@ def draw_map(selected_indicator, selected_region):
             )
             # fig_map.layout.uirevision = True
 
-        # if selected_region in list(data.regions.keys()):
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
-            print("bbox")
-
             fig_map.update_layout(
-                transition={"duration": 5000, "easing": "elastic"},
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
             fig_map.layout.uirevision = True
 
         return fig_map, [
-            html.P(latest_update, style={"font-size": 8, "color": "grey"})]
+            html.P(latest_update, style={"fontSize": 8, "color": "grey"})]
 
 
 @app.callback(
@@ -355,7 +359,9 @@ def draw_map(selected_indicator, selected_region):
 def draw_timeline(selected_indicator, selected_region):
 
     fig = go.Figure(go.Bar(), layout=layout)
-    fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
+    fig.update_layout({"plot_bgcolor": "white",
+                       "yaxis": {"side": "right"},
+                       })  # "transition": {"duration": 500}
 
     indicator_name = data.indicators[selected_indicator]["name"]
     data_selected = data.select(
@@ -380,6 +386,7 @@ app.index_string = """<!DOCTYPE html>
 <html lang="en">
     <head>
     <meta charset="utf-8">
+    <meta name="viewport">
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
         <script>
@@ -421,18 +428,3 @@ if __name__ == "__main__":
         debug=True,
         port=configuration.port,
         host=configuration.host)
-
-
-# print(data_load.latest_load)
-# print(data_load.indicators["cases"])
-
-# print(data_load.latest_data(data_load.indicators["cases"]))
-# print(data_load.timeseries)
-
-# applicationS for Heroku
-# testing for load, transform
-# call __main__ with start.sh
-# refactoring application in __main__.py
-# minimal, check loads
-# area select
-# area select to dash_templates
