@@ -47,7 +47,16 @@ def get_new_data_every(period=parser.getint("data", "update_interval")):
 get_new_data()
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    meta_tags=[
+        {
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1.0"
+        }
+    ]
+)
 
 # title
 title_div = dbc.Row(
@@ -122,7 +131,8 @@ tabs_div = dbc.Col(
             className="custom-tabs-container",
         ),
     ],
-    width=2,
+    lg=2,
+    xs=3,
     style={"margin": 0, "width": "100%"},
 )
 
@@ -156,11 +166,15 @@ fig_map.update_layout(
 fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
-    style={
-        "height": 200,  # parser.getint("layout", "height_first_row")
-        "width": "100%"},
-    width=10,
+    children=[
+        dcc.Graph(
+            id="map",
+            config={
+                "displayModeBar": False},
+            style={"height": "45vh", "width": "100%"}
+        )],
+    lg=10,
+    xs=9,
 )
 
 # timeline
@@ -187,6 +201,7 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
+                    style={"height": "45vh", "width": "100%"}
                 )]
         ),
     ],
@@ -238,7 +253,7 @@ body = html.Div(
                                 ),
                                 lg=5,
                                 md=10,
-                                xs=11,
+                                xs=12,
                             ),
                             timeline_div,
                         ],
@@ -269,7 +284,7 @@ body = html.Div(
             dbc.Row(id="update", children=[], justify="center",),
         ],
 
-        style={"height": "100vh"},)
+        style={"height": "100vh", "width": "100vw"},)
 
 )
 
