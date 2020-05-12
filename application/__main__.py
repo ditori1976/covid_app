@@ -19,7 +19,15 @@ from application.config.config import Config
 # refactoring config/layout/stlyes
 configuration = Config()
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
-styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
+style_full = {
+    "height": "100%",
+    "width": "100%",
+    "paddingLeft": "0px",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px"
+}
+
 
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -66,12 +74,12 @@ title_div = dbc.Row(
                 src=app.get_asset_url("logo.png"),
                 height="auto",
                 width="70%"),
-            lg=3,
-            md=3,
-            xs=2,
+            lg=4,
+            md=4,
+            xs=3,
             className="style_center",
         ),
-        dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=10,),
+        #dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=0,),
     ]
 )
 
@@ -102,10 +110,8 @@ dropdown_div = dbc.Col(
         children=[dropdown],
         style={"width": "100%", "margin": 0, "padding": 0},
     ),
-    xl=3,
-    lg=4,
-    md=5,
-    xs=10,
+    width=12,
+    align="center"
 )
 
 
@@ -131,9 +137,9 @@ tabs_div = dbc.Col(
             className="custom-tabs-container",
         ),
     ],
-    lg=2,
-    xs=3,
-    style={"margin": 0, "width": "100%"},
+    lg=3,
+    xs=4,
+    style=style_full,
 )
 
 # map
@@ -173,8 +179,10 @@ map_div = dbc.Col(
                 "displayModeBar": False},
             style={"height": "45vh", "width": "100%"}
         )],
-    lg=10,
-    xs=9,
+    lg=9,
+    xs=8,
+    style=style_full,
+
 )
 
 # timeline
@@ -201,13 +209,11 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
-                    style={"height": "45vh", "width": "100%"}
+                    style={"height": "35vh", "width": "100%"}
                 )]
         ),
     ],
-    lg=5,
-    md=10,
-    xs=11,
+    width=12,
 )
 
 # subtitle
@@ -237,59 +243,70 @@ def sub_title(indicator, region):
 
 
 # layout
-body = html.Div(
-    dbc.Container(
-        [
-            # title & dropdown
-            dbc.Row(children=[title_div, dropdown_div], justify="center"),
-            # tabs & figures
-            dbc.Container(
-                [
-                    dbc.Row(
-                        children=[
-                            dbc.Col(
-                                dbc.Row(
-                                    children=[tabs_div, map_div], justify="center", no_gutters=True,
-                                ),
-                                lg=5,
-                                md=10,
-                                xs=12,
+body = dbc.Container(
+    id="outer_container",
+    children=[
+        # title & dropdown
+        # dbc.Row(
+        #    children=[
+        #       title_div,
+        #        dropdown_div],
+        #    justify="center"),
+        # tabs & figures
+        dbc.Container(
+            [
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            dbc.Row(
+                                children=[tabs_div, map_div], justify="center", no_gutters=True,
                             ),
-                            timeline_div,
-                        ],
-                        justify="center",
-                        no_gutters=True,
-                        style={
-                            "paddingTop": parser.getint(
-                                "layout", "spacer")},
-                    )
-                ],
-                style={"height": "100vh"},
-            ),
-            # hidden elements & subtitle
-            dbc.Row(
-                children=[
-                    html.P(
-                        parser.get("data", "continent"),
-                        id="selected-region",
-                        style={"display": "None"},
-                    ),
-                    html.P(
-                        children=[], id="selected-countries", style={"display": "None"},
-                    ),
-                    html.P(children=[], id="sub-title"),
-                ],
-                justify="center",
-            ),
-            dbc.Row(id="update", children=[], justify="center",),
-        ],
+                            lg=5,
+                            md=10,
+                            xs=12,
+                        ),
+                        dbc.Col([
+                            dropdown_div,
+                            html.P(
+                                children=[], id="sub-title", style={"text-align": "center"}),
+                            timeline_div, ],
+                            lg=5,
+                            md=10,
+                            xs=12,
+                            align="center"
+                        )
+                    ],
+                    justify="center",
+                    no_gutters=True,
+                    style={
+                        "paddingTop": parser.getint(
+                            "layout", "spacer")},
+                )
+            ],
+            style=style_full,
+        ),
+        # hidden elements & subtitle
+        dbc.Row(
+            children=[
+                html.P(
+                    parser.get("data", "continent"),
+                    id="selected-region",
+                    style={"display": "None"},
+                ),
+                html.P(
+                    children=[], id="selected-countries", style={"display": "None"},
+                ),
 
-        style={"height": "100vh", "width": "100vw"},)
+            ],
+            justify="center",
+        ),
+        dbc.Row(id="update", children=[], justify="center",),
+    ],
+    style=style_full)
 
-)
 
-
-app.layout = body
+app.layout = html.Div(id="outer_div", children=[body],
+                      style=style_full)
 
 
 @app.callback(
@@ -328,7 +345,6 @@ def draw_map(selected_indicator, selected_region):
 
     ctx = dash.callback_context
 
-    print(ctx.triggered)
     if (ctx.triggered[0]["value"] is None) and (
         ctx.triggered[0]["prop_id"] == "select-continent.value"
     ):
@@ -351,7 +367,7 @@ def draw_map(selected_indicator, selected_region):
                 .max()
                 * 0.3,
             )
-            # fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = True
 
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
             ctx.triggered[0]["prop_id"] == "."
@@ -360,7 +376,7 @@ def draw_map(selected_indicator, selected_region):
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
-            fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = False
 
         return fig_map, [
             html.P(latest_update, style={"fontSize": 8, "color": "grey"})]
