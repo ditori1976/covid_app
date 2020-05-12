@@ -104,15 +104,16 @@ dropdown = dcc.Dropdown(
     className="stlye_center",
 )
 
-dropdown_div = dbc.Col(
-    html.Div(
-        id="selector",
-        children=[dropdown],
-        style={"width": "100%", "margin": 0, "padding": 0},
-    ),
-    width=12,
-    align="center"
-)
+dropdown_div = dbc.Row(dbc.Col(
+    id="selector",
+    children=[dropdown],
+    style={
+        "width": "100%",
+        "margin": 0,
+        "padding": 0,
+        "text-align": "center"},
+    lg=7, xs=11,
+), justify="center")
 
 
 # continent select via tabs
@@ -121,8 +122,6 @@ tabs_div = dbc.Col(
         dcc.Tabs(
             id="select-continent",
             value=parser.get("data", "continent"),
-            style={"height": 200},
-            # parser.getint("layout", "height_first_row")
             vertical=True,
             children=[
                 dcc.Tab(
@@ -138,7 +137,7 @@ tabs_div = dbc.Col(
         ),
     ],
     lg=3,
-    xs=4,
+    xs=3,
     style=style_full,
 )
 
@@ -180,7 +179,7 @@ map_div = dbc.Col(
             style={"height": "45vh", "width": "100%"}
         )],
     lg=9,
-    xs=8,
+    xs=9,
     style=style_full,
 
 )
@@ -246,13 +245,6 @@ def sub_title(indicator, region):
 body = dbc.Container(
     id="outer_container",
     children=[
-        # title & dropdown
-        # dbc.Row(
-        #    children=[
-        #       title_div,
-        #        dropdown_div],
-        #    justify="center"),
-        # tabs & figures
         dbc.Container(
             [
                 dbc.Row(
@@ -272,7 +264,7 @@ body = dbc.Container(
                             timeline_div, ],
                             lg=5,
                             md=10,
-                            xs=12,
+                            xs=11,
                             align="center"
                         )
                     ],

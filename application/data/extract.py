@@ -159,17 +159,17 @@ class Extract:
     def definition_regions(self):
 
         regions = {
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0},
             "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
-            "NA": {"name": "N.America", "center": {"lat": 45, "lon": -95}, "zoom": 2},
+            "NA": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
             "SA": {
-                "name": "S.America",
-                "center": {"lat": -20, "lon": -70},
+                "name": "South-A.",
+                "center": {"lat": -20, "lon": -65},
                 "zoom": 1.7,
             },
-            "AS": {"name": "Asia", "center": {"lat": 40, "lon": 90}, "zoom": 2},
-            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 2},
-            "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 2},
+            "AS": {"name": "Asia", "center": {"lat": 45, "lon": 90}, "zoom": 0.5},
+            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1},
+            "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 1},
         }
 
         return regions
