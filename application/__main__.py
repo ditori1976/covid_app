@@ -5,7 +5,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL, MATCH
 import time
 import json
 import math
@@ -27,7 +27,7 @@ style_full = {
     "paddingRight": "0px",
     "paddingBottom": "0px"
 }
-
+style_todo = {"display": "inline", "margin": "10px"}
 
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -111,7 +111,7 @@ dropdown_div = dbc.Row(dbc.Col(
         "width": "100%",
         "margin": 0,
         "padding": 0,
-        "text-align": "center"},
+        "textAlign": "center"},
     lg=7, xs=11,
 ), justify="center")
 
@@ -215,6 +215,16 @@ timeline_div = dbc.Col(
     width=12,
 )
 
+# compare
+compare_div = html.Div(
+    [
+        dcc.Input(id="add-country"),
+        html.Button("add", id="add"),
+        html.Button("clear", id="clear"),
+        html.Div(id="list-countries"),
+    ]
+)
+
 # subtitle
 
 
@@ -260,7 +270,7 @@ body = dbc.Container(
                         dbc.Col([
                             dropdown_div,
                             html.P(
-                                children=[], id="sub-title", style={"text-align": "center"}),
+                                children=[], id="sub-title", style={"textAlign": "center"}),
                             timeline_div, ],
                             lg=5,
                             md=10,
@@ -293,12 +303,63 @@ body = dbc.Container(
             justify="center",
         ),
         dbc.Row(id="update", children=[], justify="center",),
+        dbc.Row(
+            dbc.Col(
+                compare_div,
+                lg=5,
+                xs=11),
+            justify="center")
     ],
     style=style_full)
 
 
 app.layout = html.Div(id="outer_div", children=[body],
                       style=style_full)
+
+
+@app.callback(
+    Output("list-countries", "children"),
+    [
+        Input("add", "n_clicks"),
+        Input("add-country", "n_submit"),
+        Input("clear", "n_clicks"),
+    ],
+    [
+        State("add-country", "value"),
+        State({"index": ALL}, "children"),
+        State({"index": ALL, "type": "done"}, "value"),
+    ],
+)
+def edit_list(add, add2, clear, add_country, items, items_done):
+    triggered = [t["prop_id"] for t in dash.callback_context.triggered]
+    adding = len([1 for i in triggered if i in (
+        "add.n_clicks", "add_country.n_submit")])
+    clearing = len([1 for i in triggered if i == "clear.n_clicks"])
+    print(clearing)
+    new_spec = [
+        (text, done) for text, done in zip(items, items_done) if not (clearing and not done)
+    ]
+    if adding:
+        new_spec.append((add_country, ["done"]))
+    new_list = [
+        html.Div(
+            [
+                dcc.Checklist(
+                    id={"index": i, "type": "done"},
+                    options=[{"label": "", "value": "done"}],
+                    value=done,
+                    style={"display": "inline"},
+                    labelStyle={"display": "inline"},
+                ),
+                html.Div(
+                    text, id={"index": i}, style=style_todo
+                ),
+            ],
+            style={"clear": "both"},
+        )
+        for i, (text, done) in enumerate(new_spec)
+    ]
+    return new_list
 
 
 @app.callback(
@@ -316,7 +377,7 @@ def select_countries(select_country):
 
 
 @app.callback(
-    Output("selected-region", "children"),
+    [Output("selected-region", "children"), Output("add-country", "value")],
     [Input("select-continent", "value"),
      Input("selected-countries", "children")],
 )
@@ -326,7 +387,7 @@ def select_region(selected_continent, selected_countries):
     if selected_continent:
         selected_region = selected_continent
 
-    return selected_region
+    return selected_region, selected_region
 
 
 @app.callback(
