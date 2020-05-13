@@ -159,7 +159,8 @@ class Extract:
     def definition_regions(self):
 
         regions = {
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0},
+            # zoom has to be 0.5 otherwise mapbox fails XXX
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
             "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "NA": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
             "SA": {
