@@ -2,5 +2,6 @@ pkill python
 export UPDATE=False
 export HOST=0.0.0.0
 export PORT=8050
+export PERSONAL_ACCESS_TOKEN=0490a2a04b690eb5da0b27fe2cd3f3317644734e153e6b285b50de35835fcb37
 export MAPBOX=pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w
 python application

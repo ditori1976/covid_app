@@ -19,7 +19,15 @@ from application.config.config import Config
 # refactoring config/layout/stlyes
 configuration = Config()
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
-styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
+style_full = {
+    "height": "100%",
+    "width": "100%",
+    "paddingLeft": "0px",
+    "paddingTop": "0px",
+    "paddingRight": "0px",
+    "paddingBottom": "0px"
+}
+
 
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -47,7 +55,16 @@ def get_new_data_every(period=parser.getint("data", "update_interval")):
 get_new_data()
 
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP],)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    meta_tags=[
+        {
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1.0"
+        }
+    ]
+)
 
 # title
 title_div = dbc.Row(
@@ -57,12 +74,12 @@ title_div = dbc.Row(
                 src=app.get_asset_url("logo.png"),
                 height="auto",
                 width="70%"),
-            lg=3,
-            md=3,
-            xs=2,
+            lg=4,
+            md=4,
+            xs=3,
             className="style_center",
         ),
-        dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=10,),
+        #dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=0,),
     ]
 )
 
@@ -87,17 +104,16 @@ dropdown = dcc.Dropdown(
     className="stlye_center",
 )
 
-dropdown_div = dbc.Col(
-    html.Div(
-        id="selector",
-        children=[dropdown],
-        style={"width": "100%", "margin": 0, "padding": 0},
-    ),
-    xl=3,
-    lg=4,
-    md=5,
-    xs=10,
-)
+dropdown_div = dbc.Row(dbc.Col(
+    id="selector",
+    children=[dropdown],
+    style={
+        "width": "100%",
+        "margin": 0,
+        "padding": 0,
+        "text-align": "center"},
+    lg=7, xs=11,
+), justify="center")
 
 
 # continent select via tabs
@@ -106,7 +122,6 @@ tabs_div = dbc.Col(
         dcc.Tabs(
             id="select-continent",
             value=parser.get("data", "continent"),
-            style={"height": parser.getint("layout", "height_first_row")},
             vertical=True,
             children=[
                 dcc.Tab(
@@ -121,8 +136,9 @@ tabs_div = dbc.Col(
             className="custom-tabs-container",
         ),
     ],
-    width=2,
-    style={"margin": 0, "width": "100%"},
+    lg=3,
+    xs=3,
+    style=style_full,
 )
 
 # map
@@ -155,13 +171,17 @@ fig_map.update_layout(
 fig_map.layout.uirevision = True
 
 map_div = dbc.Col(
-    children=[dcc.Graph(id="map", config={"displayModeBar": False})],
-    style={
-        "height": parser.getint(
-            "layout",
-            "height_first_row"),
-        "width": "100%"},
-    width=10,
+    children=[
+        dcc.Graph(
+            id="map",
+            config={
+                "displayModeBar": False},
+            style={"height": "45vh", "width": "100%"}
+        )],
+    lg=9,
+    xs=9,
+    style=style_full,
+
 )
 
 # timeline
@@ -188,12 +208,11 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
+                    style={"height": "35vh", "width": "100%"}
                 )]
         ),
     ],
-    lg=5,
-    md=10,
-    xs=11,
+    width=12,
 )
 
 # subtitle
@@ -223,26 +242,40 @@ def sub_title(indicator, region):
 
 
 # layout
-body = html.Div(
-    [
-        # title & dropdown
-        dbc.Row(children=[title_div, dropdown_div], justify="center"),
-        # tabs & figures
-        dbc.Row(
-            children=[
-                dbc.Col(
-                    dbc.Row(
-                        children=[tabs_div, map_div], justify="center", no_gutters=True,
-                    ),
-                    lg=5,
-                    md=10,
-                    xs=11,
-                ),
-                timeline_div,
+body = dbc.Container(
+    id="outer_container",
+    children=[
+        dbc.Container(
+            [
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            dbc.Row(
+                                children=[tabs_div, map_div], justify="center", no_gutters=True,
+                            ),
+                            lg=5,
+                            md=10,
+                            xs=12,
+                        ),
+                        dbc.Col([
+                            dropdown_div,
+                            html.P(
+                                children=[], id="sub-title", style={"text-align": "center"}),
+                            timeline_div, ],
+                            lg=5,
+                            md=10,
+                            xs=11,
+                            align="center"
+                        )
+                    ],
+                    justify="center",
+                    no_gutters=True,
+                    style={
+                        "paddingTop": parser.getint(
+                            "layout", "spacer")},
+                )
             ],
-            justify="center",
-            no_gutters=True,
-            style={"padding-top": parser.getint("layout", "spacer")},
+            style=style_full,
         ),
         # hidden elements & subtitle
         dbc.Row(
@@ -255,16 +288,17 @@ body = html.Div(
                 html.P(
                     children=[], id="selected-countries", style={"display": "None"},
                 ),
-                html.P(children=[], id="sub-title"),
+
             ],
             justify="center",
         ),
         dbc.Row(id="update", children=[], justify="center",),
-    ]
-)
+    ],
+    style=style_full)
 
 
-app.layout = body
+app.layout = html.Div(id="outer_div", children=[body],
+                      style=style_full)
 
 
 @app.callback(
@@ -303,7 +337,6 @@ def draw_map(selected_indicator, selected_region):
 
     ctx = dash.callback_context
 
-    print(ctx.triggered)
     if (ctx.triggered[0]["value"] is None) and (
         ctx.triggered[0]["prop_id"] == "select-continent.value"
     ):
@@ -313,8 +346,6 @@ def draw_map(selected_indicator, selected_region):
         if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
-            print("trace")
-
             indicator_name = data.indicators[selected_indicator]["name"]
             data_selected = data.latest_data(
                 data.indicators[selected_indicator])
@@ -328,23 +359,19 @@ def draw_map(selected_indicator, selected_region):
                 .max()
                 * 0.3,
             )
-            # fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = True
 
-        # if selected_region in list(data.regions.keys()):
         if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
             ctx.triggered[0]["prop_id"] == "."
         ):
-            print("bbox")
-
             fig_map.update_layout(
-                transition={"duration": 5000, "easing": "elastic"},
                 mapbox_center=data.regions[selected_region]["center"],
                 mapbox_zoom=data.regions[selected_region]["zoom"],
             )
-            fig_map.layout.uirevision = True
+            fig_map.layout.uirevision = False
 
         return fig_map, [
-            html.P(latest_update, style={"font-size": 8, "color": "grey"})]
+            html.P(latest_update, style={"fontSize": 8, "color": "grey"})]
 
 
 @app.callback(
@@ -355,7 +382,9 @@ def draw_map(selected_indicator, selected_region):
 def draw_timeline(selected_indicator, selected_region):
 
     fig = go.Figure(go.Bar(), layout=layout)
-    fig.update_layout({"plot_bgcolor": "white", "yaxis": {"side": "right"}})
+    fig.update_layout({"plot_bgcolor": "white",
+                       "yaxis": {"side": "right"},
+                       })  # "transition": {"duration": 500}
 
     indicator_name = data.indicators[selected_indicator]["name"]
     data_selected = data.select(
@@ -380,6 +409,7 @@ app.index_string = """<!DOCTYPE html>
 <html lang="en">
     <head>
     <meta charset="utf-8">
+    <meta name="viewport">
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
         <script>
@@ -421,18 +451,3 @@ if __name__ == "__main__":
         debug=True,
         port=configuration.port,
         host=configuration.host)
-
-
-# print(data_load.latest_load)
-# print(data_load.indicators["cases"])
-
-# print(data_load.latest_data(data_load.indicators["cases"]))
-# print(data_load.timeseries)
-
-# applicationS for Heroku
-# testing for load, transform
-# call __main__ with start.sh
-# refactoring application in __main__.py
-# minimal, check loads
-# area select
-# area select to dash_templates
