@@ -499,15 +499,14 @@ app.index_string = """<!DOCTYPE html>
 application = app.server
 
 
-def start_multi():
-    if configuration.UPDATE:
-        executor = ProcessPoolExecutor(max_workers=1)
-        executor.submit(get_new_data_every)
+# def start_multi():
+executor = ProcessPoolExecutor(max_workers=1)
+executor.submit(get_new_data_every)
 
 
 if __name__ == "__main__":
 
-    start_multi()
+    # start_multi()
     app.run_server(
         debug=True,
         port=configuration.port,
