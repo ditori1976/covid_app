@@ -303,12 +303,12 @@ body = dbc.Container(
             justify="center",
         ),
         dbc.Row(id="update", children=[], justify="center",),
-        dbc.Row(
-            dbc.Col(
-                compare_div,
-                lg=5,
-                xs=11),
-            justify="center")
+        # dbc.Row(
+        #    dbc.Col(
+        #        compare_div,
+        #        lg=5,
+        #        xs=11),
+        #    justify="center")
     ],
     style=style_full)
 
