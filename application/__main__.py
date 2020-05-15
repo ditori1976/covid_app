@@ -32,12 +32,13 @@ style_todo = {"display": "inline", "margin": "10px"}
 parser = ConfigParser()
 parser.read("settings.ini")
 
-data = DataLoader(parser)
-
 
 def get_new_data():
 
-    global data, latest_update
+    global data
+    global latest_update
+
+    data = DataLoader(parser)
 
     data.load_data()
     latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
@@ -45,8 +46,7 @@ def get_new_data():
     print("Data updated at " + latest_update)
 
 
-def get_new_data_every(period=parser.getint("data", "update_interval")):
-
+def update_data(period=parser.getint("data", "update_interval")):
     while True:
         get_new_data()
         time.sleep(period)
@@ -249,6 +249,7 @@ def sub_title(indicator, region):
     )
 
     return title
+# info update
 
 
 # layout
@@ -302,19 +303,39 @@ body = dbc.Container(
             ],
             justify="center",
         ),
-        dbc.Row(id="update", children=[], justify="center",),
-        # dbc.Row(
-        #    dbc.Col(
-        #        compare_div,
-        #        lg=5,
-        #        xs=11),
-        #    justify="center")
+        dbc.Row(
+            id="update",
+            children=[],
+            justify="center"
+        ),
+        dbc.Row(
+            dbc.Col(
+                compare_div,
+                lg=5,
+                xs=11),
+            justify="center",
+            style={"display": "none"})
     ],
     style=style_full)
 
 
 app.layout = html.Div(id="outer_div", children=[body],
                       style=style_full)
+
+
+@app.callback(
+    Output("update", "children"),
+    [Input("select-continent", "value"),
+     ],
+)
+def submit_date(submit):
+
+    return [
+        html.P(
+            data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
+            style={"fontSize": 8, "color": "grey"}
+        )
+    ]
 
 
 @app.callback(
@@ -335,7 +356,7 @@ def edit_list(add, add2, clear, add_country, items, items_done):
     adding = len([1 for i in triggered if i in (
         "add.n_clicks", "add_country.n_submit")])
     clearing = len([1 for i in triggered if i == "clear.n_clicks"])
-    print(clearing)
+
     new_spec = [
         (text, done) for text, done in zip(items, items_done) if not (clearing and not done)
     ]
@@ -391,7 +412,7 @@ def select_region(selected_continent, selected_countries):
 
 
 @app.callback(
-    [Output("map", "figure"), Output("update", "children")],
+    Output("map", "figure"),
     [Input("indicator-selected", "value"), Input("select-continent", "value")],
 )
 def draw_map(selected_indicator, selected_region):
@@ -431,8 +452,7 @@ def draw_map(selected_indicator, selected_region):
             )
             fig_map.layout.uirevision = False
 
-        return fig_map, [
-            html.P(latest_update, style={"fontSize": 8, "color": "grey"})]
+        return fig_map
 
 
 @app.callback(
@@ -500,8 +520,8 @@ application = app.server
 
 
 # def start_multi():
-executor = ProcessPoolExecutor(max_workers=1)
-executor.submit(get_new_data_every)
+executor = ThreadPoolExecutor(max_workers=1)
+executor.submit(update_data)
 
 
 if __name__ == "__main__":
