@@ -46,6 +46,12 @@ def get_new_data():
     print("Data updated at " + latest_update)
 
 
+def update_data(period=parser.getint("data", "update_interval")):
+    while True:
+        get_new_data()
+        time.sleep(period)
+
+
 get_new_data()
 
 
@@ -297,7 +303,11 @@ body = dbc.Container(
             ],
             justify="center",
         ),
-        dbc.Row(id="update", children=[], justify="center",),
+        dbc.Row(
+            id="update",
+            children=[],
+            justify="center"
+        ),
         dbc.Row(
             dbc.Col(
                 compare_div,
@@ -308,26 +318,17 @@ body = dbc.Container(
     ],
     style=style_full)
 
-interval = dcc.Interval(
-    id='interval-component',
-    interval=parser.getint("data", "update_interval") *
-    1000,  # in milliseconds
-    n_intervals=0
-)
 
-
-app.layout = html.Div(id="outer_div", children=[body, interval],
+app.layout = html.Div(id="outer_div", children=[body],
                       style=style_full)
 
 
 @app.callback(
     Output("update", "children"),
-    [Input('interval-component', 'n_intervals'),
+    [Input("select-continent", "value"),
      ],
 )
 def submit_date(submit):
-    global data
-    get_new_data()
 
     return [
         html.P(
@@ -519,8 +520,8 @@ application = app.server
 
 
 # def start_multi():
-#executor = ProcessPoolExecutor(max_workers=1)
-# executor.submit(get_new_data_every)
+executor = ThreadPoolExecutor(max_workers=1)
+executor.submit(update_data)
 
 
 if __name__ == "__main__":
