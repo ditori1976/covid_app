@@ -79,7 +79,7 @@ title_div = dbc.Row(
             xs=3,
             className="style_center",
         ),
-        #dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=0,),
+        # dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=0,),
     ]
 )
 
@@ -314,7 +314,8 @@ body = dbc.Container(
                 lg=5,
                 xs=11),
             justify="center",
-            style={"display": "none"})
+            # style={"display": "none"}
+        )
     ],
     style=style_full)
 
