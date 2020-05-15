@@ -206,20 +206,21 @@ timeline_div = dbc.Col(
 )
 
 # compare
-compare_div = html.Div(
-    dbc.Row(
-        children=[
-            html.Button("add to comparsion", id="add"),
-            dcc.Dropdown(
-                id="list-countries",
-                options=[],  # "label": "World", "value": "World"}
-                value=[],
-                multi=True
-            )
-        ],
-        justify="center"
-    )
+compare_div = dbc.Row(
+    children=[
+        html.Button("add", id="add"),
+        dcc.Dropdown(
+            id="list-countries",
+            options=[],  # "label": "World", "value": "World"}
+            value=[],
+            multi=True,
+            placeholder="for comparsion",
+            style={"width": "80%"}
+        )
+    ],
+    justify="center"
 )
+
 
 # subtitle
 
