@@ -189,16 +189,6 @@ timeline_div = dbc.Col(
     children=[
         html.Div(
             children=[
-                # html.P(
-                #     parser.get("data", "continent"),
-                #     id="selected-series",
-                #     style={"display": "None"},
-                # ),
-                # html.P(
-                #     parser.get("data", "region"),
-                #     id="title-region",
-                #     style={"display": "None"},
-                # ),
                 html.H5([], id="title"),
             ],
         ),
@@ -217,11 +207,18 @@ timeline_div = dbc.Col(
 
 # compare
 compare_div = html.Div(
-    [
-        html.Button("add to comparsion", id="add"),
-        html.Button("clear", id="clear"),
-        html.Div(id="list-countries"),
-    ]
+    dbc.Row(
+        children=[
+            html.Button("add to comparsion", id="add"),
+            dcc.Dropdown(
+                id="list-countries",
+                options=[],  # "label": "World", "value": "World"}
+                value=[],
+                multi=True
+            )
+        ],
+        justify="center"
+    )
 )
 
 # subtitle
@@ -304,11 +301,7 @@ body = dbc.Container(
             ],
             justify="center",
         ),
-        dbc.Row(
-            id="update",
-            children=[],
-            justify="center"
-        ),
+
         dbc.Row(
             dbc.Col(
                 compare_div,
@@ -316,7 +309,12 @@ body = dbc.Container(
                 xs=11),
             justify="center",
             # style={"display": "none"}
-        )
+        ),
+        dbc.Row(
+            id="update",
+            children=[],
+            justify="center"
+        ),
     ],
     style=style_full)
 
@@ -341,48 +339,30 @@ def submit_date(submit):
 
 
 @app.callback(
-    Output("list-countries", "children"),
+    [Output("list-countries", "options"),
+     Output("list-countries", "value"), ],
     [
         Input("add", "n_clicks"),
-        Input("clear", "n_clicks"),
+
     ],
     [
         State("selected-region", "children"),
-        State({"index": ALL}, "children"),
-        State({"index": ALL, "type": "done"}, "value"),
+        State("list-countries", "options"),
+        State("list-countries", "value")
     ],
 )
-def edit_list(add, clear, add_country, items, items_done):
+def edit_list(add, add_country,
+              list_countries, list_countries_values):
 
-    triggered = [t["prop_id"] for t in dash.callback_context.triggered]
-    adding = len([1 for i in triggered if i in (
-        "add.n_clicks", "add_country.n_submit")])
-    clearing = len([1 for i in triggered if i == "clear.n_clicks"])
+    if add:
+        list_countries.append({'label': add_country, 'value': add_country})
+        list_countries_values.append(add_country)
 
-    new_spec = [
-        (text, done) for text, done in zip(items, items_done) if not (clearing and not done)
-    ]
-    if adding:
-        new_spec.append((add_country, ["done"]))
-    new_list = [
-        html.Div(
-            [
-                dcc.Checklist(
-                    id={"index": i, "type": "done"},
-                    options=[{"label": "", "value": "done"}],
-                    value=done,
-                    style={"display": "inline"},
-                    labelStyle={"display": "inline"},
-                ),
-                html.Div(
-                    text, id={"index": i}, style=style_todo
-                ),
-            ],
-            style={"clear": "both"},
-        )
-        for i, (text, done) in enumerate(new_spec)
-    ]
-    return new_list
+        return list_countries, list_countries_values
+
+    else:
+
+        return dash.no_update, dash.no_update
 
 
 @app.callback(
