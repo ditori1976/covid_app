@@ -176,7 +176,7 @@ map_div = dbc.Col(
             id="map",
             config={
                 "displayModeBar": False},
-            style={"height": "45vh", "width": "100%"}
+            style={"height": "50vh", "width": "100%"}
         )],
     lg=9,
     xs=9,
@@ -198,7 +198,7 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
-                    style={"height": "35vh", "width": "100%"}
+                    style={"height": "40vh", "width": "100%"}
                 )]
         ),
     ],
@@ -208,7 +208,7 @@ timeline_div = dbc.Col(
 # compare
 compare_div = dbc.Row(
     children=[
-        html.Button("add", id="add"),
+        html.Button("add", id="add", style={"height": 35}),
         dcc.Dropdown(
             id="list-countries",
             options=[{"label": "World", "value": "World"}],
@@ -261,8 +261,9 @@ body = dbc.Container(
                             dbc.Row(
                                 children=[tabs_div, map_div], justify="center", no_gutters=True,
                             ),
-                            lg=5,
-                            md=10,
+                            xl=5,
+                            lg=6,
+                            md=12,
                             xs=12,
                         ),
                         dbc.Col([
@@ -270,9 +271,10 @@ body = dbc.Container(
                             html.P(
                                 children=[], id="sub-title", style={"textAlign": "center"}),
                             timeline_div, ],
-                            lg=5,
-                            md=10,
-                            xs=11,
+                            xl=5,
+                            lg=6,
+                            md=12,
+                            xs=12,
                             align="center"
                         )
                     ],
@@ -280,9 +282,10 @@ body = dbc.Container(
                     no_gutters=True,
                     style={
                         "paddingTop": parser.getint(
-                            "layout", "spacer")},
+                            "layout", "spacer"), "width": "100%"},
                 )
             ],
+            fluid=True,
             style=style_full,
         ),
         # hidden elements & subtitle
@@ -317,6 +320,7 @@ body = dbc.Container(
             justify="center"
         ),
     ],
+    fluid=True,
     style=style_full)
 
 
@@ -444,7 +448,7 @@ def draw_map(selected_indicator, selected_region):
      Input("selected-region", "children"), Input("list-countries", "value"), ],
 )
 def draw_timeline(selected_indicator, selected_region, list_countries):
-    print(selected_indicator, selected_region, list_countries)
+    #print(selected_indicator, selected_region, list_countries)
     fig = go.Figure(layout=layout)
     fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
