@@ -211,8 +211,8 @@ compare_div = dbc.Row(
         html.Button("add", id="add"),
         dcc.Dropdown(
             id="list-countries",
-            options=[],  # "label": "World", "value": "World"}
-            value=[],
+            options=[{"label": "World", "value": "World"}],
+            value=["World"],
             multi=True,
             placeholder="for comparsion",
             style={"width": "80%"}
@@ -441,20 +441,35 @@ def draw_map(selected_indicator, selected_region):
 @app.callback(
     Output("timeline", "figure"),
     [Input("indicator-selected", "value"),
-     Input("selected-region", "children"), ],
+     Input("selected-region", "children"), Input("list-countries", "value"), ],
 )
-def draw_timeline(selected_indicator, selected_region):
-
-    fig = go.Figure(go.Bar(), layout=layout)
+def draw_timeline(selected_indicator, selected_region, list_countries):
+    print(selected_indicator, selected_region, list_countries)
+    fig = go.Figure(layout=layout)
+    fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
                        "yaxis": {"side": "right"},
+                       "transition": {"duration": 500}
                        })  # "transition": {"duration": 500}
 
     indicator_name = data.indicators[selected_indicator]["name"]
     data_selected = data.select(
         selected_region,
         data.indicators[selected_indicator])
-    fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
+    fig.add_trace(
+        go.Bar(name=selected_region,
+               x=data_selected.date,
+               y=data_selected[indicator_name]))
+    for country in list_countries:
+        fig.add_trace(
+            go.Scatter(name=country,
+                       x=data.select(
+                           country, data.indicators[selected_indicator]).date,
+                       y=data.select(
+                           country, data.indicators[selected_indicator])[indicator_name]
+                       )
+        )
+    fig.update_layout(legend=dict(x=.1, y=.9))
 
     return fig
 
@@ -463,6 +478,8 @@ def draw_timeline(selected_indicator, selected_region):
     Output("sub-title", "children"),
     [Input("indicator-selected", "value"),
      Input("selected-region", "children"), ],
+
+
 )
 def write_sub_title(selected_indicator, selected_region):
     return sub_title(selected_indicator, selected_region)
