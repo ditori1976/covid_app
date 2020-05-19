@@ -386,7 +386,7 @@ def draw_map(state):
         .max()
         * 0.3,
     )
-    # fig_map.layout.uirevision = True
+    fig_map.layout.uirevision = True
 
     if state["active"] in list(data.regions):
         selected_region = state["active"]
