@@ -16,21 +16,21 @@ from configparser import ConfigParser
 from application.data.data_loader import DataLoader
 from application.config.config import Config
 
-# refactoring config/layout/stlyes
 configuration = Config()
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
-style_full = {
-    "height": "100%",
-    "width": "100%",
-    "paddingLeft": "0px",
-    "paddingTop": "0px",
-    "paddingRight": "0px",
-    "paddingBottom": "0px"
-}
 style_todo = {"display": "inline", "margin": "10px"}
 
 parser = ConfigParser()
 parser.read("settings.ini")
+
+state = {
+    "indicators": ["cases"],
+    "regions": ["World"],
+    "axis": {
+        "x": "date",
+        "y": "linear"
+    }
+}
 
 
 def get_new_data():
@@ -233,7 +233,7 @@ comparsion = dbc.Row(
                 html.Button(
                     "add",
                     id="add",
-                    style={"height": 35, "width": "30%"}
+                    style={"height": 35, "width": "50%"}
                 ),
             ],
             width=3,
@@ -259,20 +259,20 @@ comparsion = dbc.Row(
 )
 
 row_1 = [
-    dbc.Col(tab_map, lg=6, xs=12),
-    dbc.Col(dropdown_title_timeline, lg=6, xs=12)
+    dbc.Col(tab_map, lg=5, md=6, xs=12),
+    dbc.Col(dropdown_title_timeline, lg=6, md=6, xs=12)
 ]
 row_2 = [
-    dbc.Col(comparsion, lg=6, xs=12),
-    dbc.Col(id="update", lg=6, xs=12)
+    dbc.Col(comparsion, lg=5, md=6, xs=12),
+    dbc.Col(id="update", lg=6, md=6, xs=12)
 ]
 
 
 def set_layout():
     return dbc.Container(
         children=[
-            dbc.Row(row_1, no_gutters=True),
-            dbc.Row(row_2, no_gutters=True),
+            dbc.Row(row_1, no_gutters=True, justify="center"),
+            dbc.Row(row_2, no_gutters=True, justify="center"),
             dcc.Store(id='memory'),
             dbc.Row(
                 children=[
