@@ -176,7 +176,8 @@ map_div = dbc.Col(
             id="map",
             config={
                 "displayModeBar": False},
-            style={"height": "45vh", "width": "100%"}
+            style={"height": parser.get(
+                "layout", "height_first_row") + "vh", "width": "100%"}
         )],
     lg=9,
     xs=9,
@@ -189,16 +190,6 @@ timeline_div = dbc.Col(
     children=[
         html.Div(
             children=[
-                html.P(
-                    parser.get("data", "continent"),
-                    id="selected-series",
-                    style={"display": "None"},
-                ),
-                html.P(
-                    parser.get("data", "region"),
-                    id="title-region",
-                    style={"display": "None"},
-                ),
                 html.H5([], id="title"),
             ],
         ),
@@ -208,22 +199,20 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
-                    style={"height": "35vh", "width": "100%"}
+                    style={
+                        "height": str(
+                            parser.getint(
+                                "layout",
+                                "height_first_row") -
+                            10) +
+                        "vh",
+                        "width": "100%"}
                 )]
         ),
     ],
     width=12,
 )
 
-# compare
-compare_div = html.Div(
-    [
-        dcc.Input(id="add-country"),
-        html.Button("add", id="add"),
-        html.Button("clear", id="clear"),
-        html.Div(id="list-countries"),
-    ]
-)
 
 # subtitle
 
@@ -258,34 +247,95 @@ body = dbc.Container(
     children=[
         dbc.Container(
             [
+                # row with tabs, map, dropdown and timeline
                 dbc.Row(
                     children=[
                         dbc.Col(
+                            # col with tabs and map
                             dbc.Row(
-                                children=[tabs_div, map_div], justify="center", no_gutters=True,
+                                children=[
+                                    tabs_div,
+                                    map_div
+                                ],
+                                justify="center",
+                                no_gutters=True,
                             ),
-                            lg=5,
-                            md=10,
+                            xl=5,
+                            lg=6,
+                            md=12,
                             xs=12,
                         ),
-                        dbc.Col([
-                            dropdown_div,
-                            html.P(
-                                children=[], id="sub-title", style={"textAlign": "center"}),
-                            timeline_div, ],
-                            lg=5,
-                            md=10,
-                            xs=11,
-                            align="center"
+                        dbc.Col(
+                            # col with dropdown and timeline
+                            [
+                                dropdown_div,
+                                html.P(
+                                    id="sub-title",
+                                    children=[],
+                                    style={"textAlign": "center"}
+                                ),
+                                timeline_div,
+                            ],
+                            xl=5,
+                            lg=6,
+                            md=12,
+                            xs=12,
                         )
                     ],
                     justify="center",
                     no_gutters=True,
                     style={
                         "paddingTop": parser.getint(
-                            "layout", "spacer")},
+                            "layout", "spacer"),
+                        "width": "100%"
+                    },
+                ),
+                # row with comparsion
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            [
+                                dbc.Row(
+                                    children=[
+                                        dbc.Col(
+                                            children=[
+                                                html.Button(
+                                                    "add",
+                                                    id="add",
+                                                    style={"height": 35}
+                                                ),
+                                            ],
+                                            width=3
+                                        ),
+                                        dbc.Col(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id="list-countries",
+                                                    options=[
+                                                        {"label": "World", "value": "World"}],
+                                                    value=["World"],
+                                                    multi=True,
+                                                    placeholder="for comparsion",
+                                                    style={"width": "80%"}
+                                                )
+                                            ],
+                                            width=9
+                                        )
+                                    ],
+                                    no_gutters=True,
+                                ),
+                            ],
+                            xl=5,
+                            lg=6,
+                            md=12,
+                            xs=12,
+                        ),
+                        dbc.Col(width=6)
+                    ]
                 )
+
             ],
+            fluid=True,
             style=style_full,
         ),
         # hidden elements & subtitle
@@ -297,7 +347,9 @@ body = dbc.Container(
                     style={"display": "None"},
                 ),
                 html.P(
-                    children=[], id="selected-countries", style={"display": "None"},
+                    children=[],
+                    id="selected-countries",
+                    style={"display": "None"},
                 ),
 
             ],
@@ -308,15 +360,8 @@ body = dbc.Container(
             children=[],
             justify="center"
         ),
-        dbc.Row(
-            dbc.Col(
-                compare_div,
-                lg=5,
-                xs=11),
-            justify="center",
-            # style={"display": "none"}
-        )
     ],
+    fluid=True,
     style=style_full)
 
 
@@ -340,48 +385,30 @@ def submit_date(submit):
 
 
 @app.callback(
-    Output("list-countries", "children"),
+    [Output("list-countries", "options"),
+     Output("list-countries", "value"), ],
     [
         Input("add", "n_clicks"),
-        Input("add-country", "n_submit"),
-        Input("clear", "n_clicks"),
+
     ],
     [
-        State("add-country", "value"),
-        State({"index": ALL}, "children"),
-        State({"index": ALL, "type": "done"}, "value"),
+        State("selected-region", "children"),
+        State("list-countries", "options"),
+        State("list-countries", "value")
     ],
 )
-def edit_list(add, add2, clear, add_country, items, items_done):
-    triggered = [t["prop_id"] for t in dash.callback_context.triggered]
-    adding = len([1 for i in triggered if i in (
-        "add.n_clicks", "add_country.n_submit")])
-    clearing = len([1 for i in triggered if i == "clear.n_clicks"])
+def edit_list(add, add_country,
+              list_countries, list_countries_values):
 
-    new_spec = [
-        (text, done) for text, done in zip(items, items_done) if not (clearing and not done)
-    ]
-    if adding:
-        new_spec.append((add_country, ["done"]))
-    new_list = [
-        html.Div(
-            [
-                dcc.Checklist(
-                    id={"index": i, "type": "done"},
-                    options=[{"label": "", "value": "done"}],
-                    value=done,
-                    style={"display": "inline"},
-                    labelStyle={"display": "inline"},
-                ),
-                html.Div(
-                    text, id={"index": i}, style=style_todo
-                ),
-            ],
-            style={"clear": "both"},
-        )
-        for i, (text, done) in enumerate(new_spec)
-    ]
-    return new_list
+    if add:
+        list_countries.append({'label': add_country, 'value': add_country})
+        list_countries_values.append(add_country)
+
+        return list_countries, list_countries_values
+
+    else:
+
+        return dash.no_update, dash.no_update
 
 
 @app.callback(
@@ -399,7 +426,7 @@ def select_countries(select_country):
 
 
 @app.callback(
-    [Output("selected-region", "children"), Output("add-country", "value")],
+    Output("selected-region", "children"),
     [Input("select-continent", "value"),
      Input("selected-countries", "children")],
 )
@@ -409,7 +436,7 @@ def select_region(selected_continent, selected_countries):
     if selected_continent:
         selected_region = selected_continent
 
-    return selected_region, selected_region
+    return selected_region
 
 
 @app.callback(
@@ -459,20 +486,35 @@ def draw_map(selected_indicator, selected_region):
 @app.callback(
     Output("timeline", "figure"),
     [Input("indicator-selected", "value"),
-     Input("selected-region", "children"), ],
+     Input("selected-region", "children"), Input("list-countries", "value"), ],
 )
-def draw_timeline(selected_indicator, selected_region):
-
-    fig = go.Figure(go.Bar(), layout=layout)
+def draw_timeline(selected_indicator, selected_region, list_countries):
+    # print(selected_indicator, selected_region, list_countries)
+    fig = go.Figure(layout=layout)
+    fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
                        "yaxis": {"side": "right"},
+                       "transition": {"duration": 500}
                        })  # "transition": {"duration": 500}
 
     indicator_name = data.indicators[selected_indicator]["name"]
     data_selected = data.select(
         selected_region,
         data.indicators[selected_indicator])
-    fig.update_traces(x=data_selected.date, y=data_selected[indicator_name])
+    fig.add_trace(
+        go.Bar(name=selected_region,
+               x=data_selected.date,
+               y=data_selected[indicator_name]))
+    for country in list_countries:
+        fig.add_trace(
+            go.Scatter(name=country,
+                       x=data.select(
+                           country, data.indicators[selected_indicator]).date,
+                       y=data.select(
+                           country, data.indicators[selected_indicator])[indicator_name]
+                       )
+        )
+    fig.update_layout(legend=dict(x=.1, y=.9))
 
     return fig
 
@@ -481,6 +523,8 @@ def draw_timeline(selected_indicator, selected_region):
     Output("sub-title", "children"),
     [Input("indicator-selected", "value"),
      Input("selected-region", "children"), ],
+
+
 )
 def write_sub_title(selected_indicator, selected_region):
     return sub_title(selected_indicator, selected_region)

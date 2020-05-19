@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup
 class Extract:
     def __init__(self, parser: ConfigParser):
         self.parser = parser
-        self.latest_load = None
+        self.latest_load = datetime.strptime(
+            "01/01/1900, 00:00:00", "%m/%d/%Y, %H:%M:%S")
         self.data = None
         self.jhu = None
         self.country_info = None
