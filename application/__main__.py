@@ -269,32 +269,34 @@ row_2 = [
 ]
 
 
-def set_layout():
-    return dbc.Container(
-        children=[
-            dbc.Row(row_1, no_gutters=True, justify="center"),
-            dbc.Row(row_2, no_gutters=True, justify="center"),
-            dcc.Store(id='memory'),
-            dbc.Row(
-                children=[
-                    html.P(
-                        parser.get("data", "continent"),
-                        id="selected-region",
-                        style={"display": "None"},
-                    ),
-                    html.P(
-                        children=[],
-                        id="selected-countries",
-                        style={"display": "None"},
-                    ),
-                ],
-            )
-        ],
-        fluid=True
-    )
+# def set_layout():
+#    return
+body = dbc.Container(
+    children=[
+        dbc.Row(row_1, no_gutters=True, justify="center"),
+        dbc.Row(row_2, no_gutters=True, justify="center"),
+        dcc.Store(id='memory'),
+        dbc.Row(
+            children=[
+                html.P(
+                    parser.get("data", "continent"),
+                    id="selected-region",
+                    style={"display": "None"},
+                ),
+                html.P(
+                    children=[],
+                    id="selected-countries",
+                    style={"display": "None"},
+                ),
+            ],
+        )
+    ],
+    fluid=True
+)
 
 
-app.layout = set_layout
+#app.layout = set_layout
+app.layout = body
 
 
 @app.callback(
