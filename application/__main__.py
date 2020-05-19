@@ -30,6 +30,11 @@ state = {
     "axis": {
         "x": "date",
         "y": "linear"
+    },
+    "bbox": {
+        "lat": 0,
+        "lon": 0,
+        "zoom": 2
     }
 }
 
@@ -305,9 +310,22 @@ app.layout = body
         Input("map", "clickData"),
         Input("select-continent", "value"),
         Input("indicator-selected", "value")
-    ]
+    ],
+    [State("map", "figure")]
 )
-def change_state(map_select, tab_select, indicator_select):
+def change_state(map_select, tab_select, indicator_select, figure):
+
+    if figure:
+        lat = figure["layout"]["mapbox"]["center"]["lat"]
+        lon = figure["layout"]["mapbox"]["center"]["lon"]
+        zoom = figure["layout"]["mapbox"]["zoom"]
+    else:
+        lat = 38.72490
+        lon = -95.61446
+        zoom = 3.5
+    state["bbox"]["lat"] = lat
+    state["bbox"]["lon"] = lon
+    state["bbox"]["zoom"] = zoom
 
     ctx = dash.callback_context
 
@@ -376,15 +394,6 @@ def write_sub_title(state):
 )
 def draw_map(state, figure):
 
-    if figure:
-        lat = figure["layout"]["mapbox"]["center"]["lat"]
-        lon = figure["layout"]["mapbox"]["center"]["lon"]
-        zoom = figure["layout"]["mapbox"]["zoom"]
-    else:
-        lat = 38.72490
-        lon = -95.61446
-        zoom = 3.5
-
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.latest_data(
         data.indicators[state["indicators"][0]])
@@ -402,8 +411,10 @@ def draw_map(state, figure):
     fig_map.update_layout(
         dict(
             mapbox=dict(
-                center=dict(lat=lat, lon=lon),
-                zoom=zoom,
+                center=dict(
+                    lat=state["bbox"]["lat"],
+                    lon=state["bbox"]["lon"]),
+                zoom=state["bbox"]["zoom"],
             )
         )
     )
