@@ -66,25 +66,6 @@ app = dash.Dash(
     ]
 )
 
-# title
-title_div = dbc.Row(
-    children=[
-        dbc.Col(
-            html.Img(
-                src=app.get_asset_url("logo.png"),
-                height="auto",
-                width="70%"),
-            lg=4,
-            md=4,
-            xs=3,
-            className="style_center",
-        ),
-        # dbc.Col(html.H1("COVID-19"), lg=9, md=9, xs=0,),
-    ]
-)
-
-# dropdown
-
 
 def dropdown_options(indicators):
     options = []
@@ -92,6 +73,28 @@ def dropdown_options(indicators):
         options.append({"label": j["name"], "value": i})
 
     return options
+
+
+def sub_title(indicator, region):
+
+    data_selected = data.select(region, data.indicators[indicator])
+    latest_value = data_selected.loc[
+        data_selected.date == data_selected.date.max(),
+        data.indicators[indicator]["name"],
+    ].max()
+    if region in list(data.regions.keys()):
+        region = data.regions[region]["name"]
+    if region == "World":
+        region = "the world"
+
+    title = "{1:.{0}f} {2} in {3} on {4}".format(
+        data.indicators[indicator]["digits"],
+        latest_value,
+        data.indicators[indicator]["name"],
+        region,
+        str(data_selected.date.max().strftime("%d %b %Y")),
+    )
+    return title
 
 
 dropdown = dcc.Dropdown(
@@ -116,32 +119,25 @@ dropdown_div = dbc.Row(dbc.Col(
 ), justify="center")
 
 
-# continent select via tabs
-tabs_div = dbc.Col(
+tabs_div = dcc.Tabs(
+    id="select-continent",
+    value=parser.get("data", "continent"),
+    vertical=True,
     children=[
-        dcc.Tabs(
-            id="select-continent",
-            value=parser.get("data", "continent"),
-            vertical=True,
-            children=[
-                dcc.Tab(
-                    label=information["name"],
-                    value=region,
-                    className="custom-tab",
-                    selected_className="custom-tab--selected",
-                )
-                for region, information in data.regions.items()
-            ],
-            parent_className="custom-tabs",
-            className="custom-tabs-container",
-        ),
+        dcc.Tab(
+            label=information["name"],
+            value=region,
+            className="custom-tab",
+            selected_className="custom-tab--selected",
+        )
+        for region, information in data.regions.items()
     ],
-    lg=3,
-    xs=3,
-    style=style_full,
+    parent_className="custom-tabs",
+    className="custom-tabs-container",
+    style={"width": "100%", "margin": 0, "padding": 0},
 )
 
-# map
+
 fig_map = go.Figure(
     go.Choroplethmapbox(
         colorscale="BuPu",
@@ -170,23 +166,29 @@ fig_map.update_layout(
 
 fig_map.layout.uirevision = True
 
-map_div = dbc.Col(
-    children=[
-        dcc.Graph(
-            id="map",
-            config={
-                "displayModeBar": False},
-            style={"height": parser.get(
-                "layout", "height_first_row") + "vh", "width": "100%"}
-        )],
-    lg=9,
-    xs=9,
-    style=style_full,
-
+map_div = dcc.Graph(
+    id="map",
+    config={
+        "displayModeBar": False},
+    style={"height": parser.get(
+        "layout", "height_first_row") + "vh", "width": "100%"}
 )
 
-# timeline
-timeline_div = dbc.Col(
+timeline = dcc.Graph(
+    id="timeline",
+    config={
+        "displayModeBar": False},
+    style={
+        "height": str(
+            parser.getint(
+                "layout",
+                "height_first_row") -
+            10) +
+        "vh",
+        "width": "100%"}
+)
+
+timeline_title = dbc.Col(
     children=[
         html.Div(
             children=[
@@ -195,178 +197,103 @@ timeline_div = dbc.Col(
         ),
         html.Div(
             children=[
-                dcc.Graph(
-                    id="timeline",
-                    config={
-                        "displayModeBar": False},
-                    style={
-                        "height": str(
-                            parser.getint(
-                                "layout",
-                                "height_first_row") -
-                            10) +
-                        "vh",
-                        "width": "100%"}
-                )]
+                timeline
+            ]
         ),
     ],
     width=12,
 )
 
 
-# subtitle
+tab_map = dbc.Row(
+    children=[
+        dbc.Col(tabs_div, width=3),
+        dbc.Col(map_div, width=9)
+    ],
+    no_gutters=True
+)
+
+dropdown_title_timeline = dbc.Col(
+    children=[
+        dropdown_div,
+        html.P(
+            id="sub-title",
+            children=[],
+            style={"textAlign": "center"}
+        ),
+        timeline_title,
+
+    ]
+)
+
+comparsion = dbc.Row(
+    children=[
+        dbc.Col(
+            children=[
+                html.Button(
+                    "add",
+                    id="add",
+                    style={"height": 35, "width": "30%"}
+                ),
+            ],
+            width=3,
+            style={"text-align": "right"}
+
+        ),
+        dbc.Col(
+            children=[
+                dcc.Dropdown(
+                    id="list-countries",
+                    options=[
+                        {"label": "World", "value": "World"}],
+                    value=["World"],
+                    multi=True,
+                    placeholder="for comparsion",
+                    style={"width": "100%"}
+                )
+            ],
+            width=9
+        )
+    ],
+    no_gutters=True,
+)
+
+row_1 = [
+    dbc.Col(tab_map, lg=6, xs=12),
+    dbc.Col(dropdown_title_timeline, lg=6, xs=12)
+]
+row_2 = [
+    dbc.Col(comparsion, lg=6, xs=12),
+    dbc.Col(id="update", lg=6, xs=12)
+]
 
 
-def sub_title(indicator, region):
-
-    data_selected = data.select(region, data.indicators[indicator])
-    latest_value = data_selected.loc[
-        data_selected.date == data_selected.date.max(),
-        data.indicators[indicator]["name"],
-    ].max()
-    if region in list(data.regions.keys()):
-        region = data.regions[region]["name"]
-    if region == "World":
-        region = "the world"
-
-    title = "{1:.{0}f} {2} in {3} on {4}".format(
-        data.indicators[indicator]["digits"],
-        latest_value,
-        data.indicators[indicator]["name"],
-        region,
-        str(data_selected.date.max().strftime("%d %b %Y")),
+def set_layout():
+    return dbc.Container(
+        children=[
+            dbc.Row(row_1, no_gutters=True),
+            dbc.Row(row_2, no_gutters=True),
+            dcc.Store(id='memory'),
+            dbc.Row(
+                children=[
+                    html.P(
+                        parser.get("data", "continent"),
+                        id="selected-region",
+                        style={"display": "None"},
+                    ),
+                    html.P(
+                        children=[],
+                        id="selected-countries",
+                        style={"display": "None"},
+                    ),
+                ],
+            )
+        ],
+        fluid=True
     )
 
-    return title
-# info update
 
-
-# layout
-body = dbc.Container(
-    id="outer_container",
-    children=[
-        dbc.Container(
-            [
-                # row with tabs, map, dropdown and timeline
-                dbc.Row(
-                    children=[
-                        dbc.Col(
-                            # col with tabs and map
-                            dbc.Row(
-                                children=[
-                                    tabs_div,
-                                    map_div
-                                ],
-                                justify="center",
-                                no_gutters=True,
-                            ),
-                            xl=5,
-                            lg=6,
-                            md=12,
-                            xs=12,
-                        ),
-                        dbc.Col(
-                            # col with dropdown and timeline
-                            [
-                                dropdown_div,
-                                html.P(
-                                    id="sub-title",
-                                    children=[],
-                                    style={"textAlign": "center"}
-                                ),
-                                timeline_div,
-                            ],
-                            xl=5,
-                            lg=6,
-                            md=12,
-                            xs=12,
-                        )
-                    ],
-                    justify="center",
-                    no_gutters=True,
-                    style={
-                        "paddingTop": parser.getint(
-                            "layout", "spacer"),
-                        "width": "100%"
-                    },
-                ),
-                # row with comparsion
-                dbc.Row(
-                    children=[
-                        dbc.Col(
-                            [
-                                dbc.Row(
-                                    children=[
-                                        dbc.Col(
-                                            children=[
-                                                html.Button(
-                                                    "add",
-                                                    id="add",
-                                                    style={"height": 35}
-                                                ),
-                                            ],
-                                            width=3
-                                        ),
-                                        dbc.Col(
-                                            children=[
-                                                dcc.Dropdown(
-                                                    id="list-countries",
-                                                    options=[
-                                                        {"label": "World", "value": "World"}],
-                                                    value=["World"],
-                                                    multi=True,
-                                                    placeholder="for comparsion",
-                                                    style={"width": "80%"}
-                                                )
-                                            ],
-                                            width=9
-                                        )
-                                    ],
-                                    no_gutters=True,
-                                ),
-                            ],
-                            xl=5,
-                            lg=6,
-                            md=12,
-                            xs=12,
-                        ),
-                        dbc.Col(width=6)
-                    ]
-                )
-
-            ],
-            fluid=True,
-            style=style_full,
-        ),
-        # hidden elements & subtitle
-        dbc.Row(
-            children=[
-                html.P(
-                    parser.get("data", "continent"),
-                    id="selected-region",
-                    style={"display": "None"},
-                ),
-                html.P(
-                    children=[],
-                    id="selected-countries",
-                    style={"display": "None"},
-                ),
-
-            ],
-            justify="center",
-        ),
-        dbc.Row(
-            id="update",
-            children=[],
-            justify="center"
-        ),
-    ],
-    fluid=True,
-    style=style_full)
-
-
-app.layout = html.Div(id="outer_div", children=[body],
-                      style=style_full)
+app.layout = set_layout
 
 
 @app.callback(
