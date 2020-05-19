@@ -26,6 +26,7 @@ parser.read("settings.ini")
 state = {
     "indicators": ["cases"],
     "regions": ["World"],
+    "active": "World",
     "axis": {
         "x": "date",
         "y": "linear"
@@ -297,45 +298,104 @@ app.layout = set_layout
 
 
 @app.callback(
-    Output("update", "children"),
-    [Input("select-continent", "value"),
-     ],
-)
-def submit_date(submit):
-
-    return [
-        html.P(
-            data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
-            style={"fontSize": 8, "color": "grey"}
-        )
+    Output('memory', 'data'),
+    [
+        Input("map", "clickData"),
+        Input("select-continent", "value"),
+        Input("indicator-selected", "value")
     ]
+)
+def change_state(map_select, tab_select, indicator_select):
+
+    ctx = dash.callback_context
+
+    if ctx.triggered[0]["prop_id"] == "select-continent.value":
+        state["active"] = tab_select
+
+    if ctx.triggered[0]["prop_id"] == "map.clickData":
+        state["active"] = map_select["points"][0]["text"]
+
+    if ctx.triggered[0]["prop_id"] == "indicator-selected.value":
+        state["indicators"][0] = indicator_select
+
+    print(state)
+
+    return state
 
 
 @app.callback(
-    [Output("list-countries", "options"),
-     Output("list-countries", "value"), ],
+    Output("timeline", "figure"),
     [
-        Input("add", "n_clicks"),
-
-    ],
-    [
-        State("selected-region", "children"),
-        State("list-countries", "options"),
-        State("list-countries", "value")
-    ],
+        Input("list-countries", "value"),
+        Input("memory", "data")
+    ]
 )
-def edit_list(add, add_country,
-              list_countries, list_countries_values):
+def draw_timeline(
+        list_countries, state):
+    fig = go.Figure(layout=layout)
+    fig.data = []
+    fig.update_layout({"plot_bgcolor": "white",
+                       "yaxis": {"side": "right"},
+                       "transition": {"duration": 500}
+                       })
+    indicator_name = data.indicators[state["indicators"][0]]["name"]
+    data_selected = data.select(
+        state["active"],
+        data.indicators[state["indicators"][0]])
+    fig.add_trace(
+        go.Bar(name=state["active"],
+               x=data_selected.date,
+               y=data_selected[indicator_name]))
+    for country in list_countries:
+        fig.add_trace(
+            go.Scatter(name=country,
+                       x=data.select(
+                           country, data.indicators[state["indicators"][0]]).date,
+                       y=data.select(
+                           country, data.indicators[state["indicators"][0]])[indicator_name]
+                       )
+        )
+    fig.update_layout(legend=dict(x=.1, y=.9))
 
-    if add:
-        list_countries.append({'label': add_country, 'value': add_country})
-        list_countries_values.append(add_country)
+    return fig
 
-        return list_countries, list_countries_values
 
-    else:
+@app.callback(
+    Output("sub-title", "children"),
+    [Input("memory", "data")])
+def write_sub_title(state):
+    return sub_title(state["indicators"][0], state["active"])
 
-        return dash.no_update, dash.no_update
+
+@app.callback(
+    Output("map", "figure"),
+    [Input("memory", "data")],
+)
+def draw_map(state):
+
+    indicator_name = data.indicators[state["indicators"][0]]["name"]
+    data_selected = data.latest_data(
+        data.indicators[state["indicators"][0]])
+
+    fig_map.update_traces(
+        locations=data_selected["iso3"],
+        z=data_selected[indicator_name],
+        text=data_selected["region"],
+        zmax=data_selected[indicator_name]
+        .replace([np.inf, -np.inf], np.nan)
+        .max()
+        * 0.3,
+    )
+    # fig_map.layout.uirevision = True
+
+    if state["active"] in list(data.regions):
+        selected_region = state["active"]
+        fig_map.update_layout(
+            mapbox_center=data.regions[selected_region]["center"],
+            mapbox_zoom=data.regions[selected_region]["zoom"],
+        )
+
+    return fig_map
 
 
 @app.callback(
@@ -367,126 +427,49 @@ def select_region(selected_continent, selected_countries):
 
 
 @app.callback(
-    Output("map", "figure"),
-    [Input("indicator-selected", "value"), Input("select-continent", "value")],
+    Output("update", "children"),
+    [Input("select-continent", "value"),
+     ],
 )
-def draw_map(selected_indicator, selected_region):
+def submit_date(submit):
 
-    ctx = dash.callback_context
+    return [
+        html.P(
+            data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
+            style={"fontSize": 8, "color": "grey"}
+        )
+    ]
 
-    if (ctx.triggered[0]["value"] is None) and (
-        ctx.triggered[0]["prop_id"] == "select-continent.value"
-    ):
-        return dash.no_update
+
+@app.callback(
+    [Output("list-countries", "options"),
+     Output("list-countries", "value"), ],
+    [
+        Input("add", "n_clicks"),
+
+    ],
+    [
+        State("selected-region", "children"),
+        State("list-countries", "options"),
+        State("list-countries", "value")
+    ],
+)
+def edit_list(add, add_country,
+              list_countries, list_countries_values):
+    # doppelte ausschliessen
+
+    if add:
+        list_countries.append({'label': add_country, 'value': add_country})
+        list_countries_values.append(add_country)
+
+        return list_countries, list_countries_values
+
     else:
 
-        if (ctx.triggered[0]["prop_id"] == "indicator-selected.value") or (
-            ctx.triggered[0]["prop_id"] == "."
-        ):
-            indicator_name = data.indicators[selected_indicator]["name"]
-            data_selected = data.latest_data(
-                data.indicators[selected_indicator])
-
-            fig_map.update_traces(
-                locations=data_selected["iso3"],
-                z=data_selected[indicator_name],
-                text=data_selected["region"],
-                zmax=data_selected[indicator_name]
-                .replace([np.inf, -np.inf], np.nan)
-                .max()
-                * 0.3,
-            )
-            fig_map.layout.uirevision = True
-
-        if (ctx.triggered[0]["prop_id"] == "select-continent.value") or (
-            ctx.triggered[0]["prop_id"] == "."
-        ):
-            fig_map.update_layout(
-                mapbox_center=data.regions[selected_region]["center"],
-                mapbox_zoom=data.regions[selected_region]["zoom"],
-            )
-            fig_map.layout.uirevision = False
-
-        return fig_map
-
-
-@app.callback(
-    Output("timeline", "figure"),
-    [Input("indicator-selected", "value"),
-     Input("selected-region", "children"), Input("list-countries", "value"), ],
-)
-def draw_timeline(selected_indicator, selected_region, list_countries):
-    # print(selected_indicator, selected_region, list_countries)
-    fig = go.Figure(layout=layout)
-    fig.data = []
-    fig.update_layout({"plot_bgcolor": "white",
-                       "yaxis": {"side": "right"},
-                       "transition": {"duration": 500}
-                       })  # "transition": {"duration": 500}
-
-    indicator_name = data.indicators[selected_indicator]["name"]
-    data_selected = data.select(
-        selected_region,
-        data.indicators[selected_indicator])
-    fig.add_trace(
-        go.Bar(name=selected_region,
-               x=data_selected.date,
-               y=data_selected[indicator_name]))
-    for country in list_countries:
-        fig.add_trace(
-            go.Scatter(name=country,
-                       x=data.select(
-                           country, data.indicators[selected_indicator]).date,
-                       y=data.select(
-                           country, data.indicators[selected_indicator])[indicator_name]
-                       )
-        )
-    fig.update_layout(legend=dict(x=.1, y=.9))
-
-    return fig
-
-
-@app.callback(
-    Output("sub-title", "children"),
-    [Input("indicator-selected", "value"),
-     Input("selected-region", "children"), ],
-
-
-)
-def write_sub_title(selected_indicator, selected_region):
-    return sub_title(selected_indicator, selected_region)
+        return dash.no_update, dash.no_update
 
 
 app.title = "COVID-19"
-app.index_string = """<!DOCTYPE html>
-<html lang="en">
-    <head>
-    <meta charset="utf-8">
-    <meta name="viewport">
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-
-        gtag('config', 'UA-164129496-1');
-        </script>
-
-        {%metas%}
-        <title>{%title%}</title>
-        {%favicon%}
-        {%css%}
-    </head>
-    <body>
-        {%app_entry%}
-        <footer>
-            {%config%}
-            {%scripts%}
-            {%renderer%}
-        </footer>
-    </body>
-</html>"""
 
 application = app.server
 
