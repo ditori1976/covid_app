@@ -176,7 +176,8 @@ map_div = dbc.Col(
             id="map",
             config={
                 "displayModeBar": False},
-            style={"height": "50vh", "width": "100%"}
+            style={"height": parser.get(
+                "layout", "height_first_row") + "vh", "width": "100%"}
         )],
     lg=9,
     xs=9,
@@ -198,27 +199,18 @@ timeline_div = dbc.Col(
                     id="timeline",
                     config={
                         "displayModeBar": False},
-                    style={"height": "40vh", "width": "100%"}
+                    style={
+                        "height": str(
+                            parser.getint(
+                                "layout",
+                                "height_first_row") -
+                            10) +
+                        "vh",
+                        "width": "100%"}
                 )]
         ),
     ],
     width=12,
-)
-
-# compare
-compare_div = dbc.Row(
-    children=[
-        html.Button("add", id="add", style={"height": 35}),
-        dcc.Dropdown(
-            id="list-countries",
-            options=[{"label": "World", "value": "World"}],
-            value=["World"],
-            multi=True,
-            placeholder="for comparsion",
-            style={"width": "80%"}
-        )
-    ],
-    justify="center"
 )
 
 
@@ -255,35 +247,93 @@ body = dbc.Container(
     children=[
         dbc.Container(
             [
+                # row with tabs, map, dropdown and timeline
                 dbc.Row(
                     children=[
                         dbc.Col(
+                            # col with tabs and map
                             dbc.Row(
-                                children=[tabs_div, map_div], justify="center", no_gutters=True,
+                                children=[
+                                    tabs_div,
+                                    map_div
+                                ],
+                                justify="center",
+                                no_gutters=True,
                             ),
                             xl=5,
                             lg=6,
                             md=12,
                             xs=12,
                         ),
-                        dbc.Col([
-                            dropdown_div,
-                            html.P(
-                                children=[], id="sub-title", style={"textAlign": "center"}),
-                            timeline_div, ],
+                        dbc.Col(
+                            # col with dropdown and timeline
+                            [
+                                dropdown_div,
+                                html.P(
+                                    id="sub-title",
+                                    children=[],
+                                    style={"textAlign": "center"}
+                                ),
+                                timeline_div,
+                            ],
                             xl=5,
                             lg=6,
                             md=12,
                             xs=12,
-                            align="center"
                         )
                     ],
                     justify="center",
                     no_gutters=True,
                     style={
                         "paddingTop": parser.getint(
-                            "layout", "spacer"), "width": "100%"},
+                            "layout", "spacer"),
+                        "width": "100%"
+                    },
+                ),
+                # row with comparsion
+                dbc.Row(
+                    children=[
+                        dbc.Col(
+                            [
+                                dbc.Row(
+                                    children=[
+                                        dbc.Col(
+                                            children=[
+                                                html.Button(
+                                                    "add",
+                                                    id="add",
+                                                    style={"height": 35}
+                                                ),
+                                            ],
+                                            width=3
+                                        ),
+                                        dbc.Col(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id="list-countries",
+                                                    options=[
+                                                        {"label": "World", "value": "World"}],
+                                                    value=["World"],
+                                                    multi=True,
+                                                    placeholder="for comparsion",
+                                                    style={"width": "80%"}
+                                                )
+                                            ],
+                                            width=9
+                                        )
+                                    ],
+                                    no_gutters=True,
+                                ),
+                            ],
+                            xl=5,
+                            lg=6,
+                            md=12,
+                            xs=12,
+                        ),
+                        dbc.Col(width=6)
+                    ]
                 )
+
             ],
             fluid=True,
             style=style_full,
@@ -304,15 +354,6 @@ body = dbc.Container(
 
             ],
             justify="center",
-        ),
-
-        dbc.Row(
-            dbc.Col(
-                compare_div,
-                lg=5,
-                xs=11),
-            justify="center",
-            # style={"display": "none"}
         ),
         dbc.Row(
             id="update",
@@ -448,7 +489,7 @@ def draw_map(selected_indicator, selected_region):
      Input("selected-region", "children"), Input("list-countries", "value"), ],
 )
 def draw_timeline(selected_indicator, selected_region, list_countries):
-    #print(selected_indicator, selected_region, list_countries)
+    # print(selected_indicator, selected_region, list_countries)
     fig = go.Figure(layout=layout)
     fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
