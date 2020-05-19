@@ -172,7 +172,7 @@ fig_map.update_layout(
     ),
 )
 
-# fig_map.layout.uirevision = True
+fig_map.layout.uirevision = True
 
 map_div = dcc.Graph(
     id="map",
@@ -425,15 +425,15 @@ def draw_map(state, figure):
         mapbox_center=center
     )
     print(center)
-    if state["active"] in list(data.regions):
-        selected_region = state["active"]
-        fig_map.update_layout(
-            mapbox_center=data.regions[selected_region]["center"],
-            mapbox_zoom=data.regions[selected_region]["zoom"],
-        )
-        print(data.regions[selected_region]["center"])
+    # if state["active"] in list(data.regions):
+    #     selected_region = state["active"]
+    #     fig_map.update_layout(
+    #         mapbox_center=data.regions[selected_region]["center"],
+    #         mapbox_zoom=data.regions[selected_region]["zoom"],
+    #     )
+    #     print(data.regions[selected_region]["center"])
 
-    # fig_map.layout.uirevision = True
+    fig_map.layout.uirevision = True
 
     return fig_map
 
