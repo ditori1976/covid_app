@@ -372,8 +372,18 @@ def write_sub_title(state):
 @app.callback(
     Output("map", "figure"),
     [Input("memory", "data")],
+    [State("map", "figure")]
 )
-def draw_map(state):
+def draw_map(state, figure):
+
+    if figure:
+        lat = figure["layout"]["mapbox"]["center"]["lat"]
+        lon = figure["layout"]["mapbox"]["center"]["lon"]
+        zoom = figure["layout"]["mapbox"]["zoom"]
+    else:
+        lat = 38.72490
+        lon = -95.61446
+        zoom = 3.5
 
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.latest_data(
@@ -388,7 +398,15 @@ def draw_map(state):
         .max()
         * 0.3,
     )
-    fig_map.layout.uirevision = True
+
+    fig_map.update_layout(
+        dict(
+            mapbox=dict(
+                center=dict(lat=lat, lon=lon),
+                zoom=zoom,
+            )
+        )
+    )
 
     if state["active"] in list(data.regions):
         selected_region = state["active"]
@@ -396,6 +414,8 @@ def draw_map(state):
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
+
+    fig_map.layout.uirevision = True
 
     return fig_map
 
