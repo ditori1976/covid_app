@@ -32,8 +32,10 @@ state = {
         "y": "linear"
     },
     "bbox": {
-        "lat": 0,
-        "lon": 0,
+        "center": {
+            "lat": 0,
+            "lon": 0,
+        },
         "zoom": 2
     }
 }
@@ -170,7 +172,7 @@ fig_map.update_layout(
     ),
 )
 
-fig_map.layout.uirevision = True
+# fig_map.layout.uirevision = True
 
 map_div = dcc.Graph(
     id="map",
@@ -300,7 +302,7 @@ body = dbc.Container(
 )
 
 
-#app.layout = set_layout
+# app.layout = set_layout
 app.layout = body
 
 
@@ -323,8 +325,8 @@ def change_state(map_select, tab_select, indicator_select, figure):
         lat = 38.72490
         lon = -95.61446
         zoom = 3.5
-    state["bbox"]["lat"] = lat
-    state["bbox"]["lon"] = lon
+    state["bbox"]["center"]["lat"] = lat
+    state["bbox"]["center"]["lon"] = lon
     state["bbox"]["zoom"] = zoom
 
     ctx = dash.callback_context
@@ -393,6 +395,16 @@ def write_sub_title(state):
     [State("map", "figure")]
 )
 def draw_map(state, figure):
+    if figure:
+        lat = figure["layout"]["mapbox"]["center"]["lat"]
+        lon = figure["layout"]["mapbox"]["center"]["lon"]
+        zoom = figure["layout"]["mapbox"]["zoom"]
+    else:
+        lat = 38.72490
+        lon = -95.61446
+        zoom = 3.5
+
+    center = {"lat": lat, "lon": lon}
 
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.latest_data(
@@ -409,24 +421,19 @@ def draw_map(state, figure):
     )
 
     fig_map.update_layout(
-        dict(
-            mapbox=dict(
-                center=dict(
-                    lat=state["bbox"]["lat"],
-                    lon=state["bbox"]["lon"]),
-                zoom=state["bbox"]["zoom"],
-            )
-        )
+        mapbox_zoom=zoom,
+        mapbox_center=center
     )
-
+    print(center)
     if state["active"] in list(data.regions):
         selected_region = state["active"]
         fig_map.update_layout(
             mapbox_center=data.regions[selected_region]["center"],
             mapbox_zoom=data.regions[selected_region]["zoom"],
         )
+        print(data.regions[selected_region]["center"])
 
-    fig_map.layout.uirevision = True
+    # fig_map.layout.uirevision = True
 
     return fig_map
 
