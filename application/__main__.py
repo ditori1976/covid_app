@@ -231,12 +231,14 @@ comparsion = dbc.Row(
         dbc.Col(
             children=[
                 html.Button(
-                    "compare",
+                    "add",
                     id="add",
-                    style={"height": 35, "width": "100%"}
+                    style={"height": 35, "width": "30%"}
                 ),
             ],
-            width=3
+            width=3,
+            style={"text-align": "right"}
+
         ),
         dbc.Col(
             children=[
