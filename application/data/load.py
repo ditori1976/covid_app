@@ -29,11 +29,11 @@ class Load(Transform):
         #
         # adds columns with values for indicators as calculated from "attributes"
         #
-
+        print("indicator")
         if len(attributes) == 2:
 
             if function == "diff":
-                print("diff2")
+
                 data.loc[:, (name)] = norming * data.loc[:,
                                                          (attributes[0])].round(digits)
 
@@ -44,7 +44,7 @@ class Load(Transform):
                 )
                 data.loc[:, name] = data.loc[:, name].round(digits)
             else:
-                print("2")
+
                 data.loc[:, name] = (
                     data.loc[:, attributes[0]] /
                     data.loc[:, attributes[1]] * norming
@@ -52,12 +52,18 @@ class Load(Transform):
 
         else:
             data.loc[:, (name)] = norming * data.loc[:,
-                                                     (attributes[0])].round(digits)
+                                                     (attributes[0])]  # .round(digits)
             if function:
                 if (function == "diff") and (len(attributes) == 1):
-                    print("diff1")
                     data.sort_values(["region", "date"], inplace=True)
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
+                    data.loc[:, name] = data.loc[:, name].round(digits)
+
+                if (function == "trend") and (len(attributes) == 1):
+                    data.sort_values(["region", "date"], inplace=True)
+                    data.loc[:, name] = data.loc[:, attributes[0]].diff()
+                    data.loc[:, name] = data.loc[:,
+                                                 name].pct_change(periods=14)
                     data.loc[:, name] = data.loc[:, name].round(digits)
 
         return data
