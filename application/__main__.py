@@ -286,7 +286,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=True, justify="center"),
-            dcc.Store(id='memory', storage_type='local'),
+            dcc.Store(id='memory', data=state),
         ],
         fluid=True
     )
@@ -305,11 +305,14 @@ app.layout = set_layout
     ],
     [
         State("map", "figure"),
-        State("list-countries", "value")
+        State("list-countries", "value"),
+        State('memory', 'data')
     ]
 )
 def change_state(map_select, tab_select, indicator_select,
-                 add, figure, list_countries):
+                 add, figure, list_countries, state):
+    print(map_select, tab_select, indicator_select,
+          add, list_countries)
 
     if figure:
         lat = figure["layout"]["mapbox"]["center"]["lat"]
@@ -323,6 +326,7 @@ def change_state(map_select, tab_select, indicator_select,
         state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
 
     ctx = dash.callback_context
+    print(ctx.triggered)
 
     if ctx.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = tab_select
