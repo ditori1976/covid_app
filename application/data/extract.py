@@ -220,6 +220,20 @@ class Extract:
                 "digits": 1,
                 "function": [],
             },
+            "daily_cases_capita": {
+                "name": "daily cases/1M capita",
+                "columns": ["cases", "population"],
+                "norming": 1000000,
+                "digits": 10,
+                "function": "diff",
+            },
+            "daily_deaths_capita": {
+                "name": "daily deaths/1M capita",
+                "columns": ["deaths", "population"],
+                "norming": 1000000,
+                "digits": 10,
+                "function": "diff",
+            },
             "recovered_capita": {
                 "name": "% recovered",
                 "columns": ["recovered", "cases"],

@@ -31,15 +31,31 @@ class Load(Transform):
         #
 
         if len(attributes) == 2:
-            data.loc[:, name] = (
-                data.loc[:, attributes[0]] /
-                data.loc[:, attributes[1]] * norming
-            ).round(digits)
+
+            if function == "diff":
+                print("diff2")
+                data.loc[:, (name)] = norming * data.loc[:,
+                                                         (attributes[0])].round(digits)
+
+                data.sort_values(["region", "date"], inplace=True)
+                data.loc[:, name] = data.loc[:, attributes[0]].diff()
+                data.loc[:, name] = data.loc[:, name] / (
+                    data.loc[:, attributes[1]]
+                )
+                data.loc[:, name] = data.loc[:, name].round(digits)
+            else:
+                print("2")
+                data.loc[:, name] = (
+                    data.loc[:, attributes[0]] /
+                    data.loc[:, attributes[1]] * norming
+                ).round(digits)
+
         else:
             data.loc[:, (name)] = norming * data.loc[:,
                                                      (attributes[0])].round(digits)
             if function:
-                if function == "diff":
+                if (function == "diff") and (len(attributes) == 1):
+                    print("diff1")
                     data.sort_values(["region", "date"], inplace=True)
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
                     data.loc[:, name] = data.loc[:, name].round(digits)
