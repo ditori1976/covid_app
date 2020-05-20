@@ -281,42 +281,18 @@ row_2 = [
 ]
 
 
-# def set_layout():
-#    return
-body = dbc.Container(
-    children=[
-        dbc.Row(row_1, no_gutters=True, justify="center"),
-        dbc.Row(row_2, no_gutters=True, justify="center"),
-        dcc.Store(id='memory'),
-        dbc.Row(
-            children=[
-                html.P(
-                    parser.get("data", "continent"),
-                    id="selected-region",
-                    style={"display": "None"},
-                ),
-                html.P(
-                    children=[],
-                    id="selected-countries",
-                    style={"display": "None"},
-                ),
-
-            ],
-        )
-    ],
-    fluid=True
-)
+def set_layout():
+    return dbc.Container(
+        children=[
+            dbc.Row(row_1, no_gutters=True, justify="center"),
+            dbc.Row(row_2, no_gutters=True, justify="center"),
+            dcc.Store(id='memory'),
+        ],
+        fluid=True
+    )
 
 
-# app.layout = set_layout
-app.layout = body
-
-
-# @app.callback(Output("actual", "children"), [Input(
-#     "map", "clickData")], [State("memory", "data")])
-# def mem(data, mem):
-#     print(data, mem)
-#     return mem
+app.layout = set_layout
 
 
 @app.callback(
@@ -324,11 +300,12 @@ app.layout = body
     [
         Input("map", "clickData"),
         Input("select-continent", "value"),
-        Input("indicator-selected", "value")
+        Input("indicator-selected", "value"),
+        Input("list-countries", "value")
     ],
     [State("map", "figure")]
 )
-def change_state(map_select, tab_select, indicator_select, figure):
+def change_state(map_select, tab_select, indicator_select, add, figure):
 
     if figure:
         lat = figure["layout"]["mapbox"]["center"]["lat"]
@@ -354,9 +331,8 @@ def change_state(map_select, tab_select, indicator_select, figure):
     if ctx.triggered[0]["prop_id"] == "indicator-selected.value":
         state["indicators"][0] = indicator_select
 
-    # state["bbox"]["center"]["lat"] = lat
-    # state["bbox"]["center"]["lon"] = lon
-    # state["bbox"]["zoom"] = zoom
+    if ctx.triggered[0]["prop_id"] == "list-countries.value":
+        state["regions"] = ctx.triggered[0]["value"]
 
     print(state)
 
@@ -366,12 +342,10 @@ def change_state(map_select, tab_select, indicator_select, figure):
 @app.callback(
     Output("timeline", "figure"),
     [
-        Input("list-countries", "value"),
         Input("memory", "data")
     ]
 )
-def draw_timeline(
-        list_countries, state):
+def draw_timeline(state):
     fig = go.Figure(layout=layout)
     fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
@@ -386,7 +360,7 @@ def draw_timeline(
         go.Bar(name=state["active"],
                x=data_selected.date,
                y=data_selected[indicator_name]))
-    for country in list_countries:
+    for country in state["regions"]:
         fig.add_trace(
             go.Scatter(name=country,
                        x=data.select(
@@ -407,26 +381,11 @@ def write_sub_title(state):
     return sub_title(state["indicators"][0], state["active"])
 
 
-# @app.callback(
-#     Output("map", "layout"),
-#     [Input("select-continent", "value")],
-
-# )
-# def bbox(continent):
-#     layout = dict(
-#         mapbox_center=data.regions[continent]["center"],
-#         mapbox_zoom=data.regions[continent]["zoom"],
-#     )
-#     print(layout)
-#     return layout
-
-
 @app.callback(
     Output("map", "figure"),
-    [Input("memory", "data")],
-    [State("map", "figure")]
+    [Input("memory", "data")]
 )
-def draw_map(state, figure):
+def draw_map(state):
 
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.latest_data(
@@ -446,46 +405,10 @@ def draw_map(state, figure):
         mapbox_zoom=state["bbox"]["zoom"],
         mapbox_center=state["bbox"]["center"],
     )
-    # print(center)
-    # if state["active"] in list(data.regions):
-    #     selected_region = state["active"]
-    #     fig_map.update_layout(
-    #         mapbox_center=data.regions[selected_region]["center"],
-    #         mapbox_zoom=data.regions[selected_region]["zoom"],
-    #     )
-    #     print(data.regions[selected_region]["center"])
 
     fig_map.layout.uirevision = True
 
     return fig_map
-
-
-@app.callback(
-    [Output("selected-countries", "children"),
-     Output("select-continent", "value")],
-    [Input("map", "clickData")],
-)
-def select_countries(select_country):
-
-    if select_country:
-        region = select_country["points"][0]["text"]
-        return region, None
-    else:
-        return dash.no_update, dash.no_update
-
-
-@app.callback(
-    Output("selected-region", "children"),
-    [Input("select-continent", "value"),
-     Input("selected-countries", "children")],
-)
-def select_region(selected_continent, selected_countries):
-
-    selected_region = selected_countries
-    if selected_continent:
-        selected_region = selected_continent
-
-    return selected_region
 
 
 @app.callback(
@@ -496,10 +419,10 @@ def select_region(selected_continent, selected_countries):
 def submit_date(submit):
 
     return [
-        html.P(
-            data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
-            style={"fontSize": 8, "color": "grey"}
-        )
+        html.P("last update: " +
+               data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
+               style={"fontSize": 8, "color": "grey"}
+               )
     ]
 
 
@@ -508,21 +431,21 @@ def submit_date(submit):
      Output("list-countries", "value"), ],
     [
         Input("add", "n_clicks"),
-
     ],
     [
-        State("selected-region", "children"),
+        State("memory", "data"),
         State("list-countries", "options"),
         State("list-countries", "value")
     ],
 )
-def edit_list(add, add_country,
+def edit_list(add, state,
               list_countries, list_countries_values):
-    # doppelte ausschliessen
 
     if add:
-        list_countries.append({'label': add_country, 'value': add_country})
-        list_countries_values.append(add_country)
+        if state["active"] not in list_countries_values:
+            list_countries.append(
+                {'label': state["active"], 'value': state["active"]})
+            list_countries_values.append(state["active"])
 
         return list_countries, list_countries_values
 
