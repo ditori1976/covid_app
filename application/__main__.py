@@ -286,7 +286,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=True, justify="center"),
-            dcc.Store(id='memory'),
+            dcc.Store(id='memory', storage_type='local'),
         ],
         fluid=True
     )
@@ -303,9 +303,13 @@ app.layout = set_layout
         Input("indicator-selected", "value"),
         Input("list-countries", "value")
     ],
-    [State("map", "figure")]
+    [
+        State("map", "figure"),
+        State("list-countries", "value")
+    ]
 )
-def change_state(map_select, tab_select, indicator_select, add, figure):
+def change_state(map_select, tab_select, indicator_select,
+                 add, figure, list_countries):
 
     if figure:
         lat = figure["layout"]["mapbox"]["center"]["lat"]
@@ -324,15 +328,13 @@ def change_state(map_select, tab_select, indicator_select, add, figure):
         state["active"] = tab_select
         state["bbox"]["center"] = data.regions[tab_select]["center"]
         state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
-
-    if ctx.triggered[0]["prop_id"] == "map.clickData":
+    elif ctx.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = map_select["points"][0]["text"]
-
-    if ctx.triggered[0]["prop_id"] == "indicator-selected.value":
+    elif ctx.triggered[0]["prop_id"] == "indicator-selected.value":
         state["indicators"][0] = indicator_select
 
-    if ctx.triggered[0]["prop_id"] == "list-countries.value":
-        state["regions"] = ctx.triggered[0]["value"]
+    # if ctx.triggered[0]["prop_id"] == "list-countries.value":
+    state["regions"] = list_countries
 
     print(state)
 
