@@ -14,8 +14,9 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
 
 from application.data.data_loader import DataLoader
-from application.config.config import Config
 
+
+from application.config.config import Config
 configuration = Config()
 layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
 style_todo = {"display": "inline", "margin": "10px"}
@@ -73,6 +74,10 @@ app = dash.Dash(
         }
     ]
 )
+app.scripts.config.serve_locally = False
+app.scripts.append_script({
+    "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
+})
 
 
 def dropdown_options(indicators):
