@@ -172,7 +172,7 @@ fig_map.update_layout(
     ),
 )
 
-# fig_map.layout.uirevision = True
+fig_map.layout.uirevision = True
 
 map_div = dcc.Graph(
     id="map",
@@ -295,6 +295,7 @@ body = dbc.Container(
                     id="selected-countries",
                     style={"display": "None"},
                 ),
+
             ],
         )
     ],
@@ -304,6 +305,13 @@ body = dbc.Container(
 
 # app.layout = set_layout
 app.layout = body
+
+
+# @app.callback(Output("actual", "children"), [Input(
+#     "map", "clickData")], [State("memory", "data")])
+# def mem(data, mem):
+#     print(data, mem)
+#     return mem
 
 
 @app.callback(
@@ -321,24 +329,29 @@ def change_state(map_select, tab_select, indicator_select, figure):
         lat = figure["layout"]["mapbox"]["center"]["lat"]
         lon = figure["layout"]["mapbox"]["center"]["lon"]
         zoom = figure["layout"]["mapbox"]["zoom"]
+        state["bbox"]["center"]["lat"] = lat
+        state["bbox"]["center"]["lon"] = lon
+        state["bbox"]["zoom"] = zoom
     else:
-        lat = 38.72490
-        lon = -95.61446
-        zoom = 3.5
-    state["bbox"]["center"]["lat"] = lat
-    state["bbox"]["center"]["lon"] = lon
-    state["bbox"]["zoom"] = zoom
+        state["bbox"]["center"] = data.regions[tab_select]["center"]
+        state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
 
     ctx = dash.callback_context
 
     if ctx.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = tab_select
+        state["bbox"]["center"] = data.regions[tab_select]["center"]
+        state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
 
     if ctx.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = map_select["points"][0]["text"]
 
     if ctx.triggered[0]["prop_id"] == "indicator-selected.value":
         state["indicators"][0] = indicator_select
+
+    # state["bbox"]["center"]["lat"] = lat
+    # state["bbox"]["center"]["lon"] = lon
+    # state["bbox"]["zoom"] = zoom
 
     print(state)
 
@@ -389,22 +402,26 @@ def write_sub_title(state):
     return sub_title(state["indicators"][0], state["active"])
 
 
+# @app.callback(
+#     Output("map", "layout"),
+#     [Input("select-continent", "value")],
+
+# )
+# def bbox(continent):
+#     layout = dict(
+#         mapbox_center=data.regions[continent]["center"],
+#         mapbox_zoom=data.regions[continent]["zoom"],
+#     )
+#     print(layout)
+#     return layout
+
+
 @app.callback(
     Output("map", "figure"),
     [Input("memory", "data")],
     [State("map", "figure")]
 )
 def draw_map(state, figure):
-    if figure:
-        lat = figure["layout"]["mapbox"]["center"]["lat"]
-        lon = figure["layout"]["mapbox"]["center"]["lon"]
-        zoom = figure["layout"]["mapbox"]["zoom"]
-    else:
-        lat = 38.72490
-        lon = -95.61446
-        zoom = 3.5
-
-    center = {"lat": lat, "lon": lon}
 
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.latest_data(
@@ -421,19 +438,19 @@ def draw_map(state, figure):
     )
 
     fig_map.update_layout(
-        mapbox_zoom=zoom,
-        mapbox_center=center
+        mapbox_zoom=state["bbox"]["zoom"],
+        mapbox_center=state["bbox"]["center"],
     )
-    print(center)
-    if state["active"] in list(data.regions):
-        selected_region = state["active"]
-        fig_map.update_layout(
-            mapbox_center=data.regions[selected_region]["center"],
-            mapbox_zoom=data.regions[selected_region]["zoom"],
-        )
-        print(data.regions[selected_region]["center"])
+    # print(center)
+    # if state["active"] in list(data.regions):
+    #     selected_region = state["active"]
+    #     fig_map.update_layout(
+    #         mapbox_center=data.regions[selected_region]["center"],
+    #         mapbox_zoom=data.regions[selected_region]["zoom"],
+    #     )
+    #     print(data.regions[selected_region]["center"])
 
-    # fig_map.layout.uirevision = True
+    fig_map.layout.uirevision = True
 
     return fig_map
 
