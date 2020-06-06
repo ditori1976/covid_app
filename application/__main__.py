@@ -262,7 +262,8 @@ comparsion = dbc.Row(
                     value=["World"],
                     multi=True,
                     placeholder="for comparsion",
-                    style={"width": "100%"}
+                    style={"width": "100%"},
+                    searchable=False
                 )
             ],
             width=9
@@ -356,7 +357,7 @@ def draw_timeline(state):
     fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
                        "yaxis": {"side": "right"},
-                       "transition": {"duration": 500}
+                       # "transition": {"duration": 500}
                        })
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.select(
