@@ -376,7 +376,7 @@ def draw_timeline(state):
                            country, data.indicators[state["indicators"][0]])[indicator_name]
                        )
         )
-    fig.update_layout(legend=dict(x=.1, y=.9))
+    fig.update_layout(legend=dict(x=.1, y=.9, bgcolor='rgba(0, 0, 0, 0)',))
 
     return fig
 
