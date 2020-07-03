@@ -259,10 +259,10 @@ comparsion = dbc.Row(
                     id="list-countries",
                     options=[
                         {"label": "World", "value": "World"},
-                        {"label": "NA", "value": "NA"},
-                        {"label": "EU", "value": "EU"},
-                        {"label": "AS", "value": "AS"},
-                        {"label": "SA", "value": "SA"}],
+                        {"label": "North-A.", "value": "NA"},
+                        {"label": "Europe", "value": "EU"},
+                        {"label": "Asia", "value": "AS"},
+                        {"label": "South-A.", "value": "SA"}],
                     value=["EU", "NA", "SA", "AS"],
                     multi=True,
                     placeholder="for comparsion",
@@ -345,7 +345,7 @@ def change_state(map_select, tab_select, indicator_select,
     # if ctx.triggered[0]["prop_id"] == "list-countries.value":
     state["regions"] = list_countries
 
-    print(state)
+    # print(state)
 
     return state
 
@@ -361,7 +361,6 @@ def draw_timeline(state):
     fig.data = []
     fig.update_layout({"plot_bgcolor": "white",
                        "yaxis": {"side": "right"},
-                       # "transition": {"duration": 500}
                        })
     indicator_name = data.indicators[state["indicators"][0]]["name"]
     data_selected = data.select(
@@ -456,7 +455,7 @@ def edit_list(add, state,
     if add:
         if state["active"] not in list_countries_values:
             list_countries.append(
-                {'label': state["active"], 'value': state["active"]})
+                {'label': data.regions[state["active"]]["name"], 'value': state["active"]})
             list_countries_values.append(state["active"])
 
         return list_countries, list_countries_values
