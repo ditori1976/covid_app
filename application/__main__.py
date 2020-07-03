@@ -25,7 +25,7 @@ parser = ConfigParser()
 parser.read("settings.ini")
 
 state = {
-    "indicators": ["cases"],
+    "indicators": ["{}".format(parser.get("data", "init_indicator"))],
     "regions": ["World"],
     "active": "World",
     "axis": {
@@ -258,8 +258,12 @@ comparsion = dbc.Row(
                 dcc.Dropdown(
                     id="list-countries",
                     options=[
-                        {"label": "World", "value": "World"}],
-                    value=["World"],
+                        {"label": "World", "value": "World"},
+                        {"label": "NA", "value": "NA"},
+                        {"label": "EU", "value": "EU"},
+                        {"label": "AS", "value": "AS"},
+                        {"label": "SA", "value": "SA"}],
+                    value=["EU", "NA", "SA", "AS"],
                     multi=True,
                     placeholder="for comparsion",
                     style={"width": "100%"},
