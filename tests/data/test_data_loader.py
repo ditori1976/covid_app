@@ -15,7 +15,7 @@ def test_data_loader_init():
     data_load = DataLoader(None)
 
     assert data_load.data is None
-    assert data_load.latest_load is None
+    assert data_load.latest_load == datetime(1900, 1, 1, 0, 0)
     assert data_load.jhu is None
     assert data_load.country_info is None
     assert data_load.countries is None
