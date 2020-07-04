@@ -136,6 +136,18 @@ class Extract:
                 },
                 inplace=True,
             )
+            country_info.loc[country_info["continent"]
+                             == "EU", "continent"] = "Europe"
+            country_info.loc[country_info["continent"]
+                             == "NA", "continent"] = "North-A."
+            country_info.loc[country_info["continent"]
+                             == "SA", "continent"] = "South-A."
+            country_info.loc[country_info["continent"]
+                             == "AS", "continent"] = "Asia"
+            country_info.loc[country_info["continent"]
+                             == "OC", "continent"] = "Oceania"
+            country_info.loc[country_info["continent"]
+                             == "AF", "continent"] = "Africa"
             return country_info
 
         except BaseException:
@@ -162,16 +174,16 @@ class Extract:
         regions = {
             # zoom has to be 0.5 otherwise mapbox fails XXX
             "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
-            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
-            "NA": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
-            "SA": {
+            "Europe": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
+            "North-A.": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
+            "South-A.": {
                 "name": "South-A.",
                 "center": {"lat": -20, "lon": -65},
                 "zoom": 1.7,
             },
-            "AS": {"name": "Asia", "center": {"lat": 45, "lon": 90}, "zoom": 0.5},
-            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1},
-            "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 1},
+            "Asia": {"name": "Asia", "center": {"lat": 45, "lon": 90}, "zoom": 0.5},
+            "Africa": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1},
+            "Oceania": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 1},
         }
 
         return regions

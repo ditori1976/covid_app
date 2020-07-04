@@ -259,11 +259,11 @@ comparsion = dbc.Row(
                     id="list-countries",
                     options=[
                         {"label": "World", "value": "World"},
-                        {"label": "North-A.", "value": "NA"},
-                        {"label": "Europe", "value": "EU"},
-                        {"label": "Asia", "value": "AS"},
-                        {"label": "South-A.", "value": "SA"}],
-                    value=["EU", "NA", "SA", "AS"],
+                        {"label": "North-A.", "value": "North-A."},
+                        {"label": "Europe", "value": "Europe"},
+                        {"label": "Asia", "value": "Asia"},
+                        {"label": "South-A.", "value": "South-A."}],
+                    value=["Europe", "North-A.", "South-A.", "Asia"],
                     multi=True,
                     placeholder="for comparsion",
                     style={"width": "100%"},
@@ -331,10 +331,9 @@ def change_state(map_select, tab_select, indicator_select,
         state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
 
     ctx = dash.callback_context
-    print(ctx.triggered)
 
     if ctx.triggered[0]["prop_id"] == "select-continent.value":
-        state["active"] = tab_select
+        state["active"] = data.regions[tab_select]["name"]
         state["bbox"]["center"] = data.regions[tab_select]["center"]
         state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
     elif ctx.triggered[0]["prop_id"] == "map.clickData":
@@ -455,7 +454,7 @@ def edit_list(add, state,
     if add:
         if state["active"] not in list_countries_values:
             list_countries.append(
-                {'label': data.regions[state["active"]]["name"], 'value': state["active"]})
+                {'label': state["active"], 'value': state["active"]})
             list_countries_values.append(state["active"])
 
         return list_countries, list_countries_values
