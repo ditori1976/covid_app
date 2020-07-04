@@ -454,7 +454,7 @@ def edit_list(add, state,
     if add:
         if state["active"] not in list_countries_values:
             list_countries.append(
-                {'label': data.regions[state["active"]]["name"], 'value': state["active"]})
+                {'label': state["active"], 'value': state["active"]})
             list_countries_values.append(state["active"])
 
         return list_countries, list_countries_values
