@@ -294,6 +294,9 @@ row_1 = [
 ]
 row_2 = [
     dbc.Col(comparsion, lg=5, md=6, xs=12),
+    dbc.Col(id="empty", lg=6, md=6, xs=12)
+]
+row_3 = [
     dbc.Col(id="update", lg=6, md=6, xs=12)
 ]
 
@@ -303,6 +306,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=True, justify="center"),
+            dbc.Row(row_3, no_gutters=True, justify="center"),
             dcc.Store(id='memory', data=state),
         ],
         fluid=True
