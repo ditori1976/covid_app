@@ -267,12 +267,12 @@ class Extract:
                 "digits": 3,
                 "function": [],
             },
-            "deaths_recovered": {
-                "name": "% deaths/recovered",
-                "columns": ["deaths", "recovered"],
-                "norming": 100,
+            "cases_trend": {
+                "name": "% trend (cases/7d)",
+                "columns": ["cases"],
+                "norming": 1,
                 "digits": 2,
-                "function": [],
+                "function": "trend",
             },
         }
 
