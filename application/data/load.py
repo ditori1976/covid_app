@@ -34,20 +34,16 @@ class Load(Transform):
         # adds columns with values for indicators as calculated from "attributes"
         #
         # print("indicator")
-
+        data.sort_values(["region", "date"], inplace=True)
         if len(attributes) == 2:
 
             if function == "diff":
 
-                data.loc[:, (name)] = norming * data.loc[:,
-                                                         (attributes[0])].round(digits)
-
-                data.sort_values(["region", "date"], inplace=True)
                 data.loc[:, name] = data.loc[:, attributes[0]].diff()
                 data.loc[:, name] = data.loc[:, name] / (
-                    data.loc[:, attributes[1]]
+                    data.loc[:, attributes[1]] * norming
                 )
-                data.loc[:, name] = data.loc[:, name].round(digits)
+                #data.loc[:, name] = data.loc[:, name].round(digits)
                 data.loc[data.loc[:, name] < 0, name] = 0
             else:
 
@@ -57,31 +53,20 @@ class Load(Transform):
                 ).round(digits)
 
         else:
-            data.loc[:, (name)] = norming * data.loc[:,
-                                                     (attributes[0])]  # .round(digits)
             if function:
                 if (function == "diff") and (len(attributes) == 1):
-                    data.sort_values(["region", "date"], inplace=True)
+
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
                     data.loc[:, name] = data.loc[:, name].round(digits)
 
                     data.loc[data.loc[:, name] < 0, name] = 0
 
                 if (function == "trend") and (len(attributes) == 1):
-                    data.sort_values(["region", "date"], inplace=True)
-                    # decompose = seasonal_decompose(
-                    #     data.loc[:, attributes[0]], period=7, extrapolate_trend="freq")
-                    # data.loc[:, name] = decompose.trend.diff(
-                    #     periods=7) / decompose.trend.mean()
-
-                    # erst ab 100 cases berechnen?
 
                     data.loc[:, name] = ((2 * data.loc[:, attributes[0]].diff(
                         periods=7) / data.loc[:, attributes[0]].diff(periods=14)) - 1) * 100
 
                     data.loc[data.cases < 50, name] = 0
-
-        # remove negative values
 
         return data
 

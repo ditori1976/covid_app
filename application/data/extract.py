@@ -221,14 +221,14 @@ class Extract:
             "cases_capita": {
                 "name": "cases/1M capita",
                 "columns": ["cases", "population"],
-                "norming": 100000,
+                "norming": 1000000,
                 "digits": 0,
                 "function": [],
             },
             "deaths_capita": {
                 "name": "deaths/1M capita",
                 "columns": ["deaths", "population"],
-                "norming": 100000,
+                "norming": 1000000,
                 "digits": 1,
                 "function": [],
             },
