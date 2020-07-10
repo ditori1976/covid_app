@@ -268,7 +268,7 @@ class Extract:
                 "function": [],
             },
             "cases_trend": {
-                "name": " trend (cases/7d)",
+                "name": "% trend (cases/7d)",
                 "columns": ["cases"],
                 "norming": 1,
                 "digits": 2,
