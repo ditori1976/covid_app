@@ -260,13 +260,6 @@ class Extract:
                 "digits": 2,
                 "function": [],
             },
-            "recovered_cases": {
-                "name": "% recovered/cases",
-                "columns": ["recovered", "cases"],
-                "norming": 100,
-                "digits": 3,
-                "function": [],
-            },
             "cases_trend": {
                 "name": "% trend (cases/7d)",
                 "columns": ["cases"],

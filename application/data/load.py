@@ -74,10 +74,12 @@ class Load(Transform):
                     # data.loc[:, name] = decompose.trend.diff(
                     #     periods=7) / decompose.trend.mean()
 
+                    # erst ab 100 cases berechnen?
+
                     data.loc[:, name] = ((2 * data.loc[:, attributes[0]].diff(
                         periods=7) / data.loc[:, attributes[0]].diff(periods=14)) - 1) * 100
 
-                    # data.loc[:, name] = data.loc[:, name].round(digits)
+                    data.loc[data.cases < 50, name] = 0
 
         # remove negative values
 

@@ -24,6 +24,7 @@ style_todo = {"display": "inline", "margin": "10px"}
 parser = ConfigParser()
 parser.read("settings.ini")
 
+
 state = {
     "indicators": ["{}".format(parser.get("data", "init_indicator"))],
     "regions": ["World"],
@@ -246,7 +247,18 @@ comparsion = dbc.Row(
                 html.Button(
                     "add",
                     id="add",
-                    style={"height": 35, "width": "50%"}
+                    style={"height": 35,
+                           "width": "100%",
+                           "background-color": "#f9f9f9",
+                           "border": "none",
+                           "color": "#586069",
+                           "padding": "0px 0px",
+                           "text-align": "center",
+                           "text-decoration": "none",
+                           "display": "inline - block",
+                           "font-size": 16,
+                           "margin": "0px 0px",
+                           "cursor": "pointer"}
                 ),
             ],
             width=3,
@@ -266,8 +278,8 @@ comparsion = dbc.Row(
                     value=["Europe", "North-A.", "South-A.", "Asia"],
                     multi=True,
                     placeholder="for comparsion",
-                    style={"width": "100%"},
-                    searchable=False
+                    style={"width": "100%", "font-size": 12, "border": "none"},
+                    searchable=False,
                 )
             ],
             width=9
@@ -450,6 +462,7 @@ def submit_date(submit):
 )
 def edit_list(add, state,
               list_countries, list_countries_values):
+    print(state)
 
     if add:
         if state["active"] not in list_countries_values:
