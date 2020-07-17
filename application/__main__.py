@@ -2,6 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
+import dash_table
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
@@ -288,6 +289,18 @@ comparsion = dbc.Row(
     no_gutters=True,
 )
 
+table_data = data.latest_data(data.indicators["cases_trend"]).loc[:, [
+    "region", "deaths", "cases", "recovered", "% trend (cases/7d)"]].sort_values(by="% trend (cases/7d)", ascending=False).head(20)
+
+table = dash_table.DataTable(
+    id="table",
+    columns=[{"name": i, "id": i} for i in table_data.loc[:,
+                                                          ["region", "deaths", "cases", "recovered"]].columns],
+    data=table_data.loc[:, ["region", "deaths",
+                            "cases", "recovered"]].to_dict("records"),
+)
+
+
 row_1 = [
     dbc.Col(tab_map, lg=5, md=6, xs=12),
     dbc.Col(dropdown_title_timeline, lg=6, md=6, xs=12)
@@ -297,7 +310,8 @@ row_2 = [
     dbc.Col(id="empty", lg=6, md=6, xs=12)
 ]
 row_3 = [
-    dbc.Col(id="update", lg=6, md=6, xs=12)
+    dbc.Col(id="update", lg=6, md=6, xs=12),
+    dbc.Col(table, lg=6, md=6, xs=12)
 ]
 
 
