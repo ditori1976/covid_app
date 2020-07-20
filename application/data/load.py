@@ -41,8 +41,8 @@ class Load(Transform):
 
                 data.loc[:, name] = data.loc[:, attributes[0]].diff()
                 data.loc[:, name] = data.loc[:, name] / (
-                    data.loc[:, attributes[1]] * norming
-                )
+                    data.loc[:, attributes[1]]
+                ) * norming
                 #data.loc[:, name] = data.loc[:, name].round(digits)
                 data.loc[data.loc[:, name] < 0, name] = 0
             else:

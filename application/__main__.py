@@ -289,16 +289,75 @@ comparsion = dbc.Row(
     no_gutters=True,
 )
 
-table_data = data.latest_data(data.indicators["cases_trend"]).loc[:, [
-    "region", "deaths", "cases", "recovered", "% trend (cases/7d)"]].sort_values(by="% trend (cases/7d)", ascending=False).head(20)
 
-table = dash_table.DataTable(
+def zscore(series):
+    zscore = ((series - series.mean()) / series.std(ddof=0)).round(0)
+    return zscore
+
+
+trend_data = data.latest_data(data.indicators["cases_trend"]).loc[:, [
+    "region", "deaths", "cases", "recovered", "% trend (cases/7d)"]]
+trend_data.rename(
+    columns={
+        "% trend (cases/7d)": "trend_n",
+        "region": ""},
+    inplace=True)
+trend_data.loc[:, ["trend_n"]] = zscore(trend_data.loc[:, ["trend_n"]])
+
+
+trend_data.sort_values(
+    by=["trend_n", "cases"], ascending=False, inplace=True)
+
+trend_data.loc[:, "trend"] = np.nan
+
+trend_data.loc[trend_data.loc[:,
+                              "trend_n"] >= 1,
+               ["trend"]] = "↗"
+trend_data.loc[trend_data.loc[:,
+                              "trend_n"] == 0,
+               ["trend"]] = "→"
+trend_data.loc[trend_data.loc[:,
+                              "trend_n"] <= -1,
+               ["trend"]] = "↘"
+
+print(trend_data.columns)
+
+table_data = trend_data.loc[trend_data.loc[:, "deaths"]
+                            > 500, ["", "cases", "deaths", "recovered", "trend"]]
+
+table = dbc.Col(dash_table.DataTable(
     id="table",
-    columns=[{"name": i, "id": i} for i in table_data.loc[:,
-                                                          ["region", "deaths", "cases", "recovered"]].columns],
-    data=table_data.loc[:, ["region", "deaths",
-                            "cases", "recovered"]].to_dict("records"),
-)
+    columns=[{"name": i, "id": i} for i in table_data.columns],
+    data=table_data.to_dict("records"),
+    style_data={'border': 'none'},
+    style_header={
+        'border': 'none',
+        'backgroundColor': 'white',
+        'fontWeight': 'bold'},
+    style_cell_conditional=[
+        {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '150px'},
+        {'if': {'column_id': 'trend'}, 'textAlign': 'center', 'width': '20px'},
+        {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '50px'}],
+    style_data_conditional=(
+        [
+            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
+             'backgroundColor': '#714e99',
+             'color': 'white'}
+        ] +
+        [
+            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "→"'},
+             'backgroundColor': '#8abdd1'}
+        ] +
+        [
+            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↘"'},
+             'backgroundColor': '#e4eaed'}
+        ] +
+        [{
+            'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
+            'backgroundColor': 'rgb(248, 248, 248)'
+        }]
+    ),
+), width=11)
 
 
 row_1 = [
@@ -307,11 +366,11 @@ row_1 = [
 ]
 row_2 = [
     dbc.Col(comparsion, lg=5, md=6, xs=12),
-    dbc.Col(id="empty", lg=6, md=6, xs=12)
+    dbc.Col(table, lg=6, md=6, xs=12)
 ]
 row_3 = [
-    dbc.Col(id="update", lg=6, md=6, xs=12),
-    dbc.Col(table, lg=6, md=6, xs=12)
+    dbc.Col(id="update", lg=5, md=5, xs=11),
+    dbc.Col(id="empty", lg=5, md=5, xs=12)
 ]
 
 
