@@ -281,9 +281,33 @@ comparsion = dbc.Row(
                     placeholder="for comparsion",
                     style={"width": "100%", "font-size": 12, "border": "none"},
                     searchable=False,
+                    clearable=False,
                 )
             ],
-            width=9
+            width=8
+        ),
+        dbc.Col(
+            children=[
+                html.Button(
+                    "clear",
+                    id="del",
+                    style={"height": 35,
+                           "width": "100%",
+                           "background-color": "#f9f9f9",
+                           "border": "none",
+                           "color": "red",
+                           "padding": "0px 0px",
+                           "text-align": "center",
+                           "text-decoration": "none",
+                           "display": "inline - block",
+                           "font-size": 16,
+                           "margin": "0px 0px",
+                           "cursor": "pointer"}
+                ),
+            ],
+            width=1,
+            style={"text-align": "right"}
+
         )
     ],
     no_gutters=True,
@@ -342,20 +366,26 @@ table = dbc.Col(dash_table.DataTable(
         [
             {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
              'backgroundColor': '#714e99',
-             'color': 'white'}
-        ] +
-        [
+             'color': 'white'},
             {'if': {'column_id': 'trend', 'filter_query': '{trend} = "→"'},
-             'backgroundColor': '#8abdd1'}
-        ] +
-        [
+             'backgroundColor': '#8abdd1'},
             {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↘"'},
-             'backgroundColor': '#e4eaed'}
-        ] +
-        [{
-            'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
-            'backgroundColor': 'rgb(248, 248, 248)'
-        }]
+             'backgroundColor': '#e4eaed'},
+            {'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
+             'backgroundColor': 'rgb(248, 248, 248)'},
+            {
+                "if": {"state": "active"},  # 'active' | 'selected'
+                "backgroundColor": "none",
+                "border": "none",
+                "color": "black",
+            },
+            {
+                "if": {"state": "selected"},
+                # "backgroundColor": "rgba(255,255,255, 0.1)",
+                "backgroundColor": "none",
+            }
+
+        ]
     ),
 ), width=11)
 
@@ -434,10 +464,7 @@ def change_state(map_select, tab_select, indicator_select,
     elif ctx.triggered[0]["prop_id"] == "indicator-selected.value":
         state["indicators"][0] = indicator_select
 
-    # if ctx.triggered[0]["prop_id"] == "list-countries.value":
     state["regions"] = list_countries
-
-    # print(state)
 
     return state
 
@@ -534,6 +561,7 @@ def submit_date(submit):
      Output("list-countries", "value"), ],
     [
         Input("add", "n_clicks"),
+        Input("del", "n_clicks")
     ],
     [
         State("memory", "data"),
@@ -541,9 +569,15 @@ def submit_date(submit):
         State("list-countries", "value")
     ],
 )
-def edit_list(add, state,
+def edit_list(add, delete, state,
               list_countries, list_countries_values):
-    print(state)
+    # print(state)
+    # print(delete)
+    ctx = dash.callback_context
+
+    # print(ctx.triggered[0]["prop_id"])
+    if ctx.triggered[0]["prop_id"] == "del.n_clicks":
+        return [], []
 
     if add:
         if state["active"] not in list_countries_values:
@@ -563,7 +597,6 @@ app.title = "COVID-19"
 application = app.server
 
 
-# def start_multi():
 executor = ThreadPoolExecutor(max_workers=1)
 executor.submit(update_data)
 
