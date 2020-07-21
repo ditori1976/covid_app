@@ -320,24 +320,24 @@ trend_data.loc[trend_data.loc[:,
                               "trend_n"] <= -1,
                ["trend"]] = "↘"
 
-print(trend_data.columns)
-
 table_data = trend_data.loc[trend_data.loc[:, "deaths"]
-                            > 500, ["", "cases", "deaths", "recovered", "trend"]]
+                            > 500, ["", "trend", "cases", "deaths", "recovered"]]
 
 table = dbc.Col(dash_table.DataTable(
     id="table",
     columns=[{"name": i, "id": i} for i in table_data.columns],
     data=table_data.to_dict("records"),
     style_data={'border': 'none'},
+    # row_selectable='multi',
+    # selected_rows=[],
     style_header={
         'border': 'none',
         'backgroundColor': 'white',
         'fontWeight': 'bold'},
     style_cell_conditional=[
-        {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '150px'},
+        {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '10vw'},
         {'if': {'column_id': 'trend'}, 'textAlign': 'center', 'width': '20px'},
-        {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '50px'}],
+        {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '5vw'}],
     style_data_conditional=(
         [
             {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
@@ -395,7 +395,8 @@ app.layout = set_layout
         Input("map", "clickData"),
         Input("select-continent", "value"),
         Input("indicator-selected", "value"),
-        Input("list-countries", "value")
+        Input("list-countries", "value"),
+        Input("table", "selected_cells")
     ],
     [
         State("map", "figure"),
@@ -404,9 +405,12 @@ app.layout = set_layout
     ]
 )
 def change_state(map_select, tab_select, indicator_select,
-                 add, figure, list_countries, state):
+                 add, row, figure, list_countries, state):
     print(map_select, tab_select, indicator_select,
           add, list_countries)
+
+    if row:
+        state["active"] = table_data.iloc[row[0]["row"]][""]
 
     if figure:
         lat = figure["layout"]["mapbox"]["center"]["lat"]
