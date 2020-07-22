@@ -315,7 +315,7 @@ comparsion = dbc.Row(
 
 
 def zscore(series):
-    zscore = ((series - series.mean()) / series.std(ddof=0)).round(0)
+    zscore = (2 * (series - series.mean()) / series.std(ddof=0)).round(0) / 2
     return zscore
 
 
@@ -327,67 +327,73 @@ trend_data.rename(
         "region": ""},
     inplace=True)
 trend_data.loc[:, ["trend_n"]] = zscore(trend_data.loc[:, ["trend_n"]])
-
-
 trend_data.sort_values(
-    by=["trend_n", "cases"], ascending=False, inplace=True)
-
+    by=["trend_n", "deaths"], ascending=False, inplace=True)
 trend_data.loc[:, "trend"] = np.nan
-
 trend_data.loc[trend_data.loc[:,
                               "trend_n"] >= 1,
+               ["trend"]] = "↑"
+trend_data.loc[(trend_data.loc[:,
+                               "trend_n"] < 1) & (trend_data.loc[:,
+                                                                 "trend_n"] >= .5),
                ["trend"]] = "↗"
 trend_data.loc[trend_data.loc[:,
                               "trend_n"] == 0,
                ["trend"]] = "→"
 trend_data.loc[trend_data.loc[:,
-                              "trend_n"] <= -1,
+                              "trend_n"] <= -0.5,
                ["trend"]] = "↘"
 
 table_data = trend_data.loc[trend_data.loc[:, "deaths"]
-                            > 500, ["", "trend", "cases", "deaths", "recovered"]]
+                            > 100, ["", "trend", "cases", "deaths"]]
 
-table = dbc.Col(dash_table.DataTable(
-    id="table",
-    columns=[{"name": i, "id": i} for i in table_data.columns],
-    data=table_data.to_dict("records"),
-    style_data={'border': 'none'},
-    # row_selectable='multi',
-    # selected_rows=[],
-    style_header={
-        'border': 'none',
-        'backgroundColor': 'white',
-        'fontWeight': 'bold'},
-    style_cell_conditional=[
-        {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '10vw'},
-        {'if': {'column_id': 'trend'}, 'textAlign': 'center', 'width': '20px'},
-        {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '5vw'}],
-    style_data_conditional=(
-        [
-            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
-             'backgroundColor': '#714e99',
-             'color': 'white'},
-            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "→"'},
-             'backgroundColor': '#8abdd1'},
-            {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↘"'},
-             'backgroundColor': '#e4eaed'},
-            {'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
-             'backgroundColor': 'rgb(248, 248, 248)'},
-            {
-                "if": {"state": "active"},  # 'active' | 'selected'
-                "backgroundColor": "none",
-                "border": "none",
-                "color": "black",
-            },
-            {
-                "if": {"state": "selected"},
-                # "backgroundColor": "rgba(255,255,255, 0.1)",
-                "backgroundColor": "none",
-            }
+table = dbc.Row(
+    dbc.Col(
+        dash_table.DataTable(
+            id="table",
+            columns=[{"name": i, "id": i} for i in table_data.columns],
+            data=table_data.to_dict("records"),
+            style_data={'border': 'none'},
+            style_header={
+                'border': 'none',
+                'backgroundColor': 'white',
+                'fontWeight': 'bold'},
+            style_cell_conditional=[
+                {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '8vw'},
+                {'if': {'column_id': 'trend'},
+                    'textAlign': 'center', 'width': '15px', "margin": 0, "padding": 0},
+                {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '4vw'}],
+            style_data_conditional=(
+                [
+                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↑"'},
+                     'backgroundColor': '#714e99',
+                     'color': 'white', "margin": 0, "padding": 0},
+                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
+                     'backgroundColor': '#ad7acc', "margin": 0, "padding": 0},
+                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "→"'},
+                     'backgroundColor': '#8abdd1', "margin": 0, "padding": 0},
+                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↘"'},
+                     'backgroundColor': '#e4eaed', "margin": 0, "padding": 0},
+                    {'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
+                     'backgroundColor': 'rgb(248, 248, 248)'},
+                    {
+                        "if": {"state": "active"},
+                        "backgroundColor": "none",
+                        "border": "none",
+                        "color": "black",
+                    },
+                    {
+                        "if": {"state": "selected"},
+                        "backgroundColor": "none",
+                    }
 
-        ]
-    ),
-), width=11)
+                ]
+            ),
+        ),
+        width=10),
+    no_gutters=True,
+    justify="center"
+)
 
 
 row_1 = [
@@ -436,11 +442,6 @@ app.layout = set_layout
 )
 def change_state(map_select, tab_select, indicator_select,
                  add, row, figure, list_countries, state):
-    print(map_select, tab_select, indicator_select,
-          add, list_countries)
-
-    if row:
-        state["active"] = table_data.iloc[row[0]["row"]][""]
 
     if figure:
         lat = figure["layout"]["mapbox"]["center"]["lat"]
@@ -454,6 +455,7 @@ def change_state(map_select, tab_select, indicator_select,
         state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
 
     ctx = dash.callback_context
+    print(ctx.triggered[0]["prop_id"])
 
     if ctx.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[tab_select]["name"]
@@ -463,8 +465,12 @@ def change_state(map_select, tab_select, indicator_select,
         state["active"] = map_select["points"][0]["text"]
     elif ctx.triggered[0]["prop_id"] == "indicator-selected.value":
         state["indicators"][0] = indicator_select
+    elif ctx.triggered[0]["prop_id"] == "table.selected_cells":
+        state["active"] = table_data.iloc[row[0]["row"]][""]
 
     state["regions"] = list_countries
+
+    print(state)
 
     return state
 
@@ -571,11 +577,9 @@ def submit_date(submit):
 )
 def edit_list(add, delete, state,
               list_countries, list_countries_values):
-    # print(state)
-    # print(delete)
+
     ctx = dash.callback_context
 
-    # print(ctx.triggered[0]["prop_id"])
     if ctx.triggered[0]["prop_id"] == "del.n_clicks":
         return [], []
 
