@@ -236,22 +236,22 @@ class Extract:
                 "name": "daily cases/1M capita",
                 "columns": ["cases", "population"],
                 "norming": 1000000,
-                "digits": 10,
+                "digits": 0,
                 "function": "diff",
             },
             "daily_deaths_capita": {
                 "name": "daily deaths/1M capita",
                 "columns": ["deaths", "population"],
                 "norming": 1000000,
-                "digits": 10,
+                "digits": 0,
                 "function": "diff",
             },
-            "recovered_capita": {
-                "name": "% recovered",
-                "columns": ["recovered", "cases"],
+            "fraction_population": {
+                "name": "% of population",
+                "columns": ["cases", "population"],
                 "norming": 100,
-                "digits": 0,
-                "function": [],
+                "digits": 2,
+                "function": "fraction",
             },
             "lethality": {
                 "name": "% lethality",
@@ -266,6 +266,13 @@ class Extract:
                 "norming": 1,
                 "digits": 2,
                 "function": "trend",
+            },
+            "recovered_capita": {
+                "name": "% recovered",
+                "columns": ["recovered", "cases"],
+                "norming": 100,
+                "digits": 0,
+                "function": [],
             },
         }
 
