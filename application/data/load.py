@@ -45,19 +45,25 @@ class Load(Transform):
                 ) * norming
                 #data.loc[:, name] = data.loc[:, name].round(digits)
                 data.loc[data.loc[:, name] < 0, name] = 0
+            elif function == "fraction":
+                data.loc[:, name] = data.loc[:, attributes[0]] / (
+                    data.loc[:, attributes[1]]
+                ) * norming
+                #data.loc[:, name] = data.loc[:, name].round(digits)
+
             else:
 
                 data.loc[:, name] = (
                     data.loc[:, attributes[0]] /
                     data.loc[:, attributes[1]] * norming
-                ).round(digits)
+                )  # .round(digits)
 
         else:
             if function:
                 if (function == "diff") and (len(attributes) == 1):
 
                     data.loc[:, name] = data.loc[:, attributes[0]].diff()
-                    data.loc[:, name] = data.loc[:, name].round(digits)
+                    data.loc[:, name] = data.loc[:, name]  # .round(digits)
 
                     data.loc[data.loc[:, name] < 0, name] = 0
 
@@ -67,7 +73,7 @@ class Load(Transform):
                         periods=7) / data.loc[:, attributes[0]].diff(periods=14)) - 1) * 100
 
                     data.loc[data.cases < 50, name] = 0
-
+        data.loc[:, name] = data.loc[:, name].round(digits)
         return data
 
     def latest_data(self, indicator):

@@ -25,6 +25,8 @@ style_todo = {"display": "inline", "margin": "10px"}
 parser = ConfigParser()
 parser.read("settings.ini")
 
+background_color_grey = "#fafbfc"
+
 
 state = {
     "indicators": ["{}".format(parser.get("data", "init_indicator"))],
@@ -115,7 +117,12 @@ def sub_title(indicator, region):
 dropdown = dcc.Dropdown(
     id="indicator-selected",
     value=parser.get("data", "init_indicator"),
-    style={"width": "100%", "margin": 0, "padding": 0},
+    style={
+        "width": "100%",
+        "margin": 0,
+        "padding": 0,
+        "border": "none",
+        "background-color": background_color_grey},
     options=dropdown_options(data.indicators),
     searchable=False,
     clearable=False,
@@ -207,14 +214,15 @@ timeline_title = dbc.Col(
     children=[
         html.Div(
             children=[
-                html.H5([], id="title"),
-            ],
-        ),
-        html.Div(
-            children=[
                 timeline
             ]
         ),
+        html.Div(
+            children=[
+                html.H5([], id="title"),
+            ],
+        ),
+
     ],
     width=12,
 )
@@ -231,12 +239,12 @@ tab_map = dbc.Row(
 dropdown_title_timeline = dbc.Col(
     children=[
         dropdown_div,
-        html.P(
+        timeline_title,
+        html.H5(
             id="sub-title",
             children=[],
             style={"textAlign": "center"}
         ),
-        timeline_title,
 
     ]
 )
@@ -250,7 +258,7 @@ comparsion = dbc.Row(
                     id="add",
                     style={"height": 35,
                            "width": "100%",
-                           "background-color": "#f9f9f9",
+                           "background-color": background_color_grey,
                            "border": "none",
                            "color": "#586069",
                            "padding": "0px 0px",
@@ -293,7 +301,7 @@ comparsion = dbc.Row(
                     id="del",
                     style={"height": 35,
                            "width": "100%",
-                           "background-color": "#f9f9f9",
+                           "background-color": background_color_grey,
                            "border": "none",
                            "color": "red",
                            "padding": "0px 0px",
@@ -365,17 +373,16 @@ table = dbc.Row(
                 {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '4vw'}],
             style_data_conditional=(
                 [
-                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↑"'},
-                     'backgroundColor': '#714e99',
-                     'color': 'white', "margin": 0, "padding": 0},
-                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↗"'},
-                     'backgroundColor': '#ad7acc', "margin": 0, "padding": 0},
-                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "→"'},
-                     'backgroundColor': '#8abdd1', "margin": 0, "padding": 0},
-                    {'if': {'column_id': 'trend', 'filter_query': '{trend} = "↘"'},
-                     'backgroundColor': '#e4eaed', "margin": 0, "padding": 0},
-                    {'if': {'row_index': 'odd', 'column_id': ['', 'cases', 'deaths', 'recovered']},
-                     'backgroundColor': 'rgb(248, 248, 248)'},
+                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↑"'},
+                     'backgroundColor': '#d4bfe0', "margin": 0, "padding": 0},
+                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↗"'},
+                     'backgroundColor': '#cacded', "margin": 0, "padding": 0},
+                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "→"'},
+                     'backgroundColor': '#c7daeb', "margin": 0, "padding": 0},
+                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↘"'},
+                     'backgroundColor': '#c7ebde', "margin": 0, "padding": 0},
+                    {'if': {'row_index': 'odd', 'column_id': ['']},
+                     'backgroundColor': background_color_grey},
                     {
                         "if": {"state": "active"},
                         "backgroundColor": "none",
@@ -390,31 +397,36 @@ table = dbc.Row(
                 ]
             ),
         ),
-        width=10),
+        width=11),
     no_gutters=True,
     justify="center"
 )
 
 
 row_1 = [
-    dbc.Col(tab_map, lg=5, md=6, xs=12),
-    dbc.Col(dropdown_title_timeline, lg=6, md=6, xs=12)
-]
-row_2 = [
-    dbc.Col(comparsion, lg=5, md=6, xs=12),
+    dbc.Col(
+        children=[
+            dropdown_title_timeline,
+            tab_map,
+            comparsion,
+            html.Div(id="update")],
+        lg=5,
+        md=6,
+        xs=12),
     dbc.Col(table, lg=6, md=6, xs=12)
 ]
-row_3 = [
-    dbc.Col(id="update", lg=5, md=5, xs=11),
-    dbc.Col(id="empty", lg=5, md=5, xs=12)
+row_2 = [
+    #dbc.Col(comparsion, lg=5, md=6, xs=12)
 ]
+row_3 = [dbc.Col(id="empty", lg=5, md=5, xs=12)
+         ]
 
 
 def set_layout():
     return dbc.Container(
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
-            dbc.Row(row_2, no_gutters=True, justify="center"),
+            #dbc.Row(row_2, no_gutters=True, justify="left"),
             dbc.Row(row_3, no_gutters=True, justify="center"),
             dcc.Store(id='memory', data=state),
         ],
@@ -554,12 +566,15 @@ def draw_map(state):
 )
 def submit_date(submit):
 
-    return [
+    return dbc.Row([
         html.P("last update: " +
-               data.latest_load.strftime("%m/%d/%Y, %H:%M:%S"),
-               style={"fontSize": 8, "color": "grey"}
-               )
-    ]
+               data.latest_load.strftime(
+                   "%m/%d/%Y, %H:%M:%S") + ", find me on  ",
+               style={"fontSize": 10, "color": "grey"}
+               ),
+        html.A("Github", href="https://github.com/ditori1976/covid_app",
+               style={"fontSize": 10, "color": "grey"})
+    ])
 
 
 @app.callback(
