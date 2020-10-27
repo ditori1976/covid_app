@@ -25,7 +25,7 @@ style_todo = {"display": "inline", "margin": "10px"}
 parser = ConfigParser()
 parser.read("settings.ini")
 
-background_color_grey = "#fafbfc"
+background_color_grey = "#b0c6eb"
 
 
 state = {
@@ -78,6 +78,7 @@ app = dash.Dash(
         }
     ]
 )
+
 app.scripts.config.serve_locally = False
 app.scripts.append_script({
     "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
@@ -129,16 +130,16 @@ dropdown = dcc.Dropdown(
     className="stlye_center",
 )
 
-dropdown_div = dbc.Row(dbc.Col(
+dropdown_div = dbc.Col(
     id="selector",
     children=[dropdown],
     style={
-        "width": "100%",
+        "width": "50%",
         "margin": 0,
         "padding": 0,
         "textAlign": "center"},
     lg=7, xs=11,
-), justify="center")
+)
 
 
 tabs_div = dcc.Tabs(
@@ -238,7 +239,6 @@ tab_map = dbc.Row(
 
 dropdown_title_timeline = dbc.Col(
     children=[
-        dropdown_div,
         timeline_title,
         html.H5(
             id="sub-title",
@@ -402,6 +402,47 @@ table = dbc.Row(
     justify="center"
 )
 
+navbar1 = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(dbc.NavLink("Page 1", href="#")),
+
+        dbc.DropdownMenu(
+            children=[
+                dbc.DropdownMenuItem("More pages", header=True),
+                dbc.DropdownMenuItem("Page 2", href="#"),
+                dbc.DropdownMenuItem("Page 3", href="#"),
+            ],
+            nav=True,
+            in_navbar=True,
+            label="More",
+        ),
+    ],
+    brand="COVID-19",
+    brand_href="#",
+    color="#b0c6eb",
+    dark=True,
+)
+
+navbar = dbc.Navbar(
+    [
+        html.P(
+            # Use row and col to control vertical alignment of logo / brand
+            dbc.Row(
+                [
+                    dbc.Col(dropdown_div),
+                    dbc.Col(dbc.NavbarBrand("Navbar", className="ml-2")),
+                ],
+                align="center",
+                no_gutters=True,
+            )
+        ),
+        dbc.NavbarToggler(id="navbar-toggler"),
+        #dbc.Collapse(search_bar, id="navbar-collapse", navbar=True),
+    ],
+    color="#b0c6eb",
+    dark=True,
+)
+
 
 row_1 = [
     dbc.Col(
@@ -425,6 +466,7 @@ row_3 = [dbc.Col(id="empty", lg=5, md=5, xs=12)
 def set_layout():
     return dbc.Container(
         children=[
+            navbar,
             dbc.Row(row_1, no_gutters=True, justify="center"),
             #dbc.Row(row_2, no_gutters=True, justify="left"),
             dbc.Row(row_3, no_gutters=True, justify="center"),
