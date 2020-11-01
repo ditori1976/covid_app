@@ -22,3 +22,29 @@ class Config:
         self.host = host
         self.mapbox = os.getenv("MAPBOX")
         self.UPDATE = UPDATE
+        self.layout = dict(
+            margin=dict(
+                l=0,
+                r=0,
+                b=0,
+                t=0,
+                pad=0),
+            dragmode="select")
+        self.state = {
+            "indicator": "cases",
+            "aggregation": "7days",
+            "per capita": True,
+            "regions": ["World"],
+            "active": "World",
+            "axis": {
+                "x": "date",
+                "y": "linear"
+            },
+            "bbox": {
+                "center": {
+                    "lat": 0,
+                    "lon": 0,
+                },
+                "zoom": 2
+            }
+        }
