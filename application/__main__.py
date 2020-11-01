@@ -402,26 +402,26 @@ table = dbc.Row(
     justify="center"
 )
 
-navbar1 = dbc.NavbarSimple(
-    children=[
-        dbc.NavItem(dbc.NavLink("Page 1", href="#")),
+# navbar1 = dbc.NavbarSimple(
+#     children=[
+#         dbc.NavItem(dbc.NavLink("Page 1", href="#")),
 
-        dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("More pages", header=True),
-                dbc.DropdownMenuItem("Page 2", href="#"),
-                dbc.DropdownMenuItem("Page 3", href="#"),
-            ],
-            nav=True,
-            in_navbar=True,
-            label="More",
-        ),
-    ],
-    brand="COVID-19",
-    brand_href="#",
-    color="#b0c6eb",
-    dark=True,
-)
+#         dbc.DropdownMenu(
+#             children=[
+#                 dbc.DropdownMenuItem("More pages", header=True),
+#                 dbc.DropdownMenuItem("Page 2", href="#"),
+#                 dbc.DropdownMenuItem("Page 3", href="#"),
+#             ],
+#             nav=True,
+#             in_navbar=True,
+#             label="More",
+#         ),
+#     ],
+#     brand="COVID-19",
+#     brand_href="#",
+#     color="#b0c6eb",
+#     dark=True,
+# )
 
 navbar = dbc.Navbar(
     [
@@ -659,7 +659,7 @@ application = app.server
 
 
 executor = ThreadPoolExecutor(max_workers=1)
-executor.submit(update_data)
+# executor.submit(update_data)
 
 
 if __name__ == "__main__":
