@@ -102,8 +102,7 @@ row_1 = [
         ],
         lg=12,
         md=6,
-        xs=12),
-    # dbc.Col(table, lg=6, md=6, xs=12)
+        xs=12)
 ]
 row_2 = controller()
 
