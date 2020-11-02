@@ -4,6 +4,7 @@ import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_table
+from dash.exceptions import PreventUpdate
 import plotly.graph_objects as go
 import dash_daq as daq
 #
@@ -38,6 +39,7 @@ app = dash.Dash(
     ]
 )
 app.scripts.config.serve_locally = False
+app.config.suppress_callback_exceptions = True
 
 
 def timeline():
@@ -57,6 +59,16 @@ def controller():
                Input("select_per_capita", "on"),
                Input("cases_death_switch", "value")])
 def set_state(daily, days, accum, per_capita, indicator):
+    # if daily is None:
+    #     raise PreventUpdate
+    # if days is None:
+    #     raise PreventUpdate
+    # if accum is None:
+    #     raise PreventUpdate
+    # if per_capita is None:
+    #     raise PreventUpdate
+    # if indicator is None:
+    #     raise PreventUpdate
     ctx = dash.callback_context
     if ctx.triggered[0]["prop_id"].split(".")[0] == "daily":
         state["aggregation"] = "daily"
@@ -138,7 +150,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            dcc.Store(id='memory', data=state),
+            dcc.Store(id='memory', data=state, storage_type='session'),
         ],
         fluid=True
     )
