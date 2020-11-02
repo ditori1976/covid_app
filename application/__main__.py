@@ -150,7 +150,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            dcc.Store(id='memory', data=state, storage_type='session'),
+            dcc.Store(id='memory', data=state, storage_type='local'),
         ],
         fluid=True
     )
