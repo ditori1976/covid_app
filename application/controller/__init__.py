@@ -1,4 +1,4 @@
-from application.__main__ import dbc, daq, html
+from application.__main__ import dcc, dbc, daq, html
 
 cases_death_switch = dbc.Col(
     daq.ToggleSwitch(
@@ -24,38 +24,32 @@ cases_death_switch = dbc.Col(
 )
 
 select_aggregation = dbc.Col(
-    dbc.Row(
-        [
-            dbc.Col(
-                html.Button(
-                    "daily",
-                    id="daily",
-                ),
-                width=4
-            ),
-            dbc.Col(
-                html.Button(
-                    "7 days",
-                    id="days",
-                ),
-                width=4
-            ),
-            dbc.Col(
-                html.Button(
-                    "accum.",
-                    id="accum",
-                ),
-                width=4
-            )
-        ],
-        id="select_aggregation",
-        style={"width": "100%", "margin": 0, "pading": 0},
-        no_gutters=True
-    ),
-    lg=4,
+    [
+        dcc.RadioItems(
+            id="select_aggregation",
+            options=[
+                {'label': 'daily', 'value': 'daily'},
+                {'label': '7 days', 'value': 'days'},
+                {'label': 'accum.', 'value': 'accum'}
+            ],
+            inputStyle={
+                'height': '22px',
+                'width': '22px',
+                'margin-top': '-3px',
+                'margin-right': '8px',
+                'vertical-align': 'middle',
+                'border': '2px solid #dbdbdb'},
+            value='days',
+            labelStyle={
+                'display': 'inline-block',
+                'margin-top': '3px',
+                'margin-right': '10px'}
+        )
+    ],
+    lg=3,
     md=4,
-    xs=11
-)
+    xs=11,
+    style={'text-align': 'center'})
 
 select_per_capita = dbc.Col(
     daq.BooleanSwitch(

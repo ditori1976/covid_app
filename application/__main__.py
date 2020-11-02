@@ -53,30 +53,11 @@ def controller():
 
 
 @app.callback(Output("memory", "data"),
-              [Input("daily", "n_clicks"),
-               Input("days", "n_clicks"),
-               Input("accum", "n_clicks"),
+              [Input("select_aggregation", "value"),
                Input("select_per_capita", "on"),
                Input("cases_death_switch", "value")])
-def set_state(daily, days, accum, per_capita, indicator):
-    # if daily is None:
-    #     raise PreventUpdate
-    # if days is None:
-    #     raise PreventUpdate
-    # if accum is None:
-    #     raise PreventUpdate
-    # if per_capita is None:
-    #     raise PreventUpdate
-    # if indicator is None:
-    #     raise PreventUpdate
-    ctx = dash.callback_context
-    if ctx.triggered[0]["prop_id"].split(".")[0] == "daily":
-        state["aggregation"] = "daily"
-    elif ctx.triggered[0]["prop_id"].split(".")[0] == "days":
-        state["aggregation"] = "days"
-    elif ctx.triggered[0]["prop_id"].split(".")[0] == "accum":
-        state["aggregation"] = "accum"
-
+def set_state(aggregation, per_capita, indicator):
+    state["aggregation"] = aggregation
     state["per capita"] = per_capita
     if indicator:
         state["indicator"] = "cases"
@@ -85,24 +66,6 @@ def set_state(daily, days, accum, per_capita, indicator):
 
     print(state)
     return state
-
-
-@app.callback(
-    [Output("daily", "className"),
-     Output("days", "className"),
-     Output("accum", "className")],
-    [Input("memory", "data")],
-)
-def set_active(data):
-    button_conf = ["btn", "btn active", "btn"]
-    if data["aggregation"] == "daily":
-        button_conf = ["btn active", "btn", "btn"]
-    elif data["aggregation"] == "accum":
-        button_conf = ["btn", "btn", "btn active"]
-    elif data["aggregation"] == "days":
-        button_conf = ["btn", "btn active", "btn"]
-
-    return button_conf
 
 
 tabs_div = dcc.Tabs(
