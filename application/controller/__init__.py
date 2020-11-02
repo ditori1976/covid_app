@@ -36,7 +36,7 @@ select_aggregation = dbc.Col(
             dbc.Col(
                 html.Button(
                     "7 days",
-                    id="7days",
+                    id="days",
                 ),
                 width=4
             ),

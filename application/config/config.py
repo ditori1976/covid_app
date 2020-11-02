@@ -32,7 +32,7 @@ class Config:
             dragmode="select")
         self.state = {
             "indicator": "cases",
-            "aggregation": "7days",
+            "aggregation": "days",
             "per capita": True,
             "regions": ["World"],
             "active": "World",

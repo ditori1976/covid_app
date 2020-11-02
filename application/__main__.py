@@ -54,7 +54,7 @@ def controller():
 
 @app.callback(Output("memory", "data"),
               [Input("daily", "n_clicks"),
-               Input("7days", "n_clicks"),
+               Input("days", "n_clicks"),
                Input("accum", "n_clicks"),
                Input("select_per_capita", "on"),
                Input("cases_death_switch", "value")])
@@ -72,8 +72,8 @@ def set_state(daily, days, accum, per_capita, indicator):
     ctx = dash.callback_context
     if ctx.triggered[0]["prop_id"].split(".")[0] == "daily":
         state["aggregation"] = "daily"
-    elif ctx.triggered[0]["prop_id"].split(".")[0] == "7days":
-        state["aggregation"] = "7days"
+    elif ctx.triggered[0]["prop_id"].split(".")[0] == "days":
+        state["aggregation"] = "days"
     elif ctx.triggered[0]["prop_id"].split(".")[0] == "accum":
         state["aggregation"] = "accum"
 
@@ -89,17 +89,17 @@ def set_state(daily, days, accum, per_capita, indicator):
 
 @app.callback(
     [Output("daily", "className"),
-     Output("7days", "className"),
+     Output("days", "className"),
      Output("accum", "className")],
     [Input("memory", "data")],
 )
 def set_active(data):
-
+    button_conf = ["btn", "btn active", "btn"]
     if data["aggregation"] == "daily":
         button_conf = ["btn active", "btn", "btn"]
     elif data["aggregation"] == "accum":
         button_conf = ["btn", "btn", "btn active"]
-    else:
+    elif data["aggregation"] == "days":
         button_conf = ["btn", "btn active", "btn"]
 
     return button_conf
