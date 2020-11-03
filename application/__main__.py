@@ -8,7 +8,7 @@ from dash.exceptions import PreventUpdate
 import plotly.graph_objects as go
 import dash_daq as daq
 #
-# import numpy as np
+import numpy as np
 from dash.dependencies import Input, Output, State, ALL, MATCH
 # import time
 import json
@@ -27,6 +27,7 @@ parser = ConfigParser()
 parser.read("settings.ini")
 
 state = configuration.state
+print(state)
 
 app = dash.Dash(
     __name__,
@@ -42,9 +43,35 @@ app.scripts.config.serve_locally = False
 app.config.suppress_callback_exceptions = True
 
 
+def get_new_data():
+
+    global data
+    global latest_update
+
+    data = DataLoader(parser)
+
+    data.load_data()
+    latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
+
+    print("Data updated at " + latest_update)
+
+
+get_new_data()
+
+
 def timeline():
     from application.timeline import timeline
     return timeline
+
+
+def tab_map():
+    from application.map import tab_map
+    return tab_map
+
+
+def fig_map():
+    from application.map import fig_map
+    return fig_map
 
 
 def controller():
@@ -55,8 +82,9 @@ def controller():
 @app.callback(Output("memory", "data"),
               [Input("select_aggregation", "value"),
                Input("select_per_capita", "on"),
-               Input("cases_death_switch", "value")])
-def set_state(aggregation, per_capita, indicator):
+               Input("cases_death_switch", "value"),
+               Input("select-continent", "value")])
+def set_state(aggregation, per_capita, indicator, continent):
     state["aggregation"] = aggregation
     state["per capita"] = per_capita
     if indicator:
@@ -64,8 +92,48 @@ def set_state(aggregation, per_capita, indicator):
     else:
         state["indicator"] = "deaths"
 
+    ctx = dash.callback_context
+
+    if ctx.triggered[0]["prop_id"] == "select-continent.value":
+        state["active"] = data.regions[continent]["name"]
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+
     print(state)
     return state
+
+
+tab_map = tab_map()
+fig_map = fig_map()
+
+
+@app.callback(
+    Output("map", "figure"),
+    [Input("memory", "data")]
+)
+def draw_map(state):
+    indicator_name = data.indicators[state["indicator"]]
+    data_selected = data.latest_data(
+        data.indicators[state["indicator"]])
+
+    fig_map.update_traces(
+        locations=data_selected["iso3"],
+        z=data_selected[state["indicator"]],
+        text=data_selected["region"],
+        zmax=data_selected[state["indicator"]]
+        .replace([np.inf, -np.inf], np.nan)
+        .max()
+        * 0.3,
+    )
+
+    fig_map.update_layout(
+        mapbox_zoom=state["bbox"]["zoom"],
+        mapbox_center=state["bbox"]["center"],
+    )
+
+    fig_map.layout.uirevision = True
+
+    return fig_map
 
 
 tabs_div = dcc.Tabs(
@@ -85,6 +153,7 @@ tabs_div = dcc.Tabs(
             value="map_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
+            children=[tab_map]
         )
 
     ],

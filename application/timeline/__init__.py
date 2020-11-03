@@ -41,8 +41,7 @@ timeline = dcc.Graph(
         "height": str(
             parser.getint(
                 "layout",
-                "height_first_row") -
-            10) +
+                "height_first_row")) +
         "vh",
         "width": "100%"}
 )

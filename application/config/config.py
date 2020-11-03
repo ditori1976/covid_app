@@ -30,6 +30,7 @@ class Config:
                 t=0,
                 pad=0),
             dragmode="select")
+        # startwerte mit DataLoader sync (DRY)
         self.state = {
             "indicator": "cases",
             "aggregation": "days",
@@ -42,9 +43,9 @@ class Config:
             },
             "bbox": {
                 "center": {
-                    "lat": 0,
+                    "lat": 35,
                     "lon": 0,
                 },
-                "zoom": 2
+                "zoom": 0.5
             }
         }
