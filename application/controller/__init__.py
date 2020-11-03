@@ -20,7 +20,8 @@ cases_death_switch = dbc.Col(
     ),
     lg=2,
     md=2,
-    xs=7
+    xs=7,
+    style={'text-align': 'center', 'margin-top': '7px'}
 )
 
 select_aggregation = dbc.Col(
@@ -49,7 +50,8 @@ select_aggregation = dbc.Col(
     lg=3,
     md=4,
     xs=11,
-    style={'text-align': 'center'})
+    # in CSS XXX
+    style={'text-align': 'center', 'margin-top': '7px'})
 
 select_per_capita = dbc.Col(
     daq.BooleanSwitch(
@@ -68,5 +70,6 @@ select_per_capita = dbc.Col(
     ),
     lg=2,
     md=2,
-    xs=6
+    xs=6,
+    style={'text-align': 'center', 'margin-top': '7px'}
 )

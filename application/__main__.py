@@ -108,6 +108,41 @@ fig_map = fig_map()
 
 
 @app.callback(
+    Output("timeline", "figure"),
+    [
+        Input("memory", "data")
+    ]
+)
+def draw_timeline(state):
+    fig = go.Figure(layout=configuration.layout)
+    fig.data = []
+    fig.update_layout({"plot_bgcolor": "white",
+                       "yaxis": {"side": "right"},
+                       })
+    indicator_name = data.indicators[state["indicator"]]
+    data_selected = data.select(
+        state["active"],
+        data.indicators[state["indicator"]])
+    fig.add_trace(
+        go.Bar(name=state["active"],
+               x=data_selected.date,
+               y=data_selected[state["indicator"]]))
+    for country in state["regions"]:
+        fig.add_trace(
+            go.Scatter(name=country,
+                       x=data.select(
+                           country, data.indicators[state["indicator"]]).date,
+                       y=data.select(
+                           country, data.indicators[state["indicator"]])[state["indicator"]]
+                       )
+        )
+
+    fig.update_layout(legend=dict(x=.1, y=.9, bgcolor='rgba(0, 0, 0, 0)',))
+
+    return fig
+
+
+@app.callback(
     Output("map", "figure"),
     [Input("memory", "data")]
 )
@@ -171,7 +206,8 @@ row_1 = [
         ],
         lg=12,
         md=6,
-        xs=12)
+        xs=12,
+        style={'margin-bottom': '7px'})
 ]
 row_2 = controller()
 
