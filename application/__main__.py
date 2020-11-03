@@ -27,7 +27,7 @@ parser = ConfigParser()
 parser.read("settings.ini")
 
 state = configuration.state
-print(state)
+
 
 app = dash.Dash(
     __name__,
@@ -166,7 +166,7 @@ def draw_map(state):
         mapbox_center=state["bbox"]["center"],
     )
 
-    fig_map.layout.uirevision = True
+    #fig_map.layout.uirevision = True
 
     return fig_map
 
