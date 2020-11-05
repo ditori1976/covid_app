@@ -7,6 +7,7 @@ import dash_table
 from dash.exceptions import PreventUpdate
 import plotly.graph_objects as go
 import dash_daq as daq
+import time
 #
 import numpy as np
 from dash.dependencies import Input, Output, State, ALL, MATCH
@@ -100,6 +101,7 @@ def set_state(aggregation, per_capita, indicator, continent):
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     print(state)
+    time.sleep(1)
     return state
 
 
@@ -148,6 +150,9 @@ def draw_timeline(state):
 )
 def draw_map(state):
     print("map")
+    ctx = dash.callback_context
+
+    print(ctx.triggered)
     indicator_name = data.indicators[state["indicator"]]
     data_selected = data.latest_data(
         data.indicators[state["indicator"]])
