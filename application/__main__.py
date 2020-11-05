@@ -147,7 +147,7 @@ def draw_timeline(state):
     [Input("memory", "data")]
 )
 def draw_map(state):
-    print(state)
+    print("map")
     indicator_name = data.indicators[state["indicator"]]
     data_selected = data.latest_data(
         data.indicators[state["indicator"]])
