@@ -157,15 +157,16 @@ def draw_map(state, continent):
     data_selected = data.latest_data(
         data.indicators[state["indicator"]])
 
-    fig_map.update_traces(
-        locations=data_selected["iso3"],
-        z=data_selected[state["indicator"]],
-        text=data_selected["region"],
-        zmax=data_selected[state["indicator"]]
-        .replace([np.inf, -np.inf], np.nan)
-        .max()
-        * 0.3,
-    )
+    if ctx.triggered[0]["prop_id"] == "memory.data":
+        fig_map.update_traces(
+            locations=data_selected["iso3"],
+            z=data_selected[state["indicator"]],
+            text=data_selected["region"],
+            zmax=data_selected[state["indicator"]]
+            .replace([np.inf, -np.inf], np.nan)
+            .max()
+            * 0.3,
+        )
     if ctx.triggered[0]["prop_id"] == "select-continent.value":
         fig_map.update_layout(
             mapbox_zoom=state["bbox"]["zoom"],
