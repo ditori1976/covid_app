@@ -101,7 +101,7 @@ def set_state(aggregation, per_capita, indicator, continent):
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     print(state)
-    time.sleep(1)
+    # time.sleep(1)
     return state
 
 
@@ -223,7 +223,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            dcc.Store(id='memory', storage_type='local'),
+            dcc.Store(id='memory'),
         ],
         fluid=True
     )
