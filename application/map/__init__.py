@@ -44,7 +44,7 @@ fig_map.update_layout(
     ),
 )
 
-#fig_map.layout.uirevision = True
+fig_map.layout.uirevision = True
 
 map_div = dcc.Graph(
     id="map",

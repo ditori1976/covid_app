@@ -146,12 +146,12 @@ def draw_timeline(state):
 
 @app.callback(
     Output("map", "figure"),
-    [Input("memory", "data")]
+    [Input("memory", "data"),
+     Input("select-continent", "value")]
 )
-def draw_map(state):
-    print("map")
+def draw_map(state, continent):
+    print(continent)
     ctx = dash.callback_context
-
     print(ctx.triggered)
     indicator_name = data.indicators[state["indicator"]]
     data_selected = data.latest_data(
@@ -166,13 +166,13 @@ def draw_map(state):
         .max()
         * 0.3,
     )
+    if ctx.triggered[0]["prop_id"] == "select-continent.value":
+        fig_map.update_layout(
+            mapbox_zoom=state["bbox"]["zoom"],
+            mapbox_center=state["bbox"]["center"],
+        )
 
-    fig_map.update_layout(
-        mapbox_zoom=state["bbox"]["zoom"],
-        mapbox_center=state["bbox"]["center"],
-    )
-
-    #fig_map.layout.uirevision = True
+    fig_map.layout.uirevision = True
 
     return fig_map
 
