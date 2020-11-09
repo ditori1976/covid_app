@@ -54,6 +54,10 @@ map_div = dcc.Graph(
         "layout", "height_first_row") + "vh", "width": "100%"}
 )
 
+
+def tab_map(tabs_div, map_div)
+
+
 tab_map = dbc.Row(
     children=[
         dbc.Col(tabs_div, width=3),
@@ -61,3 +65,4 @@ tab_map = dbc.Row(
     ],
     no_gutters=True
 )
+return tab_map

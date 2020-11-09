@@ -10,7 +10,7 @@ import dash_daq as daq
 import time
 #
 import numpy as np
-from dash.dependencies import Input, Output, State, ALL, MATCH
+from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 # import time
 import json
 # import math
@@ -65,14 +65,92 @@ def timeline():
     return timeline
 
 
-def tab_map():
-    from application.map import tab_map
-    return tab_map
+# def tab_map():
+#     from application.map import tab_map
+#     return tab_map
 
 
-def fig_map():
-    from application.map import fig_map
-    return fig_map
+# def fig_map():
+#     from application.map import fig_map
+
+#     data_selected = data.latest_data(
+#         data.indicators[state["indicator"]])
+
+#     # if ctx.triggered[0]["prop_id"] == "memory.data":
+#     fig_map.update_traces(
+#         locations=data_selected["iso3"],
+#         z=data_selected[state["indicator"]],
+#         text=data_selected["region"],
+#         zmax=data_selected[state["indicator"]]
+#         .replace([np.inf, -np.inf], np.nan)
+#         .max()
+#         * 0.3,
+#     )
+#     return fig_map
+
+tabs_div = dcc.Tabs(
+    id="select-continent",
+    value=parser.get("data", "continent"),
+    vertical=True,
+    children=[
+        dcc.Tab(
+            label=information["name"],
+            value=region,
+            className="custom-tab",
+            selected_className="custom-tab--selected",
+        )
+        for region, information in data.regions.items()
+    ],
+    parent_className="custom-tabs",
+    className="custom-tabs-container",
+    style={"width": "100%", "margin": 0, "padding": 0},
+)
+
+
+fig_map = go.Figure(
+    go.Choroplethmapbox(
+        colorscale="BuPu",
+        geojson=data.countries,
+        zmin=0,
+        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
+        colorbar={
+            "thickness": 10,
+            "len": 0.4,
+            "x": 0,
+            "y": 0.3,
+            "outlinewidth": 0,
+        },
+    )
+)
+
+fig_map.update_layout(
+    margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
+    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
+    mapbox=go.layout.Mapbox(
+        accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
+        style="light",
+        pitch=0,
+    ),
+)
+
+fig_map.layout.uirevision = True
+
+map_div = dcc.Graph(
+    id="map",
+    config={
+        "displayModeBar": False},
+    style={"height": parser.get(
+        "layout", "height_first_row") + "vh", "width": "100%"}
+)
+
+
+tab_map = dbc.Row(
+    children=[
+        dbc.Col(tabs_div, width=3),
+        dbc.Col(map_div, width=9)
+    ],
+    no_gutters=True
+)
 
 
 def controller():
@@ -105,8 +183,8 @@ def set_state(aggregation, per_capita, indicator, continent):
     return state
 
 
-tab_map = tab_map()
-fig_map = fig_map()
+# tab_map = tab_map()
+# fig_map = fig_map()
 
 
 @app.callback(
@@ -144,16 +222,39 @@ def draw_timeline(state):
     return fig
 
 
+# app.clientside_callback(
+#     """
+#     function (fig_dict, title) {
+
+#        if (!fig_dict) {
+#            throw "Figure data not loaded, aborting update."
+#        }
+
+#        // Copy the fig_data so we can modify it
+#        // Is this required? Not sure if fig_data is passed by reference or value
+#        fig_dict_copy = {...fig_dict};
+
+#        fig_dict_copy["layout"]["title"] = title;
+
+#        return fig_dict_copy
+
+#     }
+#     """,
+#     Output(component_id="map", component_property="figure"),
+#     [Input("memory", "data"), Input("select-continent", "value")],
+# )
+
+
 @app.callback(
     Output("map", "figure"),
     [Input("memory", "data"),
      Input("select-continent", "value")]
 )
 def draw_map(state, continent):
-    print(continent)
+    # print(continent)
     ctx = dash.callback_context
-    print(ctx.triggered)
-    indicator_name = data.indicators[state["indicator"]]
+    # print(ctx.triggered)
+    #indicator_name = data.indicators[state["indicator"]]
     data_selected = data.latest_data(
         data.indicators[state["indicator"]])
 
