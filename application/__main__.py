@@ -247,14 +247,13 @@ def draw_timeline(state):
 
 @app.callback(
     Output("map", "figure"),
-    [Input("memory", "data"),
-     Input("select-continent", "value")]
+    [Input("memory", "data")]
 )
-def draw_map(state, continent):
+def draw_map(state):
 
-    indicator_name = data.indicators[state["indicators"][0]]["name"]
+    indicator_name = state["indicator"]
     data_selected = data.latest_data(
-        data.indicators[state["indicators"][0]])
+        data.indicators[state["indicator"]])
 
     fig_map.update_traces(
         locations=data_selected["iso3"],
