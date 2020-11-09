@@ -251,28 +251,25 @@ def draw_timeline(state):
      Input("select-continent", "value")]
 )
 def draw_map(state, continent):
-    # print(continent)
-    ctx = dash.callback_context
-    # print(ctx.triggered)
-    #indicator_name = data.indicators[state["indicator"]]
-    data_selected = data.latest_data(
-        data.indicators[state["indicator"]])
 
-    if ctx.triggered[0]["prop_id"] == "memory.data":
-        fig_map.update_traces(
-            locations=data_selected["iso3"],
-            z=data_selected[state["indicator"]],
-            text=data_selected["region"],
-            zmax=data_selected[state["indicator"]]
-            .replace([np.inf, -np.inf], np.nan)
-            .max()
-            * 0.3,
-        )
-    if ctx.triggered[0]["prop_id"] == "select-continent.value":
-        fig_map.update_layout(
-            mapbox_zoom=state["bbox"]["zoom"],
-            mapbox_center=state["bbox"]["center"],
-        )
+    indicator_name = data.indicators[state["indicators"][0]]["name"]
+    data_selected = data.latest_data(
+        data.indicators[state["indicators"][0]])
+
+    fig_map.update_traces(
+        locations=data_selected["iso3"],
+        z=data_selected[indicator_name],
+        text=data_selected["region"],
+        zmax=data_selected[indicator_name]
+        .replace([np.inf, -np.inf], np.nan)
+        .max()
+        * 0.3,
+    )
+
+    fig_map.update_layout(
+        mapbox_zoom=state["bbox"]["zoom"],
+        mapbox_center=state["bbox"]["center"],
+    )
 
     fig_map.layout.uirevision = True
 
