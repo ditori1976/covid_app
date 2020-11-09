@@ -162,10 +162,21 @@ def controller():
               [Input("select_aggregation", "value"),
                Input("select_per_capita", "on"),
                Input("cases_death_switch", "value"),
-               Input("select-continent", "value")])
-def set_state(aggregation, per_capita, indicator, continent):
+               Input("select-continent", "value")],
+              [State("map", "figure")])
+def set_state(aggregation, per_capita, indicator, continent, figure):
     state["aggregation"] = aggregation
     state["per capita"] = per_capita
+    if figure:
+        lat = figure["layout"]["mapbox"]["center"]["lat"]
+        lon = figure["layout"]["mapbox"]["center"]["lon"]
+        zoom = figure["layout"]["mapbox"]["zoom"]
+        state["bbox"]["center"]["lat"] = lat
+        state["bbox"]["center"]["lon"] = lon
+        state["bbox"]["zoom"] = zoom
+    else:
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
     if indicator:
         state["indicator"] = "cases"
     else:
