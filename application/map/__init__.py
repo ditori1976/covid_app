@@ -1,4 +1,4 @@
-from application.__main__ import dbc, dcc, parser, pd, go, configuration, data
+
 
 tabs_div = dcc.Tabs(
     id="select-continent",
