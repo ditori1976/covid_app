@@ -13,6 +13,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
+import logging
 
 
 # import pandas as pd
@@ -26,6 +27,13 @@ from configparser import ConfigParser
 # import json
 # import math
 # from datetime import datetime
+
+"""
+logging
+"""
+logging.basicConfig()
+logging.getLogger().setLevel(logging.INFO)
+logger = logging.getLogger()
 
 
 # configs
@@ -71,7 +79,7 @@ def get_new_data():
     # data.load_data()
     latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
 
-    print("Data updated at " + latest_update)
+    logger.info("Data updated at " + latest_update)
 
 
 get_new_data()
@@ -167,7 +175,7 @@ def set_layout():
             dbc.Row(row_2, no_gutters=False, justify="center"),
             # dbc.Row(comparsion, no_gutters=False, justify="center"),
 
-            dcc.Store(id='memory'),
+            dcc.Store(id='memory')
         ],
         fluid=True
     )
@@ -181,14 +189,35 @@ callbacks
 """
 
 
+@app.callback(Output("memory", "data"),
+              [Input("select-continent", "value"),
+               Input("cases_death_switch", "value")],
+              [State("map", "figure")])
+def update_state(continent, indicator, map_figure):
+    # print(map_figure)
+    state["bbox"]["center"] = data.regions[continent]["center"]
+    state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+    if indicator:
+        state["indicator"] = "cases"
+    else:
+        state["indicator"] = "deaths"
+    print(state)
+    return state
+
+
 @app.callback(
     Output("map", "figure"),
     [
-        Input("memory", "data")
+        Input("select-continent", "value")
     ]
 )
-def draw_map(state):
+def draw_map(continent):
     map_figure = map_fig(parser, data)
+    map_figure.update_layout(
+        mapbox_zoom=data.regions[continent]["zoom"],
+        mapbox_center=data.regions[continent]["center"],
+    )
+
     return map_figure
 
 
