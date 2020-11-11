@@ -6,7 +6,7 @@ from application.layout import graph_template, continents
 from application.config.config import Config
 
 
-from dash import Dash
+from dash import Dash, callback_context
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -191,11 +191,18 @@ callbacks
 
 @app.callback(Output("memory", "data"),
               [Input("select-continent", "value"),
-               Input("cases_death_switch", "value")],
+               Input("map", "clickData"),
+               Input("cases_death_switch", "value"),
+               ],
               [State("map", "figure")])
-def update_state(continent, indicator, map_figure):
-    state["bbox"]["center"] = data.regions[continent]["center"]
-    state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+def update_state(continent, country, indicator, map_figure):
+
+    if callback_context.triggered[0]["prop_id"] == "select-continent.value":
+        state["active"] = data.regions[continent]["name"]
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+    elif callback_context.triggered[0]["prop_id"] == "map.clickData":
+        state["active"] = country["points"][0]["text"]
 
     if indicator:
         state["indicator"] = "cases"
@@ -208,9 +215,8 @@ def update_state(continent, indicator, map_figure):
 @app.callback(
     Output("map", "figure"),
     [
-
         Input("memory", "data")
-    ],)
+    ])
 def draw_map(state):
     map_figure = map_fig(parser, data)
 
