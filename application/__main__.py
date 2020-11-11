@@ -22,7 +22,7 @@ import logging
 # import plotly.graph_objects as go
 # import dash_daq as daq
 # import time
-# import numpy as np
+import numpy as np
 # import time
 # import json
 # import math
@@ -76,7 +76,7 @@ def get_new_data():
 
     data = DataLoader(parser)
 
-    # data.load_data()
+    data.load_data()
     latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
 
     logger.info("Data updated at " + latest_update)
@@ -197,6 +197,7 @@ def update_state(continent, indicator, map_figure):
     # print(map_figure)
     state["bbox"]["center"] = data.regions[continent]["center"]
     state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+
     if indicator:
         state["indicator"] = "cases"
     else:
@@ -208,11 +209,32 @@ def update_state(continent, indicator, map_figure):
 @app.callback(
     Output("map", "figure"),
     [
-        Input("select-continent", "value")
-    ]
-)
-def draw_map(continent):
+        Input("select-continent", "value"),
+        Input("memory", "data")
+    ],)
+def draw_map(continent, state):
     map_figure = map_fig(parser, data)
+
+    indicator_name = state["indicator"]
+    data_selected = data.latest_data(
+        data.indicators[state["indicator"]])
+
+    map_figure.update_traces(
+        locations=data_selected["iso3"],
+        z=data_selected[indicator_name],
+        text=data_selected["region"],
+        zmax=data_selected[indicator_name]
+        .replace([np.inf, -np.inf], np.nan)
+        .max()
+        * 0.3,
+    )
+
+    map_figure.update_layout(
+        mapbox_zoom=state["bbox"]["zoom"],
+        mapbox_center=state["bbox"]["center"],
+    )
+
+    map_figure.layout.uirevision = True
     map_figure.update_layout(
         mapbox_zoom=data.regions[continent]["zoom"],
         mapbox_center=data.regions[continent]["center"],

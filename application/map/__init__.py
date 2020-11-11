@@ -6,7 +6,7 @@ def map_fig(parser, data):
     fig_map = go.Figure(
         go.Choroplethmapbox(
             colorscale="BuPu",
-            # geojson=data.countries,
+            geojson=data.countries,
             zmin=0,
             marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
             colorbar={
