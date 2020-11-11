@@ -177,7 +177,7 @@ def set_layout():
             dbc.Row(row_2, no_gutters=False, justify="center"),
             # dbc.Row(comparsion, no_gutters=False, justify="center"),
 
-            dcc.Store(id='memory')
+            dcc.Store(id='memory', storage_type='local')
         ],
         fluid=True
     )
