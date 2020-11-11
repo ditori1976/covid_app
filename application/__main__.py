@@ -90,7 +90,9 @@ layout elements
 """
 controller = controller()
 
+map_figure = map_fig(parser, data)
 map_graph = graph_template("map", parser)
+map_graph.figure = map_figure
 continent_div = continents(parser, data)
 
 
@@ -195,7 +197,18 @@ callbacks
                Input("cases_death_switch", "value"),
                ],
               [State("map", "figure")])
-def update_state(continent, country, indicator, map_figure):
+def update_state(continent, country, indicator, map_fig):
+    if map_fig:
+        print("test")
+        # lat = map_fig["layout"]["mapbox"]["center"]["lat"]
+        # lon = map_fig["layout"]["mapbox"]["center"]["lon"]
+        # zoom = map_fig["layout"]["mapbox"]["zoom"]
+        # state["bbox"]["center"]["lat"] = lat
+        # state["bbox"]["center"]["lon"] = lon
+        # state["bbox"]["zoom"] = zoom
+    else:
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
@@ -218,7 +231,6 @@ def update_state(continent, country, indicator, map_figure):
         Input("memory", "data")
     ])
 def draw_map(state):
-    map_figure = map_fig(parser, data)
 
     indicator_name = state["indicator"]
     data_selected = data.latest_data(
@@ -244,6 +256,7 @@ def draw_map(state):
     #     mapbox_zoom=data.regions[continent]["zoom"],
     #     mapbox_center=data.regions[continent]["center"],
     # )
+    logger.info("map")
 
     return map_figure
 

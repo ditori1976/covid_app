@@ -3,6 +3,8 @@ import plotly.graph_objects as go
 
 def map_fig(parser, data):
 
+    print("initialize map")
+
     fig_map = go.Figure(
         go.Choroplethmapbox(
             colorscale="BuPu",
