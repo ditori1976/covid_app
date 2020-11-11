@@ -173,7 +173,7 @@ class Extract:
 
         regions = {
             # zoom has to be 0.5 otherwise mapbox fails XXX
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
             "Europe": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "North-A.": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
             "South-A.": {

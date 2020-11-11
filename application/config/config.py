@@ -46,6 +46,6 @@ class Config:
                     "lat": 35,
                     "lon": 0,
                 },
-                "zoom": 0.5
+                "zoom": 1
             }
         }
