@@ -1,28 +1,33 @@
 from application.timeline import timeline
 from application.controller import controller
 from application.data.data_loader import DataLoader
+from application.layout import graph_template
+from application.config.config import Config
 
-# import pandas as pd
+
 from dash import Dash
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
+from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from configparser import ConfigParser
+
+
+# import pandas as pd
 #import dash_table
 #from dash.exceptions import PreventUpdate
 #import plotly.graph_objects as go
 #import dash_daq as daq
 #import time
 #import numpy as np
-from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 # import time
 #import json
 # import math
-#from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+# from datetime import datetime
+
 
 # configs
-from configparser import ConfigParser
-from application.config.config import Config
 configuration = Config()
 parser = ConfigParser()
 parser.read("settings.ini")
@@ -30,6 +35,10 @@ parser.read("settings.ini")
 state = configuration.state
 
 
+"""
+create Dash app
+load stylesheets
+"""
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -40,8 +49,15 @@ app = Dash(
         }
     ]
 )
+app.title = "COVID-19"
 app.scripts.config.serve_locally = False
 app.config.suppress_callback_exceptions = True
+
+
+"""
+load data
+initialize DataLoader
+"""
 
 
 def get_new_data():
@@ -60,21 +76,19 @@ def get_new_data():
 get_new_data()
 
 
-def graph_template(id, parser):
-    return dcc.Graph(
-        id=id,
-        config={
-            "displayModeBar": False},
-        style={"height": parser.get(
-            "layout", "height_first_row") + "vh", "width": "100%"})
-
-
+"""
+layout elements
+"""
 controller = controller()
 
 map_graph = graph_template("map", parser)
 
 timeline_tab = graph_template("timeline", parser)
 
+
+"""
+layout
+"""
 continent_div = dcc.Tabs(
     id="select-continent",
     value=parser.get("data", "continent"),
@@ -95,8 +109,12 @@ continent_div = dcc.Tabs(
 
 map_tab = dbc.Row(
     children=[
-        dbc.Col(continent_div, width=3),
-        dbc.Col(map_graph, width=9)
+        dbc.Col(continent_div, lg=2,
+                md=3,
+                xs=12,),
+        dbc.Col(map_graph, lg=10,
+                md=9,
+                xs=12,)
     ],
     no_gutters=True
 )
@@ -162,7 +180,15 @@ def set_layout():
 
 app.layout = set_layout
 
-app.title = "COVID-19"
+
+"""
+callbacks
+"""
+
+
+"""
+start server
+"""
 
 application = app.server
 
