@@ -194,7 +194,6 @@ callbacks
                Input("cases_death_switch", "value")],
               [State("map", "figure")])
 def update_state(continent, indicator, map_figure):
-    # print(map_figure)
     state["bbox"]["center"] = data.regions[continent]["center"]
     state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
@@ -202,17 +201,17 @@ def update_state(continent, indicator, map_figure):
         state["indicator"] = "cases"
     else:
         state["indicator"] = "deaths"
-    print(state)
+    logger.info(state)
     return state
 
 
 @app.callback(
     Output("map", "figure"),
     [
-        Input("select-continent", "value"),
+
         Input("memory", "data")
     ],)
-def draw_map(continent, state):
+def draw_map(state):
     map_figure = map_fig(parser, data)
 
     indicator_name = state["indicator"]
@@ -235,10 +234,10 @@ def draw_map(continent, state):
     )
 
     map_figure.layout.uirevision = True
-    map_figure.update_layout(
-        mapbox_zoom=data.regions[continent]["zoom"],
-        mapbox_center=data.regions[continent]["center"],
-    )
+    # map_figure.update_layout(
+    #     mapbox_zoom=data.regions[continent]["zoom"],
+    #     mapbox_center=data.regions[continent]["center"],
+    # )
 
     return map_figure
 
