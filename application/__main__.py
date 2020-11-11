@@ -209,7 +209,8 @@ def update_state(continent, country, indicator, map_fig):
     else:
         state["bbox"]["center"] = data.regions[continent]["center"]
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
-
+    logger.info(callback_context.triggered[0]["prop_id"])
+    logger.info(country["points"][0]["text"])
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
         state["bbox"]["center"] = data.regions[continent]["center"]
