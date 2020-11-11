@@ -1,10 +1,7 @@
 import plotly.graph_objects as go
 
-# Create figure
 
-
-def timeline(configuration, parser):
-    #from application.__main__ import dcc, parser, pd, go, configuration
+def timeline(configuration):
 
     fig = go.Figure(layout=configuration.layout)
 

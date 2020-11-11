@@ -1,7 +1,8 @@
 from application.timeline import timeline
+from application.map import map_fig
 from application.controller import controller
 from application.data.data_loader import DataLoader
-from application.layout import graph_template
+from application.layout import graph_template, continents
 from application.config.config import Config
 
 
@@ -15,14 +16,14 @@ from configparser import ConfigParser
 
 
 # import pandas as pd
-#import dash_table
-#from dash.exceptions import PreventUpdate
-#import plotly.graph_objects as go
-#import dash_daq as daq
-#import time
-#import numpy as np
+# import dash_table
+# from dash.exceptions import PreventUpdate
+# import plotly.graph_objects as go
+# import dash_daq as daq
 # import time
-#import json
+# import numpy as np
+# import time
+# import json
 # import math
 # from datetime import datetime
 
@@ -82,36 +83,30 @@ layout elements
 controller = controller()
 
 map_graph = graph_template("map", parser)
+continent_div = continents(parser, data)
+
 
 timeline_tab = graph_template("timeline", parser)
+
+add_compare = dbc.Row("add Europe to comparsion")
+
+info = dbc.Row("2342342 cases in Europe on 2020-01-10")
 
 
 """
 layout
 """
-continent_div = dcc.Tabs(
-    id="select-continent",
-    value=parser.get("data", "continent"),
-    vertical=True,
-    children=[
-        dcc.Tab(
-            label=information["name"],
-            value=region,
-            className="custom-tab",
-            selected_className="custom-tab--selected",
-        )
-        for region, information in data.regions.items()
-    ],
-    parent_className="custom-tabs",
-    className="custom-tabs-container",
-    style={"width": "100%", "margin": 0, "padding": 0},
-)
-
 map_tab = dbc.Row(
     children=[
-        dbc.Col(continent_div, lg=2,
-                md=3,
-                xs=12,),
+        dbc.Col(
+            children=[
+                continent_div,
+                info,
+                add_compare
+            ],
+            lg=2,
+            md=3,
+            xs=12,),
         dbc.Col(map_graph, lg=10,
                 md=9,
                 xs=12,)
@@ -170,7 +165,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            #dbc.Row(comparsion, no_gutters=False, justify="center"),
+            # dbc.Row(comparsion, no_gutters=False, justify="center"),
 
             dcc.Store(id='memory'),
         ],
@@ -184,6 +179,28 @@ app.layout = set_layout
 """
 callbacks
 """
+
+
+@app.callback(
+    Output("map", "figure"),
+    [
+        Input("memory", "data")
+    ]
+)
+def draw_map(state):
+    map_figure = map_fig(parser, data)
+    return map_figure
+
+
+@app.callback(
+    Output("timeline", "figure"),
+    [
+        Input("memory", "data")
+    ]
+)
+def draw_timeline(state):
+    timeline_figure = timeline(configuration)
+    return timeline_figure
 
 
 """
