@@ -5,6 +5,7 @@ dash_bootstrap_components
 dash_html_components
 dash_table
 dash_daq
+flask-caching
 plotly
 requests
 bs4
