@@ -163,6 +163,7 @@ row_2 = dbc.Col(
     children=[
         controller,
         html.Div(id="update")
+
     ],
     lg=12,
     md=6,
@@ -175,9 +176,10 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            # dbc.Row(comparsion, no_gutters=False, justify="center"),
+            # dbc.Row(html.Div(id='memory'),, no_gutters=False,
+            # justify="center"),
 
-            dcc.Store(id='memory', storage_type='local')
+            dcc.Store(id='memory')
         ],
         fluid=True
     )
@@ -191,31 +193,30 @@ callbacks
 """
 
 
-@app.callback(Output("memory", "data"),
+@app.callback(Output("update", "children"),
               [Input("select-continent", "value"),
                Input("map", "clickData"),
                Input("cases_death_switch", "value"),
                ],
               [State("map", "figure")])
 def update_state(continent, country, indicator, map_fig):
-    if map_fig:
-        print("test")
-        # lat = map_fig["layout"]["mapbox"]["center"]["lat"]
-        # lon = map_fig["layout"]["mapbox"]["center"]["lon"]
-        # zoom = map_fig["layout"]["mapbox"]["zoom"]
-        # state["bbox"]["center"]["lat"] = lat
-        # state["bbox"]["center"]["lon"] = lon
-        # state["bbox"]["zoom"] = zoom
-    else:
-        state["bbox"]["center"] = data.regions[continent]["center"]
-        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
-    logger.info(callback_context.triggered[0]["prop_id"])
-    logger.info(country["points"][0]["text"])
+    # if map_fig:
+    #     print("test")
+    #     # lat = map_fig["layout"]["mapbox"]["center"]["lat"]
+    #     # lon = map_fig["layout"]["mapbox"]["center"]["lon"]
+    #     # zoom = map_fig["layout"]["mapbox"]["zoom"]
+    #     # state["bbox"]["center"]["lat"] = lat
+    #     # state["bbox"]["center"]["lon"] = lon
+    #     # state["bbox"]["zoom"] = zoom
+    # else:
+    #     state["bbox"]["center"] = data.regions[continent]["center"]
+    #     state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
         state["bbox"]["center"] = data.regions[continent]["center"]
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
-    elif callback_context.triggered[0]["prop_id"] == "map.clickData":
+    if callback_context.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = country["points"][0]["text"]
 
     if indicator:
@@ -229,7 +230,7 @@ def update_state(continent, country, indicator, map_fig):
 @app.callback(
     Output("map", "figure"),
     [
-        Input("memory", "data")
+        Input("update", "children")
     ])
 def draw_map(state):
 
@@ -265,7 +266,7 @@ def draw_map(state):
 @app.callback(
     Output("timeline", "figure"),
     [
-        Input("memory", "data")
+        Input("update", "children")
     ]
 )
 def draw_timeline(state):
