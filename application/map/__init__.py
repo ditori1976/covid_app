@@ -1,9 +1,10 @@
 import plotly.graph_objects as go
+from application.config import logger
 
 
 def map_fig(parser, data):
 
-    print("initialize map")
+    logger.info("initialize map")
 
     fig_map = go.Figure(
         go.Choroplethmapbox(

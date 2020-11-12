@@ -1,10 +1,9 @@
-from flask_caching import Cache
 from application.timeline import timeline
 from application.map import map_fig
 from application.controller import controller
 from application.data.data_loader import DataLoader
 from application.layout import graph_template, continents
-from application.config.config import Config
+from application.config import Config, logger
 
 
 from dash import Dash, callback_context
@@ -14,7 +13,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
-import logging
+# mport logging
 
 
 # import pandas as pd
@@ -28,13 +27,6 @@ import numpy as np
 import json
 # import math
 # from datetime import datetime
-
-"""
-logging
-"""
-logging.basicConfig()
-logging.getLogger().setLevel(logging.INFO)
-logger = logging.getLogger()
 
 
 # configs
@@ -203,18 +195,6 @@ callbacks
                State("update", "children")])
 def update_state(continent, country, indicator, map_fig, state):
     state = json.loads(state)
-    logger.info(state)
-    # if map_fig:
-    #     logger.info(map_fig["layout"]["mapbox"])
-    # #     lat = map_fig["layout"]["mapbox"]["center"]["lat"]
-    #     lon = map_fig["layout"]["mapbox"]["center"]["lon"]
-    #     zoom = map_fig["layout"]["mapbox"]["zoom"]
-    #     state["bbox"]["center"]["lat"] = lat
-    #     state["bbox"]["center"]["lon"] = lon
-    #     state["bbox"]["zoom"] = zoom
-    # else:
-    # state["bbox"]["center"] = data.regions[continent]["center"]
-    # state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
@@ -259,11 +239,6 @@ def draw_map(state):
     )
 
     map_figure.layout.uirevision = True
-    # map_figure.update_layout(
-    #     mapbox_zoom=data.regions[continent]["zoom"],
-    #     mapbox_center=data.regions[continent]["center"],
-    # )
-    logger.info("map")
 
     return map_figure
 
