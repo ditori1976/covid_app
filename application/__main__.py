@@ -163,7 +163,7 @@ row_1 = dbc.Col(
 row_2 = dbc.Col(
     children=[
         controller,
-        html.Div(id="update")
+        html.Div(id="update", children=json.dumps(state))
 
     ],
     lg=12,
@@ -199,19 +199,22 @@ callbacks
                Input("map", "clickData"),
                Input("cases_death_switch", "value"),
                ],
-              [State("map", "figure")])
-def update_state(continent, country, indicator, map_fig):
-    # if map_fig:
-    #     print("test")
-    #     # lat = map_fig["layout"]["mapbox"]["center"]["lat"]
-    #     # lon = map_fig["layout"]["mapbox"]["center"]["lon"]
-    #     # zoom = map_fig["layout"]["mapbox"]["zoom"]
-    #     # state["bbox"]["center"]["lat"] = lat
-    #     # state["bbox"]["center"]["lon"] = lon
-    #     # state["bbox"]["zoom"] = zoom
+              [State("map", "figure"),
+               State("update", "children")])
+def update_state(continent, country, indicator, map_fig, state):
+    state = json.loads(state)
+    logger.info(state)
+    if map_fig:
+        logger.info(map_fig["layout"]["mapbox"])
+    #     lat = map_fig["layout"]["mapbox"]["center"]["lat"]
+    #     lon = map_fig["layout"]["mapbox"]["center"]["lon"]
+    #     zoom = map_fig["layout"]["mapbox"]["zoom"]
+    #     state["bbox"]["center"]["lat"] = lat
+    #     state["bbox"]["center"]["lon"] = lon
+    #     state["bbox"]["zoom"] = zoom
     # else:
-    #     state["bbox"]["center"] = data.regions[continent]["center"]
-    #     state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]

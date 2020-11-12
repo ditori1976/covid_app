@@ -28,6 +28,9 @@ def map_fig(parser, data):
             accesstoken=parser.get("map", "accesstoken"),
             style="light",
             pitch=0,
+            # remove hard coded!!!
+            center={'lat': 50, 'lon': 5},
+            zoom=2
         ),
     )
 

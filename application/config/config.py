@@ -43,9 +43,9 @@ class Config:
             },
             "bbox": {
                 "center": {
-                    "lat": 35,
-                    "lon": 0,
+                    "lat": 50,
+                    "lon": 5,
                 },
-                "zoom": 1
+                "zoom": 2
             }
         }
