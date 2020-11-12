@@ -36,8 +36,8 @@ class Config:
             "indicator": "cases",
             "aggregation": "days",
             "per capita": True,
-            "regions": ["World"],
-            "active": "World",
+            "regions": ["Europe"],
+            "active": "Europe",
             "axis": {
                 "x": "date",
                 "y": "linear"
