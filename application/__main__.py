@@ -204,17 +204,17 @@ callbacks
 def update_state(continent, country, indicator, map_fig, state):
     state = json.loads(state)
     logger.info(state)
-    if map_fig:
-        logger.info(map_fig["layout"]["mapbox"])
-    #     lat = map_fig["layout"]["mapbox"]["center"]["lat"]
+    # if map_fig:
+    #     logger.info(map_fig["layout"]["mapbox"])
+    # #     lat = map_fig["layout"]["mapbox"]["center"]["lat"]
     #     lon = map_fig["layout"]["mapbox"]["center"]["lon"]
     #     zoom = map_fig["layout"]["mapbox"]["zoom"]
     #     state["bbox"]["center"]["lat"] = lat
     #     state["bbox"]["center"]["lon"] = lon
     #     state["bbox"]["zoom"] = zoom
     # else:
-        state["bbox"]["center"] = data.regions[continent]["center"]
-        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+    # state["bbox"]["center"] = data.regions[continent]["center"]
+    # state["bbox"]["zoom"] = data.regions[continent]["zoom"]
 
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
