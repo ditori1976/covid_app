@@ -24,7 +24,7 @@ import logging
 # import time
 import numpy as np
 # import time
-# import json
+import json
 # import math
 # from datetime import datetime
 
@@ -223,8 +223,8 @@ def update_state(continent, country, indicator, map_fig):
         state["indicator"] = "cases"
     else:
         state["indicator"] = "deaths"
-    logger.info(state)
-    return state
+    logger.info(json.dumps(state))
+    return json.dumps(state)
 
 
 @app.callback(
@@ -233,6 +233,7 @@ def update_state(continent, country, indicator, map_fig):
         Input("update", "children")
     ])
 def draw_map(state):
+    state = json.loads(state)
 
     indicator_name = state["indicator"]
     data_selected = data.latest_data(
