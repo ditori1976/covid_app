@@ -1,30 +1,31 @@
 from application.timeline import timeline
 from application.map import map_fig
 from application.controller import controller
+from application.comparsion import comparsion_add, comparsion_list
 from application.data.data_loader import DataLoader
 from application.layout import graph_template, continents
 from application.config import Config, logger
 
 
-from dash import Dash, callback_context
+from dash import Dash, callback_context, no_update
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
-# mport logging
+import json
 
 
 # import pandas as pd
 # import dash_table
 # from dash.exceptions import PreventUpdate
-# import plotly.graph_objects as go
+import plotly.graph_objects as go
 # import dash_daq as daq
 # import time
 import numpy as np
 # import time
-import json
+
 # import math
 # from datetime import datetime
 
@@ -90,8 +91,9 @@ continent_div = continents(parser, data)
 
 
 timeline_tab = graph_template("timeline", parser)
+# timeline_tab.figure = timeline_figure
 
-add_compare = dbc.Row("add Europe to comparsion")
+add_compare = comparsion_add("add to compare", parser)
 
 info = dbc.Row("2342342 cases in Europe on 2020-01-10")
 
@@ -157,7 +159,7 @@ row_2 = dbc.Col(
         controller,
         html.Div(
             id="state",
-            children=json.dumps(state))
+            children=json.dumps(state), style={'display': 'None'})
 
     ],
     lg=12,
@@ -171,6 +173,7 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
+            comparsion_list(parser),
             dcc.Store(id='memory')
         ],
         fluid=True
@@ -190,12 +193,13 @@ callbacks
     [
         Input("select-continent", "value"),
         Input("map", "clickData"),
+        Input("list-countries", "value"),
         Input("cases_death_switch", "value"),
         Input("select_per_capita", "on"),
         Input("select_aggregation", "value")
     ],
     [State("state", "children")])
-def update_state(continent, country, indicator,
+def update_state(continent, country, regions, indicator,
                  per_capita, aggregation, state):
     state = json.loads(state)
     print(state)
@@ -206,6 +210,8 @@ def update_state(continent, country, indicator,
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
     if callback_context.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = country["points"][0]["text"]
+
+    state["regions"] = regions
 
     if indicator:
         state["indicator"] = "cases"
@@ -259,29 +265,78 @@ def draw_map(state):
     ]
 )
 def draw_timeline(state):
+    state = json.loads(state)
+
     timeline_figure = timeline(configuration)
+    data_selected = data.select(
+        state["active"],
+        data.indicators[state["indicator"]])
+    timeline_figure.add_trace(
+        go.Bar(name=state["active"],
+               x=data_selected.date,
+               y=data_selected[state["indicator"]]))
+    for country in state["regions"]:
+        timeline_figure.add_trace(
+            go.Scatter(name=country,
+                       x=data.select(
+                           country, data.indicators[state["indicator"]]).date,
+                       y=data.select(
+                           country, data.indicators[state["indicator"]])[state["indicator"]]
+                       )
+        )
+
     return timeline_figure
+
+
+@app.callback(
+    Output("add", "children"),
+    [
+        Input("state", "children")
+    ]
+)
+def add_comparsion(state):
+    state = json.loads(state)
+    return "add {} to comparsion".format(state["active"])
+
+
+@app.callback(
+    [Output("list-countries", "options"),
+     Output("list-countries", "value"), ],
+    [
+        Input("add", "n_clicks"),
+        Input("del", "n_clicks")
+    ],
+    [
+        State("state", "children"),
+        State("list-countries", "options"),
+        State("list-countries", "value")
+    ],
+)
+def edit_list(add, delete, state,
+              list_countries, list_countries_values):
+
+    state = json.loads(state)
+
+    if callback_context.triggered[0]["prop_id"] == "del.n_clicks":
+        return [], []
+
+    if add:
+        if state["active"] not in list_countries_values:
+            list_countries.append(
+                {'label': state["active"], 'value': state["active"]})
+            list_countries_values.append(state["active"])
+
+        return list_countries, list_countries_values
+
+    else:
+
+        return no_update, no_update
 
 
 """
 start server
 """
 
-
-# # There we describe cache congif
-# cache = Cache(
-#     app.server,
-#     config={
-#         "CACHE_TYPE": "redis",
-#         # Note that filesystem cache doesn't work on systems with ephemeral
-#         # filesystems like Heroku.
-#         "CACHE_TYPE": "filesystem",
-#         "CACHE_DIR": "cache-directory",
-#         # should be equal to maximum number of users on the app at a single time
-#         # higher numbers will store more data in the filesystem / redis cache
-#         "CACHE_THRESHOLD": 200,
-#     },
-# )
 application = app.server
 if __name__ == "__main__":
 
