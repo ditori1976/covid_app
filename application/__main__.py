@@ -155,7 +155,9 @@ row_1 = dbc.Col(
 row_2 = dbc.Col(
     children=[
         controller,
-        html.Div(id="update", children=json.dumps(state))
+        html.Div(
+            id="state",
+            children=json.dumps(state))
 
     ],
     lg=12,
@@ -169,9 +171,6 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            # dbc.Row(html.Div(id='memory'),, no_gutters=False,
-            # justify="center"),
-
             dcc.Store(id='memory')
         ],
         fluid=True
@@ -186,15 +185,20 @@ callbacks
 """
 
 
-@app.callback(Output("update", "children"),
-              [Input("select-continent", "value"),
-               Input("map", "clickData"),
-               Input("cases_death_switch", "value"),
-               ],
-              [State("map", "figure"),
-               State("update", "children")])
-def update_state(continent, country, indicator, map_fig, state):
+@app.callback(
+    Output("state", "children"),
+    [
+        Input("select-continent", "value"),
+        Input("map", "clickData"),
+        Input("cases_death_switch", "value"),
+        Input("select_per_capita", "on"),
+        Input("select_aggregation", "value")
+    ],
+    [State("state", "children")])
+def update_state(continent, country, indicator,
+                 per_capita, aggregation, state):
     state = json.loads(state)
+    print(state)
 
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         state["active"] = data.regions[continent]["name"]
@@ -207,14 +211,19 @@ def update_state(continent, country, indicator, map_fig, state):
         state["indicator"] = "cases"
     else:
         state["indicator"] = "deaths"
+
+    state["per capita"] = per_capita
+    state["aggregation"] = aggregation
+
     logger.info(json.dumps(state))
+
     return json.dumps(state)
 
 
 @app.callback(
     Output("map", "figure"),
     [
-        Input("update", "children")
+        Input("state", "children")
     ])
 def draw_map(state):
     state = json.loads(state)
@@ -246,7 +255,7 @@ def draw_map(state):
 @app.callback(
     Output("timeline", "figure"),
     [
-        Input("update", "children")
+        Input("state", "children")
     ]
 )
 def draw_timeline(state):
