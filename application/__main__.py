@@ -1,4 +1,5 @@
 from application.timeline import timeline
+from application.table import table
 from application.map import map_fig
 from application.controller import controller
 from application.comparsion import comparsion_add, comparsion_list
@@ -217,12 +218,13 @@ callbacks
         Input("list-countries", "value"),
         Input("cases_death_switch", "value"),
         Input("select_per_capita", "on"),
-        Input("select_aggregation", "value")
+        Input("select_aggregation", "value"),
+        Input("del", "n_clicks")
     ],
     [State("state", "children"),
      State("map", "figure")])
 def update_state(continent, country, regions, indicator,
-                 per_capita, aggregation, state, map_figure):
+                 per_capita, aggregation, clear, state, map_figure):
     state = json.loads(state)
 
     # neccessary?
@@ -244,6 +246,8 @@ def update_state(continent, country, regions, indicator,
             state["bbox"]["zoom"] = data.regions[continent]["zoom"]
     if callback_context.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = country["points"][0]["text"]
+    if callback_context.triggered[0]["prop_id"] == "del.n_clicks":
+        state["active"] = ""
 
     state["regions"] = regions
 
@@ -263,9 +267,10 @@ def update_state(continent, country, regions, indicator,
 @app.callback(
     Output("select-continent", "value"),
     [
-        Input("map", "clickData")
+        Input("map", "clickData"),
+        Input("del", "n_clicks")
     ])
-def reset_tab(continent):
+def reset_tab(continent, clear):
     return ""
 
 
