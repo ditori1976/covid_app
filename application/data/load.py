@@ -13,6 +13,37 @@ class Load(Transform):
 
         super().__init__(parser)
 
+    def series(self, country, per_capita, aggregation, indicator):
+
+        try:
+            if country == "all":
+                series = self.timeseries.sort_values(["region", "date"]).copy()
+            else:
+                series = self.timeseries[self.timeseries.region == country].sort_values(
+                    ["region", "date"]).copy()
+            if per_capita:
+                series.loc[:, indicator] = 100000 * series.loc[:,
+                                                               indicator] / series.loc[:, "population"]
+            if aggregation == "daily":
+                series.loc[:, indicator] = series.loc[:, indicator].diff()
+            elif aggregation == "days":
+                series.loc[:,
+                           indicator] = series.loc[:,
+                                                   indicator].diff(periods=7)
+            return series
+        except BaseException:
+            return None
+
+    def map_data(self, per_capita, aggregation, indicator):
+        try:
+            # map_data = self.data.copy()
+
+            map_data = self.series('all', per_capita, aggregation, indicator)
+            map_data = map_data.loc[map_data.date == map_data.date.max(), :]
+            return map_data
+        except BaseException:
+            return None
+
     def select(self, country, indicator):
         try:
             select = self.timeseries[self.timeseries.region == country].copy()

@@ -1,30 +1,54 @@
 * {
-    font-family: Georgia, Times, Times New Roman, serif;
+  font-family: Georgia, Times, Times New Roman, serif;
 }
 
 body {
-    margin-top: 1vh;    
+  margin-top: 1vh;
 }
 
 h1 {
-    font-size: 2em;
+  font-size: 2em;
 }
 
 .center {
-    display: flex;
-    justify-content: center;
-    align-items: top;
+  display: flex;
+  justify-content: center;
+  align-items: top;
 }
 
-.style_center  {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    verticalAlign: middle;
-    margin: 0;
-    padding: 0;
+.label {
+  font-size: 16;
 }
 
+.style_center {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  verticalalign: middle;
+  margin: 0;
+  padding: 0;
+}
 
+.btn {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 0;
+  width: 100%;
+  background-color: #f1f1f1;
+}
 
+/* Style the active class, and buttons on mouse-over */
+.active,
+.btn:hover {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 0;
+  width: 100%;
+  background-color: #666;
+  color: white;
+}

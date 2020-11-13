@@ -1,49 +1,66 @@
-import dash
+from application.timeline import timeline
+from application.map import map_fig
+from application.controller import controller
+from application.comparsion import comparsion_add, comparsion_list
+from application.data.data_loader import DataLoader
+from application.layout import graph_template, continents
+from application.config import Config, logger
+
+
+from dash import Dash, callback_context, no_update
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
-import dash_table
-import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
-from dash.dependencies import Input, Output, State, ALL, MATCH
-import time
-import json
-import math
-from datetime import datetime
+from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
+import json
 
-from application.data.data_loader import DataLoader
+
+# import pandas as pd
+# import dash_table
+# from dash.exceptions import PreventUpdate
+import plotly.graph_objects as go
+# import dash_daq as daq
+# import time
+import numpy as np
+# import time
+
+# import math
+# from datetime import datetime
 
 
-from application.config.config import Config
+# configs
 configuration = Config()
-layout = dict(margin=dict(l=0, r=0, b=0, t=0, pad=0), dragmode="select")
-style_todo = {"display": "inline", "margin": "10px"}
-
 parser = ConfigParser()
 parser.read("settings.ini")
 
-background_color_grey = "#fafbfc"
+state = configuration.state
 
 
-state = {
-    "indicators": ["{}".format(parser.get("data", "init_indicator"))],
-    "regions": ["World"],
-    "active": "World",
-    "axis": {
-        "x": "date",
-        "y": "linear"
-    },
-    "bbox": {
-        "center": {
-            "lat": 0,
-            "lon": 0,
-        },
-        "zoom": 2
-    }
-}
+"""
+create Dash app
+load stylesheets
+"""
+app = Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    meta_tags=[
+        {
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1.0"
+        }
+    ]
+)
+app.title = "COVID-19"
+app.scripts.config.serve_locally = False
+app.config.suppress_callback_exceptions = True
+
+
+"""
+load data
+initialize DataLoader
+"""
 
 
 def get_new_data():
@@ -56,103 +73,73 @@ def get_new_data():
     data.load_data()
     latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
 
-    print("Data updated at " + latest_update)
-
-
-def update_data(period=parser.getint("data", "update_interval")):
-    while True:
-        get_new_data()
-        time.sleep(period)
+    logger.info("Data updated at " + latest_update)
 
 
 get_new_data()
 
 
-app = dash.Dash(
-    __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    meta_tags=[
-        {
-            "name": "viewport",
-            "content": "width=device-width, initial-scale=1.0"
-        }
-    ]
+"""
+layout elements
+"""
+controller = controller()
+
+map_figure = map_fig(parser, data)
+map_graph = graph_template("map", parser)
+map_graph.figure = map_figure
+continent_div = continents(parser, data)
+
+
+timeline_tab = graph_template("timeline", parser)
+# timeline_tab.figure = timeline_figure
+
+add_compare = comparsion_add("add to compare", parser)
+
+info1 = dbc.Row("select continent")
+info2 = dbc.Row("or click on map")
+
+
+"""
+layout
+"""
+map_tab = dbc.Row(
+    children=[
+        dbc.Col(map_graph, lg=10,
+                md=9,
+                xs=12,),
+        dbc.Col(
+            children=[
+
+                continent_div
+
+                # add_compare
+            ],
+            lg=2,
+            md=3,
+            xs=12,)
+    ],
+    no_gutters=True
 )
-app.scripts.config.serve_locally = False
-app.scripts.append_script({
-    "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
-})
-
-
-def dropdown_options(indicators):
-    options = []
-    for i, j in indicators.items():
-        options.append({"label": j["name"], "value": i})
-
-    return options
-
-
-def sub_title(indicator, region):
-
-    data_selected = data.select(region, data.indicators[indicator])
-    latest_value = data_selected.loc[
-        data_selected.date == data_selected.date.max(),
-        data.indicators[indicator]["name"],
-    ].max()
-    if region in list(data.regions.keys()):
-        region = data.regions[region]["name"]
-    if region == "World":
-        region = "the world"
-
-    title = "{1:.{0}f} {2} in {3} on {4}".format(
-        data.indicators[indicator]["digits"],
-        latest_value,
-        data.indicators[indicator]["name"],
-        region,
-        str(data_selected.date.max().strftime("%d %b %Y")),
-    )
-    return title
-
-
-dropdown = dcc.Dropdown(
-    id="indicator-selected",
-    value=parser.get("data", "init_indicator"),
-    style={
-        "width": "100%",
-        "margin": 0,
-        "padding": 0,
-        "border": "none",
-        "background-color": background_color_grey},
-    options=dropdown_options(data.indicators),
-    searchable=False,
-    clearable=False,
-    className="stlye_center",
-)
-
-dropdown_div = dbc.Row(dbc.Col(
-    id="selector",
-    children=[dropdown],
-    style={
-        "width": "100%",
-        "margin": 0,
-        "padding": 0,
-        "textAlign": "center"},
-    lg=7, xs=11,
-), justify="center")
-
 
 tabs_div = dcc.Tabs(
-    id="select-continent",
-    value=parser.get("data", "continent"),
-    vertical=True,
+    id="timeline_map_tab",
+    value="map_tab",
+    vertical=False,
     children=[
         dcc.Tab(
-            label=information["name"],
-            value=region,
+            label="timeline",
+            value="timeline_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
+            children=[timeline_tab]
+        ),
+        dcc.Tab(
+            label="select country",
+            value="map_tab",
+            className="custom-tab",
+            selected_className="custom-tab--selected",
+            children=[map_tab]
         )
-        for region, information in data.regions.items()
     ],
     parent_className="custom-tabs",
     className="custom-tabs-container",
@@ -160,275 +147,36 @@ tabs_div = dcc.Tabs(
 )
 
 
-fig_map = go.Figure(
-    go.Choroplethmapbox(
-        colorscale="BuPu",
-        geojson=data.countries,
-        zmin=0,
-        marker={"line": {"color": "rgb(180,180,180)", "width": 0.5}},
-        colorbar={
-            "thickness": 10,
-            "len": 0.4,
-            "x": 0,
-            "y": 0.3,
-            "outlinewidth": 0,
-        },
-    )
-)
-
-fig_map.update_layout(
-    margin={"r": 0, "t": 0, "l": 0, "b": 0, "pad": 0},
-    mapbox_style="mapbox://styles/dirkriemann/ck88smdb602qa1iljg6kxyavd",
-    mapbox=go.layout.Mapbox(
-        accesstoken="pk.eyJ1IjoiZGlya3JpZW1hbm4iLCJhIjoiY2szZnMyaXoxMDdkdjNvcW5qajl3bzdkZCJ9.d7njqybjwdWOxsnxc3fo9w",
-        style="light",
-        pitch=0,
-    ),
-)
-
-fig_map.layout.uirevision = True
-
-map_div = dcc.Graph(
-    id="map",
-    config={
-        "displayModeBar": False},
-    style={"height": parser.get(
-        "layout", "height_first_row") + "vh", "width": "100%"}
-)
-
-timeline = dcc.Graph(
-    id="timeline",
-    config={
-        "displayModeBar": False},
-    style={
-        "height": str(
-            parser.getint(
-                "layout",
-                "height_first_row") -
-            10) +
-        "vh",
-        "width": "100%"}
-)
-
-timeline_title = dbc.Col(
+row_1 = dbc.Col(
     children=[
+        tabs_div
+    ],
+    lg=12,
+    md=6,
+    xs=12,
+    style={'margin-bottom': '7px'})
+
+row_2 = dbc.Col(
+    children=[
+        controller,
         html.Div(
-            children=[
-                timeline
-            ]
-        ),
-        html.Div(
-            children=[
-                html.H5([], id="title"),
-            ],
-        ),
+            id="state",
+            children=json.dumps(state), style={'display': 'None'})
 
     ],
-    width=12,
-)
-
-
-tab_map = dbc.Row(
-    children=[
-        dbc.Col(tabs_div, width=3),
-        dbc.Col(map_div, width=9)
-    ],
-    no_gutters=True
-)
-
-dropdown_title_timeline = dbc.Col(
-    children=[
-        dropdown_div,
-        timeline_title,
-        html.H5(
-            id="sub-title",
-            children=[],
-            style={"textAlign": "center"}
-        ),
-
-    ]
-)
-
-comparsion = dbc.Row(
-    children=[
-        dbc.Col(
-            children=[
-                html.Button(
-                    "add",
-                    id="add",
-                    style={"height": 35,
-                           "width": "100%",
-                           "background-color": background_color_grey,
-                           "border": "none",
-                           "color": "#586069",
-                           "padding": "0px 0px",
-                           "text-align": "center",
-                           "text-decoration": "none",
-                           "display": "inline - block",
-                           "font-size": 16,
-                           "margin": "0px 0px",
-                           "cursor": "pointer"}
-                ),
-            ],
-            width=3,
-            style={"text-align": "right"}
-
-        ),
-        dbc.Col(
-            children=[
-                dcc.Dropdown(
-                    id="list-countries",
-                    options=[
-                        {"label": "World", "value": "World"},
-                        {"label": "North-A.", "value": "North-A."},
-                        {"label": "Europe", "value": "Europe"},
-                        {"label": "Asia", "value": "Asia"},
-                        {"label": "South-A.", "value": "South-A."}],
-                    value=["Europe", "North-A.", "South-A.", "Asia"],
-                    multi=True,
-                    placeholder="for comparsion",
-                    style={"width": "100%", "font-size": 12, "border": "none"},
-                    searchable=False,
-                    clearable=False,
-                )
-            ],
-            width=8
-        ),
-        dbc.Col(
-            children=[
-                html.Button(
-                    "clear",
-                    id="del",
-                    style={"height": 35,
-                           "width": "100%",
-                           "background-color": background_color_grey,
-                           "border": "none",
-                           "color": "red",
-                           "padding": "0px 0px",
-                           "text-align": "center",
-                           "text-decoration": "none",
-                           "display": "inline - block",
-                           "font-size": 16,
-                           "margin": "0px 0px",
-                           "cursor": "pointer"}
-                ),
-            ],
-            width=1,
-            style={"text-align": "right"}
-
-        )
-    ],
-    no_gutters=True,
-)
-
-
-def zscore(series):
-    zscore = (2 * (series - series.mean()) / series.std(ddof=0)).round(0) / 2
-    return zscore
-
-
-trend_data = data.latest_data(data.indicators["cases_trend"]).loc[:, [
-    "region", "deaths", "cases", "recovered", "% trend (cases/7d)"]]
-trend_data.rename(
-    columns={
-        "% trend (cases/7d)": "trend_n",
-        "region": ""},
-    inplace=True)
-trend_data.loc[:, ["trend_n"]] = zscore(trend_data.loc[:, ["trend_n"]])
-trend_data.sort_values(
-    by=["trend_n", "deaths"], ascending=False, inplace=True)
-trend_data.loc[:, "trend"] = np.nan
-trend_data.loc[trend_data.loc[:,
-                              "trend_n"] >= 1,
-               ["trend"]] = "↑"
-trend_data.loc[(trend_data.loc[:,
-                               "trend_n"] < 1) & (trend_data.loc[:,
-                                                                 "trend_n"] >= .5),
-               ["trend"]] = "↗"
-trend_data.loc[trend_data.loc[:,
-                              "trend_n"] == 0,
-               ["trend"]] = "→"
-trend_data.loc[trend_data.loc[:,
-                              "trend_n"] <= -0.5,
-               ["trend"]] = "↘"
-
-table_data = trend_data.loc[trend_data.loc[:, "deaths"]
-                            > 100, ["", "trend", "cases", "deaths"]]
-
-table = dbc.Row(
-    dbc.Col(
-        dash_table.DataTable(
-            id="table",
-            columns=[{"name": i, "id": i} for i in table_data.columns],
-            data=table_data.to_dict("records"),
-            style_data={'border': 'none'},
-            style_header={
-                'border': 'none',
-                'backgroundColor': 'white',
-                'fontWeight': 'bold'},
-            style_cell_conditional=[
-                {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '8vw'},
-                {'if': {'column_id': 'trend'},
-                    'textAlign': 'center', 'width': '15px', "margin": 0, "padding": 0},
-                {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '4vw'}],
-            style_data_conditional=(
-                [
-                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↑"'},
-                     'backgroundColor': '#d4bfe0', "margin": 0, "padding": 0},
-                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↗"'},
-                     'backgroundColor': '#cacded', "margin": 0, "padding": 0},
-                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "→"'},
-                     'backgroundColor': '#c7daeb', "margin": 0, "padding": 0},
-                    {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↘"'},
-                     'backgroundColor': '#c7ebde', "margin": 0, "padding": 0},
-                    {'if': {'row_index': 'odd', 'column_id': ['']},
-                     'backgroundColor': background_color_grey},
-                    {
-                        "if": {"state": "active"},
-                        "backgroundColor": "none",
-                        "border": "none",
-                        "color": "black",
-                    },
-                    {
-                        "if": {"state": "selected"},
-                        "backgroundColor": "none",
-                    }
-
-                ]
-            ),
-        ),
-        width=11),
-    no_gutters=True,
-    justify="center"
-)
-
-
-row_1 = [
-    dbc.Col(
-        children=[
-            dropdown_title_timeline,
-            tab_map,
-            comparsion,
-            html.Div(id="update")],
-        lg=5,
-        md=6,
-        xs=12),
-    dbc.Col(table, lg=6, md=6, xs=12)
-]
-row_2 = [
-    #dbc.Col(comparsion, lg=5, md=6, xs=12)
-]
-row_3 = [dbc.Col(id="empty", lg=5, md=5, xs=12)
-         ]
+    lg=12,
+    md=6,
+    xs=12,
+    style={'margin-bottom': '7px'})
 
 
 def set_layout():
     return dbc.Container(
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
-            #dbc.Row(row_2, no_gutters=True, justify="left"),
-            dbc.Row(row_3, no_gutters=True, justify="center"),
-            dcc.Store(id='memory', data=state),
+            dbc.Row(row_2, no_gutters=False, justify="center"),
+            comparsion_list(parser),
+            dcc.Store(id='memory')
         ],
         fluid=True
     )
@@ -437,109 +185,65 @@ def set_layout():
 app.layout = set_layout
 
 
+"""
+callbacks
+"""
+
+
 @app.callback(
-    Output('memory', 'data'),
+    Output("state", "children"),
     [
-        Input("map", "clickData"),
         Input("select-continent", "value"),
-        Input("indicator-selected", "value"),
+        Input("map", "clickData"),
         Input("list-countries", "value"),
-        Input("table", "selected_cells")
+        Input("cases_death_switch", "value"),
+        Input("select_per_capita", "on"),
+        Input("select_aggregation", "value")
     ],
-    [
-        State("map", "figure"),
-        State("list-countries", "value"),
-        State('memory', 'data')
-    ]
-)
-def change_state(map_select, tab_select, indicator_select,
-                 add, row, figure, list_countries, state):
-
-    if figure:
-        lat = figure["layout"]["mapbox"]["center"]["lat"]
-        lon = figure["layout"]["mapbox"]["center"]["lon"]
-        zoom = figure["layout"]["mapbox"]["zoom"]
-        state["bbox"]["center"]["lat"] = lat
-        state["bbox"]["center"]["lon"] = lon
-        state["bbox"]["zoom"] = zoom
-    else:
-        state["bbox"]["center"] = data.regions[tab_select]["center"]
-        state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
-
-    ctx = dash.callback_context
-    print(ctx.triggered[0]["prop_id"])
-
-    if ctx.triggered[0]["prop_id"] == "select-continent.value":
-        state["active"] = data.regions[tab_select]["name"]
-        state["bbox"]["center"] = data.regions[tab_select]["center"]
-        state["bbox"]["zoom"] = data.regions[tab_select]["zoom"]
-    elif ctx.triggered[0]["prop_id"] == "map.clickData":
-        state["active"] = map_select["points"][0]["text"]
-    elif ctx.triggered[0]["prop_id"] == "indicator-selected.value":
-        state["indicators"][0] = indicator_select
-    elif ctx.triggered[0]["prop_id"] == "table.selected_cells":
-        state["active"] = table_data.iloc[row[0]["row"]][""]
-
-    state["regions"] = list_countries
-
+    [State("state", "children")])
+def update_state(continent, country, regions, indicator,
+                 per_capita, aggregation, state):
+    state = json.loads(state)
     print(state)
 
-    return state
+    if callback_context.triggered[0]["prop_id"] == "select-continent.value":
+        state["active"] = data.regions[continent]["name"]
+        state["bbox"]["center"] = data.regions[continent]["center"]
+        state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+    if callback_context.triggered[0]["prop_id"] == "map.clickData":
+        state["active"] = country["points"][0]["text"]
 
+    state["regions"] = regions
 
-@app.callback(
-    Output("timeline", "figure"),
-    [
-        Input("memory", "data")
-    ]
-)
-def draw_timeline(state):
-    fig = go.Figure(layout=layout)
-    fig.data = []
-    fig.update_layout({"plot_bgcolor": "white",
-                       "yaxis": {"side": "right"},
-                       })
-    indicator_name = data.indicators[state["indicators"][0]]["name"]
-    data_selected = data.select(
-        state["active"],
-        data.indicators[state["indicators"][0]])
-    fig.add_trace(
-        go.Bar(name=state["active"],
-               x=data_selected.date,
-               y=data_selected[indicator_name]))
-    for country in state["regions"]:
-        fig.add_trace(
-            go.Scatter(name=country,
-                       x=data.select(
-                           country, data.indicators[state["indicators"][0]]).date,
-                       y=data.select(
-                           country, data.indicators[state["indicators"][0]])[indicator_name]
-                       )
-        )
+    if indicator:
+        state["indicator"] = "cases"
+    else:
+        state["indicator"] = "deaths"
 
-    fig.update_layout(legend=dict(x=.1, y=.9, bgcolor='rgba(0, 0, 0, 0)',))
+    state["per capita"] = per_capita
+    state["aggregation"] = aggregation
 
-    return fig
+    logger.info(json.dumps(state))
 
-
-@app.callback(
-    Output("sub-title", "children"),
-    [Input("memory", "data")])
-def write_sub_title(state):
-    return sub_title(state["indicators"][0], state["active"])
+    return json.dumps(state)
 
 
 @app.callback(
     Output("map", "figure"),
-    [Input("memory", "data")]
-)
+    [
+        Input("state", "children")
+    ])
 def draw_map(state):
+    state = json.loads(state)
 
-    indicator_name = data.indicators[state["indicators"][0]]["name"]
-    data_selected = data.latest_data(
-        data.indicators[state["indicators"][0]])
+    indicator_name = state["indicator"]
 
-    fig_map.update_traces(
+    data_selected = data.map_data(
+        state["per capita"],
+        state["aggregation"],
+        state["indicator"])
+
+    map_figure.update_traces(
         locations=data_selected["iso3"],
         z=data_selected[indicator_name],
         text=data_selected["region"],
@@ -549,80 +253,96 @@ def draw_map(state):
         * 0.3,
     )
 
-    fig_map.update_layout(
+    map_figure.update_layout(
         mapbox_zoom=state["bbox"]["zoom"],
         mapbox_center=state["bbox"]["center"],
     )
 
-    fig_map.layout.uirevision = True
+    map_figure.layout.uirevision = True
 
-    return fig_map
+    return map_figure
 
 
 @app.callback(
-    Output("update", "children"),
-    [Input("select-continent", "value"),
-     ],
+    Output("timeline", "figure"),
+    [
+        Input("state", "children")
+    ]
 )
-def submit_date(submit):
+def draw_timeline(state):
+    state = json.loads(state)
 
-    return dbc.Row([
-        html.P("last update: " +
-               data.latest_load.strftime(
-                   "%m/%d/%Y, %H:%M:%S") + ", find me on  ",
-               style={"fontSize": 10, "color": "grey"}
-               ),
-        html.A("Github", href="https://github.com/ditori1976/covid_app",
-               style={"fontSize": 10, "color": "grey"})
-    ])
+    timeline_figure = timeline(configuration)
+
+    regions = set([state["active"]]) | set(state["regions"])
+    for country in regions:
+        data_selected = data.series(
+            country,
+            state["per capita"],
+            state["aggregation"],
+            state["indicator"])
+        timeline_figure.add_trace(
+            go.Scatter(name=country,
+                       x=data_selected.date,
+                       y=data_selected[state["indicator"]]
+                       )
+        )
+
+    return timeline_figure
+
+
+# @app.callback(
+#     Output("add", "children"),
+#     [
+#         Input("state", "children")
+#     ]
+# )
+# def add_comparsion(state):
+#     state = json.loads(state)
+#     return "add {} to comparsion".format(state["active"])
 
 
 @app.callback(
     [Output("list-countries", "options"),
      Output("list-countries", "value"), ],
     [
-        Input("add", "n_clicks"),
+        Input("state", "children"),
         Input("del", "n_clicks")
     ],
     [
-        State("memory", "data"),
+
         State("list-countries", "options"),
         State("list-countries", "value")
     ],
 )
-def edit_list(add, delete, state,
+def edit_list(state, delete,
               list_countries, list_countries_values):
 
-    ctx = dash.callback_context
+    state = json.loads(state)
 
-    if ctx.triggered[0]["prop_id"] == "del.n_clicks":
+    if callback_context.triggered[0]["prop_id"] == "del.n_clicks":
         return [], []
 
-    if add:
-        if state["active"] not in list_countries_values:
-            list_countries.append(
-                {'label': state["active"], 'value': state["active"]})
-            list_countries_values.append(state["active"])
+    # if add:
+    if state["active"] not in list_countries_values:
+        list_countries.append(
+            {'label': state["active"], 'value': state["active"]})
+        list_countries_values.append(state["active"])
 
-        return list_countries, list_countries_values
+    return list_countries, list_countries_values
 
-    else:
+    # else:
 
-        return dash.no_update, dash.no_update
+    #     return no_update, no_update
 
 
-app.title = "COVID-19"
+"""
+start server
+"""
 
 application = app.server
-
-
-executor = ThreadPoolExecutor(max_workers=1)
-executor.submit(update_data)
-
-
 if __name__ == "__main__":
 
-    # start_multi()
     app.run_server(
         debug=True,
         port=configuration.port,

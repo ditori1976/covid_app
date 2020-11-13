@@ -1,3 +1,4 @@
+from application.config import logger
 from datetime import datetime
 import pandas as pd
 from configparser import ConfigParser
@@ -19,7 +20,7 @@ class Extract:
 
     def load_jhu(self):
 
-        print("jhu")
+        logger.info("load jhu")
 
         error_msg = "cannot load JHU data, no url provided"
 
@@ -32,7 +33,7 @@ class Extract:
             )
 
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
         if not lookup_table.empty:
@@ -52,7 +53,7 @@ class Extract:
 
                     return data
                 except BaseException:
-                    print(error_msg)
+                    logger.error(error_msg)
                     return None
 
             def create_timeseries_jhu(data, lookup_table, value_name):
@@ -76,7 +77,7 @@ class Extract:
                         timeseries.loc[:, var_name])
                     return timeseries
                 except BaseException:
-                    print(error_msg)
+                    logger.error(error_msg)
                     return None
 
             confirmed_data = read_prepare_data("jhu_confirmed_url")
@@ -107,12 +108,12 @@ class Extract:
             return data
 
         else:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def read_geonames_country_info(self):
 
-        print("geonames")
+        logger.info("geonames")
 
         error_msg = "cannot load geonames data, no url provided"
 
@@ -151,12 +152,12 @@ class Extract:
             return country_info
 
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def countries_geojson(self):
 
-        print("geojson")
+        logger.info("geojson")
 
         error_msg = "cannot load geojson data, no url provided"
 
@@ -166,14 +167,14 @@ class Extract:
 
             return countries
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def definition_regions(self):
 
         regions = {
             # zoom has to be 0.5 otherwise mapbox fails XXX
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
             "Europe": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
             "North-A.": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
             "South-A.": {
@@ -283,4 +284,4 @@ class Extract:
         if self.data is not None:
             self.data.to_csv("test.csv")
         else:
-            print("nothing to write")
+            logger.info("nothing to write")
