@@ -107,15 +107,13 @@ layout
 """
 map_tab = dbc.Row(
     children=[
-        dbc.Col(map_graph, lg=10,
+        dbc.Col(map_graph,
+                lg=10,
                 md=9,
                 xs=12,),
         dbc.Col(
             children=[
-
                 continent_div
-
-                # add_compare
             ],
             lg=2,
             md=3,
@@ -137,7 +135,7 @@ tabs_div = dcc.Tabs(
             children=[timeline_tab]
         ),
         dcc.Tab(
-            label="select country",
+            label="select countries/continents",
             value="map_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
@@ -154,8 +152,9 @@ row_1 = dbc.Col(
     children=[
         tabs_div
     ],
-    lg=12,
-    md=6,
+    lg=9,
+    md=10,
+    sm=11,
     xs=12,
     style={'margin-bottom': '7px'})
 
@@ -165,10 +164,21 @@ row_2 = dbc.Col(
         html.Div(
             id="state",
             children=json.dumps(state), style={'display': 'None'})
-
     ],
-    lg=12,
-    md=6,
+    lg=9,
+    md=10,
+    sm=11,
+    xs=12,
+    style={'margin-bottom': '7px'})
+
+
+row_3 = dbc.Col(
+    children=[
+        comparsion_list(parser)
+    ],
+    lg=9,
+    md=10,
+    sm=11,
     xs=12,
     style={'margin-bottom': '7px'})
 
@@ -177,8 +187,9 @@ def set_layout():
     return dbc.Container(
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
+            dbc.Row(row_3, no_gutters=False, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
-            comparsion_list(parser),
+
             dcc.Store(id='memory')
         ],
         fluid=True

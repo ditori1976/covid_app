@@ -22,14 +22,15 @@ def comparsion_list(parser):
                         style={
                             "width": "100%",
                             "font-size": 12,
-                            "border": "none"},
+                            "border": "none",
+                            "text-align": "center"},
                         searchable=False,
                         clearable=False,
                     )
                 ],
-                lg=11,
-                md=11,
-                xs=10,
+                lg=10,
+                md=9,
+                xs=12,
             ),
             dbc.Col(
                 children=[
@@ -50,9 +51,9 @@ def comparsion_list(parser):
                                "cursor": "pointer"}
                     ),
                 ],
-                lg=1,
-                md=1,
-                xs=2,
+                lg=2,
+                md=3,
+                xs=12,
                 style={"text-align": "right"}
 
             )
