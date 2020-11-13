@@ -16,7 +16,7 @@ def comparsion_list(parser):
                             {"label": "Europe", "value": "Europe"},
                             {"label": "Asia", "value": "Asia"},
                             {"label": "South-A.", "value": "South-A."}],
-                        value=["Europe", "North-A.", "South-A.", "Asia"],
+                        value=[],
                         multi=True,
                         placeholder="for comparsion",
                         style={
@@ -70,7 +70,7 @@ def comparsion_add(title, parser):
                 id="add",
                 style={"height": 35,
                        "width": "100%",
-                       "background-color": parser.get("layout", "background_color_grey"),
+                       "background-color": parser.get("layout", "background_color_red"),
                        "border": "none",
                        "color": "#586069",
                        "padding": "0px 0px",
@@ -82,6 +82,6 @@ def comparsion_add(title, parser):
                        "cursor": "pointer"}
             ),
         ],
-        style={"text-align": "center", "width": "100%"}
+        style={"text-align": "center", "width": "90%"}
 
     )

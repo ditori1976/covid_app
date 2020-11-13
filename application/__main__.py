@@ -95,7 +95,8 @@ timeline_tab = graph_template("timeline", parser)
 
 add_compare = comparsion_add("add to compare", parser)
 
-info = dbc.Row("2342342 cases in Europe on 2020-01-10")
+info1 = dbc.Row("select continent")
+info2 = dbc.Row("or click on map")
 
 
 """
@@ -103,25 +104,26 @@ layout
 """
 map_tab = dbc.Row(
     children=[
+        dbc.Col(map_graph, lg=10,
+                md=9,
+                xs=12,),
         dbc.Col(
             children=[
-                continent_div,
-                info,
-                add_compare
+
+                continent_div
+
+                # add_compare
             ],
             lg=2,
             md=3,
-            xs=12,),
-        dbc.Col(map_graph, lg=10,
-                md=9,
-                xs=12,)
+            xs=12,)
     ],
     no_gutters=True
 )
 
 tabs_div = dcc.Tabs(
     id="timeline_map_tab",
-    value="timeline_tab",
+    value="map_tab",
     vertical=False,
     children=[
         dcc.Tab(
@@ -132,7 +134,7 @@ tabs_div = dcc.Tabs(
             children=[timeline_tab]
         ),
         dcc.Tab(
-            label="map",
+            label="select country",
             value="map_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
@@ -235,8 +237,11 @@ def draw_map(state):
     state = json.loads(state)
 
     indicator_name = state["indicator"]
-    data_selected = data.latest_data(
-        data.indicators[state["indicator"]])
+
+    data_selected = data.map_data(
+        state["per capita"],
+        state["aggregation"],
+        state["indicator"])
 
     map_figure.update_traces(
         locations=data_selected["iso3"],
@@ -268,51 +273,49 @@ def draw_timeline(state):
     state = json.loads(state)
 
     timeline_figure = timeline(configuration)
-    data_selected = data.select(
-        state["active"],
-        data.indicators[state["indicator"]])
-    timeline_figure.add_trace(
-        go.Bar(name=state["active"],
-               x=data_selected.date,
-               y=data_selected[state["indicator"]]))
-    for country in state["regions"]:
+
+    regions = set([state["active"]]) | set(state["regions"])
+    for country in regions:
+        data_selected = data.series(
+            country,
+            state["per capita"],
+            state["aggregation"],
+            state["indicator"])
         timeline_figure.add_trace(
             go.Scatter(name=country,
-                       x=data.select(
-                           country, data.indicators[state["indicator"]]).date,
-                       y=data.select(
-                           country, data.indicators[state["indicator"]])[state["indicator"]]
+                       x=data_selected.date,
+                       y=data_selected[state["indicator"]]
                        )
         )
 
     return timeline_figure
 
 
-@app.callback(
-    Output("add", "children"),
-    [
-        Input("state", "children")
-    ]
-)
-def add_comparsion(state):
-    state = json.loads(state)
-    return "add {} to comparsion".format(state["active"])
+# @app.callback(
+#     Output("add", "children"),
+#     [
+#         Input("state", "children")
+#     ]
+# )
+# def add_comparsion(state):
+#     state = json.loads(state)
+#     return "add {} to comparsion".format(state["active"])
 
 
 @app.callback(
     [Output("list-countries", "options"),
      Output("list-countries", "value"), ],
     [
-        Input("add", "n_clicks"),
+        Input("state", "children"),
         Input("del", "n_clicks")
     ],
     [
-        State("state", "children"),
+
         State("list-countries", "options"),
         State("list-countries", "value")
     ],
 )
-def edit_list(add, delete, state,
+def edit_list(state, delete,
               list_countries, list_countries_values):
 
     state = json.loads(state)
@@ -320,17 +323,17 @@ def edit_list(add, delete, state,
     if callback_context.triggered[0]["prop_id"] == "del.n_clicks":
         return [], []
 
-    if add:
-        if state["active"] not in list_countries_values:
-            list_countries.append(
-                {'label': state["active"], 'value': state["active"]})
-            list_countries_values.append(state["active"])
+    # if add:
+    if state["active"] not in list_countries_values:
+        list_countries.append(
+            {'label': state["active"], 'value': state["active"]})
+        list_countries_values.append(state["active"])
 
-        return list_countries, list_countries_values
+    return list_countries, list_countries_values
 
-    else:
+    # else:
 
-        return no_update, no_update
+    #     return no_update, no_update
 
 
 """
