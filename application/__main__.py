@@ -122,6 +122,8 @@ map_tab = dbc.Row(
     no_gutters=True
 )
 
+tab_style = {"font-weight": "bold"}
+tab_selected_style = {"font-weight": "bolder"}
 tabs_div = dcc.Tabs(
     id="timeline_map_tab",
     value="map_tab",
@@ -132,12 +134,16 @@ tabs_div = dcc.Tabs(
             value="timeline_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
+            style=tab_style,
+            selected_style=tab_selected_style,
             children=[timeline_tab]
         ),
         dcc.Tab(
             label="select countries/continents",
             value="map_tab",
             className="custom-tab",
+            style=tab_style,
+            selected_style=tab_selected_style,
             selected_className="custom-tab--selected",
             children=[map_tab]
         )
@@ -160,10 +166,7 @@ row_1 = dbc.Col(
 
 row_2 = dbc.Col(
     children=[
-        controller,
-        html.Div(
-            id="state",
-            children=json.dumps(state), style={'display': 'None'})
+        comparsion_list(parser)
     ],
     lg=9,
     md=10,
@@ -171,13 +174,15 @@ row_2 = dbc.Col(
     xs=12,
     style={'margin-bottom': '7px'})
 
-
 row_3 = dbc.Col(
     children=[
-        comparsion_list(parser)
+        controller,
+        html.Div(
+            id="state",
+            children=json.dumps(state), style={'display': 'None'})
     ],
-    lg=9,
-    md=10,
+    lg=11,
+    md=11,
     sm=11,
     xs=12,
     style={'margin-bottom': '7px'})
@@ -187,8 +192,8 @@ def set_layout():
     return dbc.Container(
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
-            dbc.Row(row_3, no_gutters=False, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
+            dbc.Row(row_3, no_gutters=False, justify="center"),
 
             dcc.Store(id='memory')
         ],
@@ -214,16 +219,29 @@ callbacks
         Input("select_per_capita", "on"),
         Input("select_aggregation", "value")
     ],
-    [State("state", "children")])
+    [State("state", "children"),
+     State("map", "figure")])
 def update_state(continent, country, regions, indicator,
-                 per_capita, aggregation, state):
+                 per_capita, aggregation, state, map_figure):
     state = json.loads(state)
-    print(state)
 
-    if callback_context.triggered[0]["prop_id"] == "select-continent.value":
-        state["active"] = data.regions[continent]["name"]
+    # neccessary?
+    if map_figure:
+        lat = map_figure["layout"]["mapbox"]["center"]["lat"]
+        lon = map_figure["layout"]["mapbox"]["center"]["lon"]
+        zoom = map_figure["layout"]["mapbox"]["zoom"]
+        state["bbox"]["center"]["lat"] = lat
+        state["bbox"]["center"]["lon"] = lon
+        state["bbox"]["zoom"] = zoom
+    else:
         state["bbox"]["center"] = data.regions[continent]["center"]
         state["bbox"]["zoom"] = data.regions[continent]["zoom"]
+
+    if callback_context.triggered[0]["prop_id"] == "select-continent.value":
+        if not continent == "":
+            state["active"] = data.regions[continent]["name"]
+            state["bbox"]["center"] = data.regions[continent]["center"]
+            state["bbox"]["zoom"] = data.regions[continent]["zoom"]
     if callback_context.triggered[0]["prop_id"] == "map.clickData":
         state["active"] = country["points"][0]["text"]
 
@@ -243,6 +261,15 @@ def update_state(continent, country, regions, indicator,
 
 
 @app.callback(
+    Output("select-continent", "value"),
+    [
+        Input("map", "clickData")
+    ])
+def reset_tab(continent):
+    return ""
+
+
+@app.callback(
     Output("map", "figure"),
     [
         Input("state", "children")
@@ -257,6 +284,7 @@ def draw_map(state):
         state["aggregation"],
         state["indicator"])
 
+    # replace in DataLoader
     map_figure.update_traces(
         locations=data_selected["iso3"],
         z=data_selected[indicator_name],
@@ -305,49 +333,39 @@ def draw_timeline(state):
     return timeline_figure
 
 
-# @app.callback(
-#     Output("add", "children"),
-#     [
-#         Input("state", "children")
-#     ]
-# )
-# def add_comparsion(state):
-#     state = json.loads(state)
-#     return "add {} to comparsion".format(state["active"])
-
-
 @app.callback(
     [Output("list-countries", "options"),
      Output("list-countries", "value"), ],
     [
-        Input("state", "children"),
+        Input("select-continent", "value"),
+        Input("map", "clickData"),
         Input("del", "n_clicks")
     ],
     [
-
         State("list-countries", "options"),
         State("list-countries", "value")
     ],
 )
-def edit_list(state, delete,
-              list_countries, list_countries_values):
-
-    state = json.loads(state)
+def edit_list(continent, country, delete, list_countries,
+              list_countries_values):
+    region = False
+    if callback_context.triggered[0]["prop_id"] == "select-continent.value":
+        if not continent == "":
+            region = data.regions[continent]["name"]
+    if callback_context.triggered[0]["prop_id"] == "map.clickData":
+        region = country["points"][0]["text"]
 
     if callback_context.triggered[0]["prop_id"] == "del.n_clicks":
         return [], []
+    if region:
+        if region not in list_countries_values:
+            list_countries.append(
+                {'label': region, 'value': region})
+            list_countries_values.append(region)
 
-    # if add:
-    if state["active"] not in list_countries_values:
-        list_countries.append(
-            {'label': state["active"], 'value': state["active"]})
-        list_countries_values.append(state["active"])
-
-    return list_countries, list_countries_values
-
-    # else:
-
-    #     return no_update, no_update
+        return list_countries, list_countries_values
+    else:
+        return [], []
 
 
 """

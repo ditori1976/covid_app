@@ -37,7 +37,7 @@ class Config:
             "aggregation": "days",
             "per capita": True,
             "regions": ["Europe"],
-            "active": "Europe",
+            "active": "",
             "axis": {
                 "x": "date",
                 "y": "linear"
