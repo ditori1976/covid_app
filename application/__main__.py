@@ -123,15 +123,18 @@ map_tab = dbc.Row(
     no_gutters=True
 )
 
-tab_style = {"font-weight": "bold"}
-tab_selected_style = {"font-weight": "bolder"}
+tab_style = {"font-weight": "bold", "background": parser.get(
+    "layout", "light_grey")}
+tab_selected_style = {"font-weight": "bold",
+                      "background": parser.get(
+                          "layout", "grey")}
 tabs_div = dcc.Tabs(
     id="timeline_map_tab",
     value="map_tab",
     vertical=False,
     children=[
         dcc.Tab(
-            label="timeline",
+            label="show timeline",
             value="timeline_tab",
             className="custom-tab",
             selected_className="custom-tab--selected",
@@ -152,32 +155,36 @@ tabs_div = dcc.Tabs(
     parent_className="custom-tabs",
     className="custom-tabs-container",
     style={"width": "100%", "margin": 0, "padding": 0},
+
 )
 
 
 row_1 = dbc.Col(
     children=[
-        tabs_div
+        comparsion_list(parser),
+        controller,
+
+
     ],
-    lg=9,
-    md=10,
+    lg=11,
+    md=11,
     sm=11,
     xs=12,
     style={'margin-bottom': '7px'})
 
 row_2 = dbc.Col(
     children=[
-        comparsion_list(parser)
+        tabs_div
     ],
-    lg=9,
-    md=10,
+    lg=11,
+    md=11,
     sm=11,
     xs=12,
     style={'margin-bottom': '7px'})
 
 row_3 = dbc.Col(
     children=[
-        controller,
+
         html.Div(
             id="state",
             children=json.dumps(state), style={'display': 'None'})

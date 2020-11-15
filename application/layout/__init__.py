@@ -22,6 +22,12 @@ def continents(parser, data):
                 value=region,
                 className="custom-tab",
                 selected_className="custom-tab--selected",
+                style={
+                    "background": parser.get(
+                        "layout", "light_grey")},
+                selected_style={
+                    "background": parser.get(
+                        "layout", "grey")}
             )
             for region, information in data.regions.items()
         ],

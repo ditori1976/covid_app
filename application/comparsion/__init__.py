@@ -15,10 +15,11 @@ def comparsion_list(parser):
                             {"label": "North-A.", "value": "North-A."},
                             {"label": "Europe", "value": "Europe"},
                             {"label": "Asia", "value": "Asia"},
-                            {"label": "South-A.", "value": "South-A."}],
+                            {"label": "South-A.", "value": "South-A."}
+                        ],
                         value=[],
                         multi=True,
-                        placeholder="for comparsion",
+                        placeholder="select countries on map",
                         style={
                             "width": "100%",
                             "font-size": 12,
@@ -30,7 +31,7 @@ def comparsion_list(parser):
                 ],
                 lg=10,
                 md=9,
-                xs=12,
+                xs=10,
             ),
             dbc.Col(
                 children=[
@@ -38,8 +39,9 @@ def comparsion_list(parser):
                         "clear",
                         id="del",
                         style={"height": 35,
+                               "font-weight": "bold",
                                "width": "100%",
-                               "background-color": parser.get("layout", "background_color_grey"),
+                               "background-color": parser.get("layout", "grey"),
                                "border": "none",
                                "color": "red",
                                "padding": "0px 0px",
@@ -53,7 +55,7 @@ def comparsion_list(parser):
                 ],
                 lg=2,
                 md=3,
-                xs=12,
+                xs=2,
                 style={"text-align": "right"}
 
             )
