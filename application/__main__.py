@@ -15,7 +15,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from configparser import ConfigParser
-import jsonn
+import json
 
 
 # import pandas as pd
