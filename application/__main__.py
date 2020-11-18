@@ -53,6 +53,7 @@ app = Dash(
         }
     ]
 )
+
 app.title = "COVID-19"
 app.scripts.config.serve_locally = False
 app.config.suppress_callback_exceptions = True
@@ -81,7 +82,7 @@ def get_new_data():
 
 
 get_new_data()
-#data = DataLoader(parser)
+# data = DataLoader(parser)
 
 
 """

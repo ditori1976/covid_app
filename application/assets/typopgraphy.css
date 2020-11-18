@@ -58,14 +58,9 @@ h1 {
   color: white;
 }
 
-#comparsion-style .Select–multi .Select-value {
-  background-color: red;
-  color: red;
-  border: 1px solid var(–borderColor);
-}
-#comparsion-style .Select–multi .Select-value-icon {
-  border-right: 1px solid red;
-}
-#comparsion-style .VirtualizedSelectFocusedOption {
-  background-color: red;
+.Select--multi .Select-value {
+  font-size: 1.4em;
+  color: white;
+  background-color: #d94a5a;
+  border: 1px solid #d94a5a;
 }
