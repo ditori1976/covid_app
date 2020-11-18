@@ -7,26 +7,30 @@ def comparsion_list(parser):
     comparsion = dbc.Row(
         children=[
             dbc.Col(
+
                 children=[
-                    dcc.Dropdown(
-                        id="list-countries",
-                        options=[
-                            {"label": "World", "value": "World"},
-                            {"label": "North-A.", "value": "North-A."},
-                            {"label": "Europe", "value": "Europe"},
-                            {"label": "Asia", "value": "Asia"},
-                            {"label": "South-A.", "value": "South-A."}
-                        ],
-                        value=[],
-                        multi=True,
-                        placeholder="select countries on map",
-                        style={
-                            "width": "100%",
-                            "font-size": 12,
-                            "border": "none",
-                            "text-align": "center"},
-                        searchable=False,
-                        clearable=False,
+                    html.Div(
+                        dcc.Dropdown(
+                            id="list-countries",
+                            options=[
+                                {"label": "World", "value": "World"},
+                                {"label": "North-A.", "value": "North-A."},
+                                {"label": "Europe", "value": "Europe"},
+                                {"label": "Asia", "value": "Asia"},
+                                {"label": "South-A.", "value": "South-A."}
+                            ],
+                            value=[parser.get("data", "region")],
+                            multi=True,
+                            placeholder="select countries on map",
+                            style={
+                                "width": "100%",
+                                "font-size": 12,
+                                "border": "none",
+                                "text-align": "center"},
+                            searchable=False,
+                            clearable=False,
+                        ),
+                        id="comparsion-style"
                     )
                 ],
                 lg=10,
@@ -41,9 +45,9 @@ def comparsion_list(parser):
                         style={"height": 35,
                                "font-weight": "bold",
                                "width": "100%",
-                               "background-color": parser.get("layout", "grey"),
-                               "border": "none",
-                               "color": "red",
+                               "background-color": "#f9f9f9",
+                               "border": "1px solid  #d6d6d6",
+                               "color": "black",
                                "padding": "0px 0px",
                                "text-align": "center",
                                "text-decoration": "none",

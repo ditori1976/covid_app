@@ -18,6 +18,16 @@ class Extract:
         self.country_info = None
         self.countries = None
 
+    def indicator(self, per_capita, aggregation, indicator):
+        indicators = {
+            "cases": {
+                "per_capita": False,
+                "aggregation": "daily",
+                "indicator": "cases"
+            }
+        }
+        return indicators
+
     def load_jhu(self):
 
         logger.info("load jhu")

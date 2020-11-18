@@ -1,5 +1,6 @@
 * {
-  font-family: Georgia, Times, Times New Roman, serif;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -18,6 +19,10 @@ h1 {
 
 .label {
   font-size: 16;
+}
+
+.Select--multi {
+  font-size: 1.5em;
 }
 
 .style_center {
@@ -51,4 +56,16 @@ h1 {
   width: 100%;
   background-color: #666;
   color: white;
+}
+
+#comparsion-style .Select–multi .Select-value {
+  background-color: red;
+  color: red;
+  border: 1px solid var(–borderColor);
+}
+#comparsion-style .Select–multi .Select-value-icon {
+  border-right: 1px solid red;
+}
+#comparsion-style .VirtualizedSelectFocusedOption {
+  background-color: red;
 }

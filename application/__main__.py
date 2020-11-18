@@ -1,10 +1,10 @@
 from application.timeline import timeline
 from application.table import table
 from application.map import map_fig
-from application.controller import controller
+from application.controller import controller, continents
 from application.comparsion import comparsion_add, comparsion_list
 from application.data.data_loader import DataLoader
-from application.layout import graph_template, continents
+from application.layout import graph_template
 from application.config import Config, logger
 
 
@@ -81,6 +81,7 @@ def get_new_data():
 
 
 get_new_data()
+#data = DataLoader(parser)
 
 
 """
@@ -123,11 +124,11 @@ map_tab = dbc.Row(
     no_gutters=True
 )
 
-tab_style = {"font-weight": "bold", "background": parser.get(
+tab_style = {"font-weight": "normal", "background": parser.get(
     "layout", "light_grey")}
 tab_selected_style = {"font-weight": "bold",
                       "background": parser.get(
-                          "layout", "grey")}
+                          "layout", "grey"), "font": {"family": "Courier New, monospace"}}
 tabs_div = dcc.Tabs(
     id="timeline_map_tab",
     value="map_tab",
@@ -136,41 +137,39 @@ tabs_div = dcc.Tabs(
         dcc.Tab(
             label="show timeline",
             value="timeline_tab",
-            className="custom-tab",
-            selected_className="custom-tab--selected",
-            style=tab_style,
-            selected_style=tab_selected_style,
+            className="main-tab",
+            selected_className="main-tab--selected",
+            # style=tab_style,
+            # selected_style=tab_selected_style,
             children=[timeline_tab]
         ),
         dcc.Tab(
             label="select countries/continents",
             value="map_tab",
-            className="custom-tab",
-            style=tab_style,
-            selected_style=tab_selected_style,
-            selected_className="custom-tab--selected",
+            className="main-tab",
+            # style=tab_style,
+            # selected_style=tab_selected_style,
+            selected_className="main-tab--selected",
             children=[map_tab]
         )
     ],
-    parent_className="custom-tabs",
-    className="custom-tabs-container",
-    style={"width": "100%", "margin": 0, "padding": 0},
+    # parent_className="custom-tabs",
+    # className="custom-tabs-container",
+    #style={"width": "100%", "margin": 0, "padding": 0},
 
 )
 
 
 row_1 = dbc.Col(
     children=[
-        comparsion_list(parser),
         controller,
-
-
+        comparsion_list(parser),
     ],
     lg=11,
     md=11,
     sm=11,
     xs=12,
-    style={'margin-bottom': '7px'})
+    style={'margin-bottom': '10px'})
 
 row_2 = dbc.Col(
     children=[
@@ -271,14 +270,17 @@ def update_state(continent, country, regions, indicator,
     return json.dumps(state)
 
 
-@app.callback(
-    Output("select-continent", "value"),
-    [
-        Input("map", "clickData"),
-        Input("del", "n_clicks")
-    ])
-def reset_tab(continent, clear):
-    return ""
+# @app.callback(
+#     Output("select-continent", "value"),
+#     [
+#         Input("map", "clickData"),
+#         Input("del", "n_clicks")
+#     ])
+# def reset_tab(continent, clear):
+#     if callback_context.triggered[0]["prop_id"] in (
+#             "map.clickData", "del.n_clicks"):
+#         # print("click")
+#         return ""
 
 
 @app.callback(
@@ -360,7 +362,7 @@ def draw_timeline(state):
 )
 def edit_list(continent, country, delete, list_countries,
               list_countries_values):
-    region = False
+    region = parser.get("data", "region")
     if callback_context.triggered[0]["prop_id"] == "select-continent.value":
         if not continent == "":
             region = data.regions[continent]["name"]

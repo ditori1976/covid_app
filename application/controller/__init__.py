@@ -51,7 +51,7 @@ def controller():
                     'margin-right': '10px'}
             )
         ],
-        lg=3,
+        lg=4,
         md=4,
         xs=11,
         # in CSS XXX
@@ -78,4 +78,24 @@ def controller():
         style={'text-align': 'center', 'margin-top': '7px'}
     )
     return dbc.Row([cases_death_switch, select_aggregation,
-                    select_per_capita], no_gutters=False, justify="center")
+                    select_per_capita], no_gutters=False, justify="center", style={"margin-bottom": "10px"})
+
+
+def continents(parser, data):
+
+    continents = dcc.Tabs(
+        id="select-continent",
+        value="Europe",  # parser.get("data", "continent"),
+        vertical=True,
+        children=[
+            dcc.Tab(
+                label=information["name"],
+                value=region,
+                className="continents-tab",
+            )
+            for region, information in data.regions.items()
+        ],
+        parent_className="continents-tabs",
+        className="continents-tabs-container",
+    )
+    return continents
