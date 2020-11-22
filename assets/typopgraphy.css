@@ -1,32 +1,31 @@
 * {
-    font-family: Georgia, Times, Times New Roman, serif;
+  font-family: Georgia, Times, Times New Roman, serif;
 }
 
-
-
 body {
-    margin-top: 1vh;    
+  margin-top: 1vh;
 }
 
 h1 {
-    font-size: 2em;
+  font-size: 2em;
 }
 
 .center {
-    display: flex;
-    justify-content: center;
-    align-items: top;
+  display: flex;
+  justify-content: center;
+  align-items: top;
 }
 
-.style_center  {
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    verticalAlign: middle;
-    margin: 0;
-    padding: 0;
+.style_center {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  verticalalign: middle;
+  margin: 0;
+  padding: 0;
 }
 
-
-
+.Select--multi .Select-value {
+  font-size: 2em;
+}
