@@ -9,6 +9,7 @@ from application.config import Config, logger
 
 
 from dash import Dash, callback_context, no_update
+from dash_table import DataTable
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_html_components as html
@@ -45,7 +46,7 @@ load stylesheets
 """
 app = Dash(
     __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    # external_stylesheets=[dbc.themes.BOOTSTRAP],
     meta_tags=[
         {
             "name": "viewport",
@@ -55,7 +56,7 @@ app = Dash(
 )
 
 app.title = "COVID-19"
-app.scripts.config.serve_locally = False
+app.scripts.config.serve_locally = True
 app.config.suppress_callback_exceptions = True
 app.scripts.append_script({
     "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
@@ -100,6 +101,9 @@ timeline_tab = graph_template("timeline", parser)
 # timeline_tab.figure = timeline_figure
 
 add_compare = comparsion_add("add to compare", parser)
+
+table_data = data.map_data(True, "days", ["deaths", "cases"])[
+    ["region", "continent", "deaths", "cases"]]
 
 info1 = dbc.Row("select continent")
 info2 = dbc.Row("or click on map")
@@ -156,7 +160,7 @@ tabs_div = dcc.Tabs(
     ],
     # parent_className="custom-tabs",
     # className="custom-tabs-container",
-    #style={"width": "100%", "margin": 0, "padding": 0},
+    # style={"width": "100%", "margin": 0, "padding": 0},
 
 )
 
@@ -184,6 +188,8 @@ row_2 = dbc.Col(
 
 row_3 = dbc.Col(
     children=[
+
+        html.Div(id="table", children=[table(table_data)]),
 
         html.Div(
             id="state",
@@ -226,13 +232,27 @@ callbacks
         Input("cases_death_switch", "value"),
         Input("select_per_capita", "on"),
         Input("select_aggregation", "value"),
-        Input("del", "n_clicks")
+        Input("del", "n_clicks"),
+
+
     ],
-    [State("state", "children"),
+    [State("datatable", "derived_virtual_selected_rows"),
+     State('datatable', "derived_virtual_data"),
+     State("state", "children"),
      State("map", "figure")])
 def update_state(continent, country, regions, indicator,
-                 per_capita, aggregation, clear, state, map_figure):
+                 per_capita, aggregation, clear, table_row, table_data, state, map_figure):
+
     state = json.loads(state)
+
+    if table_row:
+        i = 0
+        for k in table_data:
+            if i in ([0]):
+                state["regions"].append(
+                    k["region"]) if k["region"] not in state["regions"] else state["regions"]
+            i += 1
+    logger.info(state["regions"])
 
     # neccessary?
     if map_figure:
@@ -271,17 +291,16 @@ def update_state(continent, country, regions, indicator,
     return json.dumps(state)
 
 
-# @app.callback(
-#     Output("select-continent", "value"),
-#     [
-#         Input("map", "clickData"),
-#         Input("del", "n_clicks")
-#     ])
-# def reset_tab(continent, clear):
-#     if callback_context.triggered[0]["prop_id"] in (
-#             "map.clickData", "del.n_clicks"):
-#         # print("click")
-#         return ""
+@app.callback(
+    Output("table", "children"),
+    [
+        Input("state", "children")
+    ])
+def update_table(state):
+    state = json.loads(state)
+    data_table = data.map_data(state["per capita"], state["aggregation"], ["deaths", "cases"])[
+        ["region", "continent", "deaths", "cases"]]
+    return table(data_table, selected_rows=state["regions"])
 
 
 @app.callback(
@@ -391,7 +410,6 @@ application = app.server
 if __name__ == "__main__":
 
     app.run_server(
-        ssl_context='adhoc',
         debug=True,
         port=configuration.port,
         host=configuration.host)

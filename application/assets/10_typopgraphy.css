@@ -59,8 +59,8 @@ h1 {
 }
 
 .Select--multi .Select-value {
-  font-size: 1.4em;
-  color: white;
-  background-color: #d94a5a;
-  border: 1px solid #d94a5a;
+  font-size: 1.4em !important;
+  color: white !important;
+  background-color: #d94a5a !important;
+  border: 1px solid #d94a5a !important;
 }

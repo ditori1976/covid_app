@@ -4,6 +4,8 @@ from application.data.transform import Transform
 import pandas as pd
 import logging
 from statsmodels.tsa.seasonal import seasonal_decompose
+import numpy as np
+from decimal import Decimal
 
 log = logging.getLogger("my-logger")
 
@@ -12,6 +14,10 @@ class Load(Transform):
     def __init__(self, parser: ConfigParser):
 
         super().__init__(parser)
+
+    def _readable(self, n, d=0):
+        digits = 10 ** (np.floor(np.log10(abs(n))) - d - 1)
+        return np.floor(n / digits) * digits
 
     def series(self, country, per_capita, aggregation, indicator):
 
@@ -23,13 +29,15 @@ class Load(Transform):
                     ["region", "date"]).copy()
             if per_capita:
                 series.loc[:, indicator] = 100000 * series.loc[:,
-                                                               indicator] / series.loc[:, "population"]
+                                                               indicator].div(series.loc[:, "population"], axis=0)
             if aggregation == "daily":
                 series.loc[:, indicator] = series.loc[:, indicator].diff()
             elif aggregation == "days":
                 series.loc[:,
                            indicator] = series.loc[:,
                                                    indicator].diff(periods=7)
+            series.loc[:, indicator] = self._readable(
+                series.loc[:, indicator], 1).round(5)
             return series
         except BaseException:
             return None
@@ -74,13 +82,13 @@ class Load(Transform):
                 data.loc[:, name] = data.loc[:, name] / (
                     data.loc[:, attributes[1]]
                 ) * norming
-                #data.loc[:, name] = data.loc[:, name].round(digits)
+                # data.loc[:, name] = data.loc[:, name].round(digits)
                 data.loc[data.loc[:, name] < 0, name] = 0
             elif function == "fraction":
                 data.loc[:, name] = data.loc[:, attributes[0]] / (
                     data.loc[:, attributes[1]]
                 ) * norming
-                #data.loc[:, name] = data.loc[:, name].round(digits)
+                # data.loc[:, name] = data.loc[:, name].round(digits)
 
             else:
 
