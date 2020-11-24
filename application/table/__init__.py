@@ -1,85 +1,52 @@
-import dash_table
+from dash_table import DataTable
 import numpy as np
 import dash_bootstrap_components as dbc
 
 
-def table(data):
-    def zscore(series):
-        zscore = (2 * (series - series.mean()) /
-                  series.std(ddof=0)).round(0) / 2
-        return zscore
+def table(data, selected_rows=[]):
 
-    trend_data = data.latest_data(data.indicators["cases_trend"]).loc[:, [
-        "region", "deaths", "cases", "recovered", "% trend (cases/7d)"]]
-    trend_data.rename(
-        columns={
-            "% trend (cases/7d)": "trend_n",
-            "region": ""},
-        inplace=True)
-    trend_data.loc[:, ["trend_n"]] = zscore(trend_data.loc[:, ["trend_n"]])
-    trend_data.sort_values(
-        by=["trend_n", "deaths"], ascending=False, inplace=True)
-    trend_data.loc[:, "trend"] = np.nan
-    trend_data.loc[trend_data.loc[:,
-                                  "trend_n"] >= 1,
-                   ["trend"]] = "↑"
-    trend_data.loc[(trend_data.loc[:,
-                                   "trend_n"] < 1) & (trend_data.loc[:,
-                                                                     "trend_n"] >= .5),
-                   ["trend"]] = "↗"
-    trend_data.loc[trend_data.loc[:,
-                                  "trend_n"] == 0,
-                   ["trend"]] = "→"
-    trend_data.loc[trend_data.loc[:,
-                                  "trend_n"] <= -0.5,
-                   ["trend"]] = "↘"
+    table = DataTable(
+        id="datatable",
+        columns=[
+            {"name": i, "id": i, "deletable": False, "selectable": False} for i in data.columns
+        ],
+        data=data.to_dict('records'),
+        # editable=True,
+        # filter_action="native",
+        sort_action="native",
+        sort_mode="multi",
+        # column_selectable="single",
+        # row_selectable="multi",
+        # row_deletable=True,
+        # selected_columns=[],
+        selected_rows=[1],
+        page_action="native",
+        page_current=0,
+        page_size=10,
+        style_cell_conditional=[
+            {'if': {'column_id': 'region'},
+             'width': '35%'},
+            {'if': {'column_id': 'continent'},
+             'width': '25%'},
+            {'if': {'column_id': 'deaths'},
+             'width': '20%'},
+            {'if': {'column_id': 'cases'},
+                'width': '20%'},
 
-    table_data = trend_data.loc[trend_data.loc[:, "deaths"]
-                                > 100, ["", "trend", "cases", "deaths"]]
-
-    table = dbc.Row(
-        dbc.Col(
-            dash_table.DataTable(
-                id="table",
-                columns=[{"name": i, "id": i} for i in table_data.columns],
-                data=table_data.to_dict("records"),
-                style_data={'border': 'none'},
-                style_header={
-                    'border': 'none',
-                    'backgroundColor': 'white',
-                    'fontWeight': 'bold'},
-                style_cell_conditional=[
-                    {'if': {'column_id': ''}, 'textAlign': 'left', 'width': '8vw'},
-                    {'if': {'column_id': 'trend'},
-                        'textAlign': 'center', 'width': '15px', "margin": 0, "padding": 0},
-                    {'if': {'column_id': ['cases', 'deaths', 'recovered']}, 'textAlign': 'center', 'width': '4vw'}],
-                style_data_conditional=(
-                    [
-                        {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↑"'},
-                         'backgroundColor': '#d4bfe0', "margin": 0, "padding": 0},
-                        {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↗"'},
-                         'backgroundColor': '#cacded', "margin": 0, "padding": 0},
-                        {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "→"'},
-                         'backgroundColor': '#c7daeb', "margin": 0, "padding": 0},
-                        {'if': {'column_id': ['trend', 'cases', 'deaths'], 'filter_query': '{trend} = "↘"'},
-                         'backgroundColor': '#c7ebde', "margin": 0, "padding": 0},
-                        {'if': {'row_index': 'odd', 'column_id': ['']},
-                         'backgroundColor': background_color_grey},
-                        {
-                            "if": {"state": "active"},
-                            "backgroundColor": "none",
-                            "border": "none",
-                            "color": "black",
-                        },
-                        {
-                            "if": {"state": "selected"},
-                            "backgroundColor": "none",
-                        }
-
-                    ]
-                ),
-            ),
-            width=11),
-        no_gutters=True,
-        justify="center"
+        ],
+        style_data_conditional=[
+            {
+                'if': {'row_index': 'odd'},
+                'backgroundColor': 'rgb(248, 248, 248)'
+            }
+        ],
+        style_header={
+            'backgroundColor': 'white',
+            'fontWeight': 'bold'
+        },
+        style_cell={'textAlign': 'left',
+                    'overflow': 'hidden',
+                    'textOverflow': 'ellipsis',
+                    'maxWidth': 0},
     )
+    return table
