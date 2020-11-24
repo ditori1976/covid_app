@@ -56,7 +56,7 @@ app = Dash(
 )
 
 app.title = "COVID-19"
-app.scripts.config.serve_locally = True
+app.scripts.config.serve_locally = False
 app.config.suppress_callback_exceptions = True
 app.scripts.append_script({
     "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
