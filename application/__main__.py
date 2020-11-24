@@ -188,16 +188,13 @@ row_2 = dbc.Col(
 
 row_3 = dbc.Col(
     children=[
-
         html.Div(id="table", children=[table(table_data)]),
 
-        html.Div(
-            id="state",
-            children=json.dumps(state), style={'display': 'None'})
+
     ],
-    lg=11,
-    md=11,
-    sm=11,
+    lg=7,
+    md=8,
+    sm=9,
     xs=12,
     style={'margin-bottom': '7px'})
 
@@ -209,7 +206,10 @@ def set_layout():
             dbc.Row(row_2, no_gutters=False, justify="center"),
             dbc.Row(row_3, no_gutters=False, justify="center"),
 
-            dcc.Store(id='memory')
+            dcc.Store(id='memory'),
+            html.Div(
+                id="state",
+                children=json.dumps(state), style={'display': 'None'})
         ],
         fluid=True
     )
@@ -299,7 +299,7 @@ def update_state(continent, country, regions, indicator,
 def update_table(state):
     state = json.loads(state)
     data_table = data.map_data(state["per capita"], state["aggregation"], ["deaths", "cases"])[
-        ["region", "continent", "deaths", "cases"]]
+        ["region", "continent", "deaths", "cases"]].sort_values(by=state["indicator"], ascending=False)
     return table(data_table, selected_rows=state["regions"])
 
 
