@@ -63,7 +63,7 @@ def controller():
             on=True,
             label=[
                 {
-                    "label": "per capita",
+                    "label": "per 100.000",
                     "style": {
                         "font-size": 16
                     }
