@@ -11,4 +11,4 @@ EXPOSE 8050
 
 ENV NAME covid_app
 
-CMD ["gunicorn", "application.__main__:application"]
+CMD gunicorn application.__main__:application --timeout 45
