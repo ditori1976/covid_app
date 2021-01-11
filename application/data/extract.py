@@ -41,6 +41,10 @@ class Extract:
             lookup_table.rename(
                 columns={"Country_Region": "region", "Long_": "Lon"}, inplace=True
             )
+            logger.info(
+                'length data ({}): {}'.format(
+                    'lookup table',
+                    len(lookup_table)))
 
         except BaseException:
             logger.error('lookup table')
@@ -72,7 +76,7 @@ class Extract:
 
             def create_timeseries_jhu(data, lookup_table, value_name):
                 try:
-
+                    logger.info('timeseries: ' + value_name)
                     id_vars = "region"
                     var_name = "date"
                     timeseries = pd.melt(
@@ -91,8 +95,7 @@ class Extract:
                         timeseries.loc[:, var_name])
                     return timeseries
                 except BaseException:
-                    logger.error('create timeseries')
-                    logger.error(error_msg)
+                    logger.error('failed to create timeseries')
                     return None
 
             confirmed_data = read_prepare_data("jhu_confirmed_url")
