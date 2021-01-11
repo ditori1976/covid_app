@@ -43,6 +43,7 @@ class Extract:
             )
 
         except BaseException:
+            logger.error('lookup table')
             logger.error(error_msg)
             return None
 
@@ -63,6 +64,7 @@ class Extract:
 
                     return data
                 except BaseException:
+                    logger.error('prepare_data')
                     logger.error(error_msg)
                     return None
 
@@ -87,6 +89,7 @@ class Extract:
                         timeseries.loc[:, var_name])
                     return timeseries
                 except BaseException:
+                    logger.error('create timeseries')
                     logger.error(error_msg)
                     return None
 
@@ -99,7 +102,7 @@ class Extract:
             confirmed = create_timeseries_jhu(
                 confirmed_data, lookup_table, "confirmed")
             deaths = create_timeseries_jhu(deaths_data, lookup_table, "deaths")
-            #recovered = create_timeseries_jhu(
+            # recovered = create_timeseries_jhu(
             #    recovered_data, lookup_table, "recovered")
 
             data = pd.merge(
