@@ -1,0 +1,702 @@
+[
+  {
+    "region": "Afghanistan",
+    "continent": "Asia",
+    "deaths": 0.188,
+    "cases": 3.94
+  },
+  { "region": "Africa", "continent": "Africa", "deaths": 0.185, "cases": 7.43 },
+  { "region": "Albania", "continent": "Europe", "deaths": 2.65, "cases": 172 },
+  { "region": "Algeria", "continent": "Africa", "deaths": 0.279, "cases": 17 },
+  { "region": "Andorra", "continent": "Europe", "deaths": None, "cases": 498 },
+  {
+    "region": "Angola",
+    "continent": "Africa",
+    "deaths": 0.0486,
+    "cases": 3.38
+  },
+  {
+    "region": "Antigua and Barbuda",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 5.19
+  },
+  {
+    "region": "Argentina",
+    "continent": "South-A.",
+    "deaths": 3.51,
+    "cases": 134
+  },
+  { "region": "Armenia", "continent": "Asia", "deaths": 6.4, "cases": 301 },
+  { "region": "Asia", "continent": "Asia", "deaths": 0.266, "cases": 15.7 },
+  {
+    "region": "Australia",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": 0.34
+  },
+  { "region": "Austria", "continent": "Europe", "deaths": 6.31, "cases": 488 },
+  { "region": "Azerbaijan", "continent": "Asia", "deaths": 1.64, "cases": 175 },
+  {
+    "region": "Bahamas",
+    "continent": "North-A.",
+    "deaths": 1.81,
+    "cases": 58.8
+  },
+  { "region": "Bahrain", "continent": "Asia", "deaths": 0.254, "cases": 63.8 },
+  { "region": "Bangladesh", "continent": "Asia", "deaths": 0.12, "cases": 9.3 },
+  {
+    "region": "Barbados",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 3.13
+  },
+  { "region": "Belarus", "continent": "Europe", "deaths": 0.527, "cases": 103 },
+  { "region": "Belgium", "continent": "Europe", "deaths": 10.4, "cases": 199 },
+  { "region": "Belize", "continent": "North-A.", "deaths": 6.78, "cases": 84 },
+  { "region": "Benin", "continent": "Africa", "deaths": None, "cases": 0.626 },
+  { "region": "Bhutan", "continent": "Asia", "deaths": None, "cases": 0.927 },
+  {
+    "region": "Bolivia",
+    "continent": "South-A.",
+    "deaths": 0.51,
+    "cases": 6.44
+  },
+  {
+    "region": "Bosnia and Herzegovina",
+    "continent": "Europe",
+    "deaths": 11.6,
+    "cases": 242
+  },
+  {
+    "region": "Botswana",
+    "continent": "Africa",
+    "deaths": 0.177,
+    "cases": 60.7
+  },
+  {
+    "region": "Brazil",
+    "continent": "South-A.",
+    "deaths": 1.61,
+    "cases": 99.4
+  },
+  { "region": "Brunei", "continent": "Asia", "deaths": None, "cases": None },
+  { "region": "Bulgaria", "continent": "Europe", "deaths": 10.7, "cases": 336 },
+  {
+    "region": "Burkina Faso",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.475
+  },
+  { "region": "Burma", "continent": "Asia", "deaths": 0.301, "cases": 19 },
+  {
+    "region": "Burundi",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.304
+  },
+  {
+    "region": "Cabo Verde",
+    "continent": "Africa",
+    "deaths": 0.183,
+    "cases": 83.4
+  },
+  {
+    "region": "Cambodia",
+    "continent": "Asia",
+    "deaths": None,
+    "cases": 0.0246
+  },
+  {
+    "region": "Cameroon",
+    "continent": "Africa",
+    "deaths": 0.00793,
+    "cases": 3.31
+  },
+  {
+    "region": "Canada",
+    "continent": "North-A.",
+    "deaths": 1.35,
+    "cases": 92.7
+  },
+  {
+    "region": "Central African Republic",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.235
+  },
+  { "region": "Chad", "continent": "Africa", "deaths": None, "cases": 0.29 },
+  { "region": "Chile", "continent": "South-A.", "deaths": 1.33, "cases": 50 },
+  { "region": "China", "continent": "Asia", "deaths": None, "cases": 0.019 },
+  {
+    "region": "Colombia",
+    "continent": "South-A.",
+    "deaths": 2.52,
+    "cases": 100
+  },
+  { "region": "Comoros", "continent": "Africa", "deaths": None, "cases": 2.04 },
+  {
+    "region": "Congo (Brazzaville)",
+    "continent": "Africa",
+    "deaths": 0.019,
+    "cases": 2.23
+  },
+  {
+    "region": "Congo (Kinshasa)",
+    "continent": "Africa",
+    "deaths": 0.00951,
+    "cases": 0.499
+  },
+  {
+    "region": "Costa Rica",
+    "continent": "North-A.",
+    "deaths": 1.24,
+    "cases": 123
+  },
+  {
+    "region": "Cote d'Ivoire",
+    "continent": "Africa",
+    "deaths": 0.0119,
+    "cases": 0.646
+  },
+  { "region": "Croatia", "continent": "Europe", "deaths": 7.43, "cases": 477 },
+  {
+    "region": "Cuba",
+    "continent": "North-A.",
+    "deaths": 0.00881,
+    "cases": 2.25
+  },
+  { "region": "Cyprus", "continent": "Europe", "deaths": 0.42, "cases": 123 },
+  { "region": "Czechia", "continent": "Europe", "deaths": 9.29, "cases": 302 },
+  { "region": "Denmark", "continent": "Europe", "deaths": 0.413, "cases": 144 },
+  {
+    "region": "Djibouti",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 1.98
+  },
+  {
+    "region": "Dominica",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 5.58
+  },
+  {
+    "region": "Dominican Republic",
+    "continent": "North-A.",
+    "deaths": 0.235,
+    "cases": 44
+  },
+  {
+    "region": "Ecuador",
+    "continent": "South-A.",
+    "deaths": 1.12,
+    "cases": 31.3
+  },
+  { "region": "Egypt", "continent": "Africa", "deaths": 0.0965, "cases": 2.29 },
+  {
+    "region": "El Salvador",
+    "continent": "North-A.",
+    "deaths": 0.482,
+    "cases": 18.7
+  },
+  {
+    "region": "Equatorial Guinea",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 1.98
+  },
+  { "region": "Eritrea", "continent": "Africa", "deaths": None, "cases": None },
+  { "region": "Estonia", "continent": "Europe", "deaths": 0.529, "cases": 158 },
+  {
+    "region": "Eswatini",
+    "continent": "Africa",
+    "deaths": 0.088,
+    "cases": 10.9
+  },
+  {
+    "region": "Ethiopia",
+    "continent": "Africa",
+    "deaths": 0.0714,
+    "cases": 2.8
+  },
+  { "region": "Europe", "continent": "Europe", "deaths": 4.38, "cases": 227 },
+  { "region": "Fiji", "continent": "Oceania", "deaths": None, "cases": None },
+  {
+    "region": "Finland",
+    "continent": "Europe",
+    "deaths": 0.108,
+    "cases": 42.1
+  },
+  { "region": "France", "continent": "Europe", "deaths": 6.26, "cases": 238 },
+  { "region": "Gabon", "continent": "Africa", "deaths": 0.0471, "cases": 3.25 },
+  {
+    "region": "Gambia",
+    "continent": "Africa",
+    "deaths": 0.0438,
+    "cases": 1.05
+  },
+  { "region": "Georgia", "continent": "Asia", "deaths": 7.31, "cases": 671 },
+  { "region": "Germany", "continent": "Europe", "deaths": 1.91, "cases": 156 },
+  {
+    "region": "Ghana",
+    "continent": "Africa",
+    "deaths": 0.00335,
+    "cases": 2.52
+  },
+  { "region": "Greece", "continent": "Europe", "deaths": 4.88, "cases": 162 },
+  {
+    "region": "Grenada",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 8.07
+  },
+  {
+    "region": "Guatemala",
+    "continent": "North-A.",
+    "deaths": 0.834,
+    "cases": 21.7
+  },
+  { "region": "Guinea", "continent": "Africa", "deaths": None, "cases": 1.73 },
+  {
+    "region": "Guinea-Bissau",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.106
+  },
+  {
+    "region": "Guyana",
+    "continent": "South-A.",
+    "deaths": 0.513,
+    "cases": 39.7
+  },
+  {
+    "region": "Haiti",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 0.413
+  },
+  {
+    "region": "Holy See",
+    "continent": "Europe",
+    "deaths": None,
+    "cases": None
+  },
+  {
+    "region": "Honduras",
+    "continent": "North-A.",
+    "deaths": 0.354,
+    "cases": 13.9
+  },
+  { "region": "Hungary", "continent": "Europe", "deaths": 7.19, "cases": 344 },
+  {
+    "region": "Iceland",
+    "continent": "Europe",
+    "deaths": 0.282,
+    "cases": 24.8
+  },
+  { "region": "India", "continent": "Asia", "deaths": 0.271, "cases": 21.7 },
+  {
+    "region": "Indonesia",
+    "continent": "Asia",
+    "deaths": 0.251,
+    "cases": 11.4
+  },
+  { "region": "Iran", "continent": "Asia", "deaths": 4.04, "cases": 112 },
+  { "region": "Iraq", "continent": "Asia", "deaths": 0.749, "cases": 42 },
+  {
+    "region": "Ireland",
+    "continent": "Europe",
+    "deaths": 0.906,
+    "cases": 52.7
+  },
+  { "region": "Israel", "continent": "Asia", "deaths": 0.754, "cases": 58.2 },
+  { "region": "Italy", "continent": "Europe", "deaths": 7.6, "cases": 381 },
+  {
+    "region": "Jamaica",
+    "continent": "North-A.",
+    "deaths": 0.238,
+    "cases": 13.6
+  },
+  { "region": "Japan", "continent": "Asia", "deaths": 0.0545, "cases": 11.3 },
+  { "region": "Jordan", "continent": "Asia", "deaths": 4.66, "cases": 399 },
+  { "region": "Kazakhstan", "continent": "Asia", "deaths": 0.251, "cases": 28 },
+  { "region": "Kenya", "continent": "Africa", "deaths": 0.215, "cases": 13.8 },
+  {
+    "region": "Korea, South",
+    "continent": "Asia",
+    "deaths": 0.029,
+    "cases": 4.32
+  },
+  { "region": "Kuwait", "continent": "Asia", "deaths": 0.676, "cases": 77.7 },
+  {
+    "region": "Kyrgyzstan",
+    "continent": "Asia",
+    "deaths": 0.443,
+    "cases": 41.1
+  },
+  { "region": "Laos", "continent": "Asia", "deaths": None, "cases": 0.0141 },
+  { "region": "Latvia", "continent": "Europe", "deaths": 1.55, "cases": 133 },
+  { "region": "Lebanon", "continent": "Asia", "deaths": 1.21, "cases": 161 },
+  { "region": "Lesotho", "continent": "Africa", "deaths": None, "cases": 2.13 },
+  {
+    "region": "Liberia",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.913
+  },
+  { "region": "Libya", "continent": "Africa", "deaths": 1.07, "cases": 63.2 },
+  {
+    "region": "Liechtenstein",
+    "continent": "Europe",
+    "deaths": 7.91,
+    "cases": 335
+  },
+  { "region": "Lithuania", "continent": "Europe", "deaths": 3.9, "cases": 440 },
+  {
+    "region": "Luxembourg",
+    "continent": "Europe",
+    "deaths": 6.74,
+    "cases": 630
+  },
+  {
+    "region": "Madagascar",
+    "continent": "Africa",
+    "deaths": 0.0038,
+    "cases": 0.118
+  },
+  { "region": "Malawi", "continent": "Africa", "deaths": None, "cases": 0.216 },
+  {
+    "region": "Malaysia",
+    "continent": "Asia",
+    "deaths": 0.0824,
+    "cases": 23.3
+  },
+  { "region": "Maldives", "continent": "Asia", "deaths": 0.581, "cases": 78.3 },
+  { "region": "Mali", "continent": "Africa", "deaths": 0.0209, "cases": 1.86 },
+  { "region": "Malta", "continent": "Europe", "deaths": 2.89, "cases": 184 },
+  {
+    "region": "Marshall Islands",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": 5.13
+  },
+  {
+    "region": "Mauritania",
+    "continent": "Africa",
+    "deaths": 0.0908,
+    "cases": 3.99
+  },
+  {
+    "region": "Mauritius",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 1.26
+  },
+  { "region": "Mexico", "continent": "North-A.", "deaths": 2.48, "cases": 28 },
+  { "region": "Moldova", "continent": "Europe", "deaths": 3.66, "cases": 244 },
+  { "region": "Monaco", "continent": "Europe", "deaths": 2.58, "cases": 87.8 },
+  { "region": "Mongolia", "continent": "Asia", "deaths": None, "cases": 6.59 },
+  {
+    "region": "Montenegro",
+    "continent": "Europe",
+    "deaths": 7.71,
+    "cases": 624
+  },
+  { "region": "Morocco", "continent": "Africa", "deaths": 1.49, "cases": 88.1 },
+  {
+    "region": "Mozambique",
+    "continent": "Africa",
+    "deaths": 0.0372,
+    "cases": 1.99
+  },
+  {
+    "region": "Namibia",
+    "continent": "Africa",
+    "deaths": 0.285,
+    "cases": 14.5
+  },
+  { "region": "Nepal", "continent": "Asia", "deaths": 0.356, "cases": 37.4 },
+  {
+    "region": "Netherlands",
+    "continent": "Europe",
+    "deaths": 2.36,
+    "cases": 216
+  },
+  {
+    "region": "New Zealand",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": 0.593
+  },
+  {
+    "region": "Nicaragua",
+    "continent": "North-A.",
+    "deaths": 0.0154,
+    "cases": 0.989
+  },
+  { "region": "Niger", "continent": "Africa", "deaths": None, "cases": 0.271 },
+  {
+    "region": "Nigeria",
+    "continent": "Africa",
+    "deaths": 0.00204,
+    "cases": 0.63
+  },
+  {
+    "region": "North Macedonia",
+    "continent": "Europe",
+    "deaths": 9.88,
+    "cases": 369
+  },
+  {
+    "region": "North-A.",
+    "continent": "North-A.",
+    "deaths": 2.53,
+    "cases": 223
+  },
+  { "region": "Norway", "continent": "Europe", "deaths": 0.225, "cases": 81.4 },
+  {
+    "region": "Oceania",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": 0.285
+  },
+  { "region": "Oman", "continent": "Asia", "deaths": 0.869, "cases": 35 },
+  { "region": "Pakistan", "continent": "Asia", "deaths": 0.252, "cases": 8.43 },
+  { "region": "Panama", "continent": "North-A.", "deaths": 2.01, "cases": 194 },
+  {
+    "region": "Papua New Guinea",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": 0.0232
+  },
+  { "region": "Paraguay", "continent": "South-A.", "deaths": 1, "cases": 70.4 },
+  { "region": "Peru", "continent": "South-A.", "deaths": 1.16, "cases": 41.2 },
+  {
+    "region": "Philippines",
+    "continent": "Asia",
+    "deaths": 0.272,
+    "cases": 10.2
+  },
+  { "region": "Poland", "continent": "Europe", "deaths": 8.61, "cases": 390 },
+  { "region": "Portugal", "continent": "Europe", "deaths": 5.01, "cases": 422 },
+  { "region": "Qatar", "continent": "Asia", "deaths": 0.0718, "cases": 51.9 },
+  { "region": "Romania", "continent": "Europe", "deaths": 5.75, "cases": 299 },
+  { "region": "Russia", "continent": "Europe", "deaths": 2.04, "cases": 111 },
+  { "region": "Rwanda", "continent": "Africa", "deaths": 0.0162, "cases": 1.7 },
+  {
+    "region": "Saint Kitts and Nevis",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 1.9
+  },
+  {
+    "region": "Saint Lucia",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 31.8
+  },
+  {
+    "region": "Saint Vincent and the Grenadines",
+    "continent": "North-A.",
+    "deaths": None,
+    "cases": 5.44
+  },
+  {
+    "region": "San Marino",
+    "continent": "Europe",
+    "deaths": 2.95,
+    "cases": 420
+  },
+  {
+    "region": "Sao Tome and Principe",
+    "continent": "Africa",
+    "deaths": 0.505,
+    "cases": 7.08
+  },
+  {
+    "region": "Saudi Arabia",
+    "continent": "Asia",
+    "deaths": 0.364,
+    "cases": 5.94
+  },
+  {
+    "region": "Senegal",
+    "continent": "Africa",
+    "deaths": 0.0126,
+    "cases": 0.561
+  },
+  { "region": "Serbia", "continent": "Europe", "deaths": 2.72, "cases": 523 },
+  {
+    "region": "Seychelles",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 3.1
+  },
+  {
+    "region": "Sierra Leone",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": 0.183
+  },
+  {
+    "region": "Singapore",
+    "continent": "Asia",
+    "deaths": None,
+    "cases": 0.727
+  },
+  { "region": "Slovakia", "continent": "Europe", "deaths": 2.95, "cases": 173 },
+  { "region": "Slovenia", "continent": "Europe", "deaths": 12.3, "cases": 496 },
+  {
+    "region": "Solomon Islands",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": None
+  },
+  {
+    "region": "Somalia",
+    "continent": "Africa",
+    "deaths": 0.0399,
+    "cases": 0.959
+  },
+  {
+    "region": "South Africa",
+    "continent": "Africa",
+    "deaths": 1.14,
+    "cases": 28.8
+  },
+  {
+    "region": "South Sudan",
+    "continent": "Africa",
+    "deaths": 0.0121,
+    "cases": 0.532
+  },
+  {
+    "region": "South-A.",
+    "continent": "South-A.",
+    "deaths": 1.69,
+    "cases": 83.8
+  },
+  { "region": "Spain", "continent": "Europe", "deaths": 3.95, "cases": 210 },
+  {
+    "region": "Sri Lanka",
+    "continent": "Asia",
+    "deaths": 0.133,
+    "cases": 13.3
+  },
+  { "region": "Sudan", "continent": "Africa", "deaths": 0.193, "cases": 3.41 },
+  {
+    "region": "Suriname",
+    "continent": "South-A.",
+    "deaths": 0.347,
+    "cases": 3.81
+  },
+  { "region": "Sweden", "continent": "Europe", "deaths": 2.37, "cases": 303 },
+  {
+    "region": "Switzerland",
+    "continent": "Europe",
+    "deaths": 8.06,
+    "cases": 392
+  },
+  { "region": "Syria", "continent": "Asia", "deaths": 0.183, "cases": 3.19 },
+  { "region": "Taiwan*", "continent": "Asia", "deaths": None, "cases": 0.0655 },
+  {
+    "region": "Tajikistan",
+    "continent": "Asia",
+    "deaths": 0.0109,
+    "cases": 3.12
+  },
+  {
+    "region": "Tanzania",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": None
+  },
+  {
+    "region": "Thailand",
+    "continent": "Asia",
+    "deaths": None,
+    "cases": 0.0648
+  },
+  {
+    "region": "Timor-Leste",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": None
+  },
+  { "region": "Togo", "continent": "Africa", "deaths": 0.038, "cases": 2.12 },
+  {
+    "region": "Trinidad and Tobago",
+    "continent": "North-A.",
+    "deaths": 0.215,
+    "cases": 26.6
+  },
+  { "region": "Tunisia", "continent": "Africa", "deaths": 4.11, "cases": 71.8 },
+  { "region": "Turkey", "continent": "Asia", "deaths": 1.03, "cases": 39.5 },
+  { "region": "US", "continent": "North-A.", "deaths": 3.23, "cases": 365 },
+  {
+    "region": "Uganda",
+    "continent": "Africa",
+    "deaths": 0.0631,
+    "cases": 4.55
+  },
+  { "region": "Ukraine", "continent": "Europe", "deaths": 3.11, "cases": 203 },
+  {
+    "region": "United Arab Emirates",
+    "continent": "Asia",
+    "deaths": 0.228,
+    "cases": 89.7
+  },
+  {
+    "region": "United Kingdom",
+    "continent": "Europe",
+    "deaths": 4.65,
+    "cases": 214
+  },
+  {
+    "region": "Uruguay",
+    "continent": "South-A.",
+    "deaths": 0.173,
+    "cases": 19.3
+  },
+  {
+    "region": "Uzbekistan",
+    "continent": "Asia",
+    "deaths": 0.0151,
+    "cases": 4.16
+  },
+  {
+    "region": "Vanuatu",
+    "continent": "Oceania",
+    "deaths": None,
+    "cases": None
+  },
+  {
+    "region": "Venezuela",
+    "continent": "South-A.",
+    "deaths": 0.0692,
+    "cases": 8.6
+  },
+  { "region": "Vietnam", "continent": "Asia", "deaths": None, "cases": 0.0272 },
+  {
+    "region": "West Bank and Gaza",
+    "continent": "Asia",
+    "deaths": 1.55,
+    "cases": 188
+  },
+  {
+    "region": "Western Sahara",
+    "continent": "Africa",
+    "deaths": None,
+    "cases": None
+  },
+  { "region": "World", "continent": "World", "deaths": 0.912, "cases": 54.9 },
+  { "region": "Yemen", "continent": "Asia", "deaths": 0.0105, "cases": 0.0947 },
+  { "region": "Zambia", "continent": "Africa", "deaths": 0.023, "cases": 1.73 },
+  {
+    "region": "Zimbabwe",
+    "continent": "Africa",
+    "deaths": 0.0761,
+    "cases": 2.7
+  }
+]

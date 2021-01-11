@@ -1,0 +1,30 @@
+.continents-tabs-container {
+  width: 100%;
+}
+.continents-tabs {
+  width: 100%;
+  border-right: 1px solid #d6d6d6 !important;
+}
+
+.continents-tab {
+  height: 14.28%;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-tab {
+  font-weight: bold;
+  height: 40px;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.main-tab--selected {
+  font-size: large;
+  font-weight: normal;
+}

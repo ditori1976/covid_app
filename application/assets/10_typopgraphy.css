@@ -1,0 +1,66 @@
+* {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin-top: 1vh;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: top;
+}
+
+.label {
+  font-size: 16;
+}
+
+.Select--multi {
+  font-size: 1.5em;
+}
+
+.style_center {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  verticalalign: middle;
+  margin: 0;
+  padding: 0;
+}
+
+.btn {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 0;
+  width: 100%;
+  background-color: #f1f1f1;
+}
+
+/* Style the active class, and buttons on mouse-over */
+.active,
+.btn:hover {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  padding: 0;
+  width: 100%;
+  background-color: #666;
+  color: white;
+}
+
+.Select--multi .Select-value {
+  font-size: 1.4em !important;
+  color: white !important;
+  background-color: #d94a5a !important;
+  border: 1px solid #d94a5a !important;
+}

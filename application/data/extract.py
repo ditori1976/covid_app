@@ -1,3 +1,4 @@
+from application.config import logger
 from datetime import datetime
 import pandas as pd
 from configparser import ConfigParser
@@ -10,15 +11,26 @@ from bs4 import BeautifulSoup
 class Extract:
     def __init__(self, parser: ConfigParser):
         self.parser = parser
-        self.latest_load = None
+        self.latest_load = datetime.strptime(
+            "01/01/1900, 00:00:00", "%m/%d/%Y, %H:%M:%S")
         self.data = None
         self.jhu = None
         self.country_info = None
         self.countries = None
 
+    def indicator(self, per_capita, aggregation, indicator):
+        indicators = {
+            "cases": {
+                "per_capita": False,
+                "aggregation": "daily",
+                "indicator": "cases"
+            }
+        }
+        return indicators
+
     def load_jhu(self):
 
-        print("jhu")
+        logger.info("load jhu")
 
         error_msg = "cannot load JHU data, no url provided"
 
@@ -31,7 +43,7 @@ class Extract:
             )
 
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
         if not lookup_table.empty:
@@ -51,7 +63,7 @@ class Extract:
 
                     return data
                 except BaseException:
-                    print(error_msg)
+                    logger.error(error_msg)
                     return None
 
             def create_timeseries_jhu(data, lookup_table, value_name):
@@ -75,18 +87,20 @@ class Extract:
                         timeseries.loc[:, var_name])
                     return timeseries
                 except BaseException:
-                    print(error_msg)
+                    logger.error(error_msg)
                     return None
 
             confirmed_data = read_prepare_data("jhu_confirmed_url")
             deaths_data = read_prepare_data("jhu_deaths_url")
-            recovered_data = read_prepare_data("jhu_recovered_url")
+            #recovered_data = read_prepare_data("jhu_recovered_url")
+            # logger.error(deaths_data.columns)
+            # logger.error(recovered_data.columns)
 
             confirmed = create_timeseries_jhu(
                 confirmed_data, lookup_table, "confirmed")
             deaths = create_timeseries_jhu(deaths_data, lookup_table, "deaths")
-            recovered = create_timeseries_jhu(
-                recovered_data, lookup_table, "recovered")
+            #recovered = create_timeseries_jhu(
+            #    recovered_data, lookup_table, "recovered")
 
             data = pd.merge(
                 deaths[["date", "region", "iso3", "Lat", "Lon", "deaths"]],
@@ -94,24 +108,24 @@ class Extract:
                 on=["iso3", "date"],
                 how="inner",
             )
-            data = pd.merge(
-                data,
-                recovered[["date", "recovered", "iso3"]],
-                on=["iso3", "date"],
-                how="inner",
-            )
+            # data = pd.merge(
+            #     data,
+            #     recovered[["date", "recovered", "iso3"]],
+            #     on=["iso3", "date"],
+            #     how="inner",
+            # )
 
             data.rename(columns={"confirmed": "cases"}, inplace=True)
 
             return data
 
         else:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def read_geonames_country_info(self):
 
-        print("geonames")
+        logger.info("geonames")
 
         error_msg = "cannot load geonames data, no url provided"
 
@@ -135,15 +149,27 @@ class Extract:
                 },
                 inplace=True,
             )
+            country_info.loc[country_info["continent"]
+                             == "EU", "continent"] = "Europe"
+            country_info.loc[country_info["continent"]
+                             == "NA", "continent"] = "North-A."
+            country_info.loc[country_info["continent"]
+                             == "SA", "continent"] = "South-A."
+            country_info.loc[country_info["continent"]
+                             == "AS", "continent"] = "Asia"
+            country_info.loc[country_info["continent"]
+                             == "OC", "continent"] = "Oceania"
+            country_info.loc[country_info["continent"]
+                             == "AF", "continent"] = "Africa"
             return country_info
 
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def countries_geojson(self):
 
-        print("geojson")
+        logger.info("geojson")
 
         error_msg = "cannot load geojson data, no url provided"
 
@@ -153,24 +179,24 @@ class Extract:
 
             return countries
         except BaseException:
-            print(error_msg)
+            logger.error(error_msg)
             return None
 
     def definition_regions(self):
 
         regions = {
             # zoom has to be 0.5 otherwise mapbox fails XXX
-            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 0.5},
-            "EU": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
-            "NA": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
-            "SA": {
+            "World": {"name": "World", "center": {"lat": 35, "lon": 0}, "zoom": 1},
+            "Europe": {"name": "Europe", "center": {"lat": 50, "lon": 5}, "zoom": 2},
+            "North-A.": {"name": "North-A.", "center": {"lat": 45, "lon": -95}, "zoom": 1},
+            "South-A.": {
                 "name": "South-A.",
                 "center": {"lat": -20, "lon": -65},
                 "zoom": 1.7,
             },
-            "AS": {"name": "Asia", "center": {"lat": 45, "lon": 90}, "zoom": 0.5},
-            "AF": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1},
-            "OC": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 1},
+            "Asia": {"name": "Asia", "center": {"lat": 45, "lon": 90}, "zoom": 0.5},
+            "Africa": {"name": "Africa", "center": {"lat": 5, "lon": 20}, "zoom": 1},
+            "Oceania": {"name": "Oceania", "center": {"lat": -30, "lon": 145}, "zoom": 1},
         }
 
         return regions
@@ -208,23 +234,37 @@ class Extract:
             "cases_capita": {
                 "name": "cases/1M capita",
                 "columns": ["cases", "population"],
-                "norming": 100000,
+                "norming": 1000000,
                 "digits": 0,
                 "function": [],
             },
             "deaths_capita": {
                 "name": "deaths/1M capita",
                 "columns": ["deaths", "population"],
-                "norming": 100000,
+                "norming": 1000000,
                 "digits": 1,
                 "function": [],
             },
-            "recovered_capita": {
-                "name": "% recovered",
-                "columns": ["recovered", "cases"],
-                "norming": 100,
+            "daily_cases_capita": {
+                "name": "daily cases/1M capita",
+                "columns": ["cases", "population"],
+                "norming": 1000000,
                 "digits": 0,
-                "function": [],
+                "function": "diff",
+            },
+            "daily_deaths_capita": {
+                "name": "daily deaths/1M capita",
+                "columns": ["deaths", "population"],
+                "norming": 1000000,
+                "digits": 0,
+                "function": "diff",
+            },
+            "fraction_population": {
+                "name": "% of population",
+                "columns": ["cases", "population"],
+                "norming": 100,
+                "digits": 2,
+                "function": "fraction",
             },
             "lethality": {
                 "name": "% lethality",
@@ -233,18 +273,18 @@ class Extract:
                 "digits": 2,
                 "function": [],
             },
-            "recovered_cases": {
-                "name": "% recovered/cases",
+            "cases_trend": {
+                "name": "% trend (cases/7d)",
+                "columns": ["cases"],
+                "norming": 1,
+                "digits": 2,
+                "function": "trend",
+            },
+            "recovered_capita": {
+                "name": "% recovered",
                 "columns": ["recovered", "cases"],
                 "norming": 100,
-                "digits": 3,
-                "function": [],
-            },
-            "deaths_recovered": {
-                "name": "% deaths/recovered",
-                "columns": ["deaths", "recovered"],
-                "norming": 100,
-                "digits": 2,
+                "digits": 0,
                 "function": [],
             },
         }
@@ -256,4 +296,4 @@ class Extract:
         if self.data is not None:
             self.data.to_csv("test.csv")
         else:
-            print("nothing to write")
+            logger.info("nothing to write")

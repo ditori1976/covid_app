@@ -1,5 +1,4 @@
 import os
-import logging
 
 
 class Config:
@@ -36,8 +35,8 @@ class Config:
             "indicator": "cases",
             "aggregation": "days",
             "per capita": True,
-            "regions": ["Europe"],
-            "active": "Europe",
+            "regions": ["World"],
+            "active": "World",
             "axis": {
                 "x": "date",
                 "y": "linear"
@@ -50,16 +49,3 @@ class Config:
                 "zoom": 2
             }
         }
-
-
-"""
-logging
-"""
-# logging.basicConfig()
-logger = logging.getLogger()
-handler = logging.StreamHandler()
-formatter = logging.Formatter(
-    '%(asctime)-20s %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
