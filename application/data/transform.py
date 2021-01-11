@@ -32,7 +32,7 @@ class Transform(Extract):
                 "iso3": "max",
                 "deaths": "sum",
                 "cases": "sum",
-                "recovered": "sum",
+                #"recovered": "sum",
                 "population": "sum",
             }
         )
@@ -46,7 +46,7 @@ class Transform(Extract):
                 "iso3": "max",
                 "deaths": "sum",
                 "cases": "sum",
-                "recovered": "sum",
+                #"recovered": "sum",
                 "population": "sum",
                 "continent": "max",
             }

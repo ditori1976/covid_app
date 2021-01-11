@@ -3,7 +3,7 @@ import datetime
 from application.data.transform import Transform
 import pandas as pd
 import logging
-from statsmodels.tsa.seasonal import seasonal_decompose
+#from statsmodels.tsa.seasonal import seasonal_decompose
 import numpy as np
 from decimal import Decimal
 

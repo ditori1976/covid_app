@@ -92,15 +92,15 @@ class Extract:
 
             confirmed_data = read_prepare_data("jhu_confirmed_url")
             deaths_data = read_prepare_data("jhu_deaths_url")
-            recovered_data = read_prepare_data("jhu_recovered_url")
+            #recovered_data = read_prepare_data("jhu_recovered_url")
             # logger.error(deaths_data.columns)
             # logger.error(recovered_data.columns)
 
             confirmed = create_timeseries_jhu(
                 confirmed_data, lookup_table, "confirmed")
             deaths = create_timeseries_jhu(deaths_data, lookup_table, "deaths")
-            recovered = create_timeseries_jhu(
-                recovered_data, lookup_table, "recovered")
+            #recovered = create_timeseries_jhu(
+            #    recovered_data, lookup_table, "recovered")
 
             data = pd.merge(
                 deaths[["date", "region", "iso3", "Lat", "Lon", "deaths"]],
@@ -108,12 +108,12 @@ class Extract:
                 on=["iso3", "date"],
                 how="inner",
             )
-            data = pd.merge(
-                data,
-                recovered[["date", "recovered", "iso3"]],
-                on=["iso3", "date"],
-                how="inner",
-            )
+            # data = pd.merge(
+            #     data,
+            #     recovered[["date", "recovered", "iso3"]],
+            #     on=["iso3", "date"],
+            #     how="inner",
+            # )
 
             data.rename(columns={"confirmed": "cases"}, inplace=True)
 
