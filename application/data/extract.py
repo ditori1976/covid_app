@@ -50,6 +50,7 @@ class Extract:
         if not lookup_table.empty:
             def read_prepare_data(url):
                 try:
+                    logger.info(url)
                     data_raw = pd.read_csv(self.parser.get("urls", url))
                     data_raw.rename(
                         columns={
@@ -61,6 +62,7 @@ class Extract:
                         .drop(columns=["Lat", "Long"])
                         .reset_index()
                     )
+                    logger.info('length data ({}): {}'.format(url, len(data)))
 
                     return data
                 except BaseException:
