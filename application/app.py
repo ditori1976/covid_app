@@ -33,9 +33,6 @@ def set_layout():
         children=[
             # dbc.Row(row_1, no_gutters=True, justify="center"),
             # dbc.Row(row_2, no_gutters=False, justify="center"),
-            # dbc.Row(row_3, no_gutters=False, justify="center"),
-
-            dcc.Store(id='memory'),
             html.Div(
                 id="state",
                 children=json.dumps(state),

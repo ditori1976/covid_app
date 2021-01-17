@@ -1,6 +1,8 @@
-from application.data.extract import Extract
 from datetime import datetime, timedelta
 from configparser import ConfigParser
+from application.data.extract import Extract
+import sys
+sys.path.append('..')
 
 
 def test_parser():

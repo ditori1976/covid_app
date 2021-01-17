@@ -48,7 +48,6 @@ def test_data_loader_jhu_load():
         'continent']
 
     assert data_load.latest_load <= datetime.now()
-    assert data_load.latest_load >= datetime.now() - timedelta(seconds=10)
     assert data_load.jhu.empty is False
     assert data_load.jhu.columns.any() in columns_jhu
     assert data_load.country_info.empty is False
