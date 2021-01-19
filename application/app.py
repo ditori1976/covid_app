@@ -1,11 +1,11 @@
 from application.config import Config, logger, daq, dbc, dcc, html
 from application.controller import controller
 from application.comparsion import comparsion_list
+from application.map import map_fig
+from application.layout import graph_template
+from application.data.data_loader import DataLoader
 
 from dash import Dash, callback_context, no_update
-#import dash_core_components as dcc
-#import dash_bootstrap_components as dbc
-# import dash_html_components as html
 from dash.dependencies import Input, Output, State, ALL, MATCH, ClientsideFunction
 from configparser import ConfigParser
 import json
@@ -15,7 +15,14 @@ configuration = Config()
 parser = ConfigParser()
 parser.read("settings.ini")
 
+data = DataLoader(parser)
+data.countries_geojson()
+
 state = configuration.state
+
+map_figure = map_fig(parser, data)
+map_graph = graph_template("map", parser)
+map_graph.figure = map_figure
 
 row_1 = dbc.Col(
     children=[
@@ -28,6 +35,16 @@ row_1 = dbc.Col(
     sm=11,
     xs=12,
     style={'margin-bottom': '10px'})
+
+row_2 = dbc.Col(
+    children=[
+        map_graph
+    ],
+    lg=11,
+    md=11,
+    sm=11,
+    xs=12,
+    style={'margin-bottom': '7px'})
 
 app = Dash(
     __name__,
@@ -46,7 +63,7 @@ def set_layout():
     return dbc.Container(
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
-            # dbc.Row(row_2, no_gutters=False, justify="center"),
+            dbc.Row(row_2, no_gutters=False, justify="center"),
             html.Div(
                 id="state",
                 children=json.dumps(state),
