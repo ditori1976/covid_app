@@ -10,9 +10,13 @@ class DataLoader(Load):
         self.regions = self.definition_regions()
         self.indicators = self.definition_indicators()
 
-    def load_data(self):
+    def load_geo(self):
         self.countries = self.countries_geojson()
         self.country_info = self.read_geonames_country_info()
+
+    def load_data(self):
+        #self.countries = self.countries_geojson()
+        #self.country_info = self.read_geonames_country_info()
         self.latest_load = datetime.now()
         self.jhu = self.load_jhu()
 

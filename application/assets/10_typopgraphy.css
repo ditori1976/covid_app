@@ -7,8 +7,39 @@ body {
   margin-top: 1vh;
 }
 
+@media screen and (min-width: 601px) {
+  h1 {
+    font-size: 4vw;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  h1 {
+    font-size: 40px;
+  }
+}
+
 h1 {
-  font-size: 2em;
+  color: rgb(116, 35, 170);
+  text-align: center;
+  font-family: Garamond, serif;
+}
+
+@media screen and (min-width: 601px) {
+  h3 {
+    font-size: 2vw;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  h3 {
+    font-size: 16px;
+  }
+}
+
+h3 {
+  color: rgb(108, 148, 233);
+  text-align: center;
 }
 
 .center {
@@ -30,7 +61,7 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  verticalalign: middle;
+  vertical-align: middle;
   margin: 0;
   padding: 0;
 }

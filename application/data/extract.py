@@ -34,6 +34,58 @@ class Extract:
 
         error_msg = "cannot load JHU data, no url provided"
 
+        def read_prepare_data(url):
+            try:
+                # logger.info(url)
+                data_raw = pd.read_csv(self.parser.get("urls", url))
+
+                data_raw.rename(
+                    columns={
+                        "Country/Region": "region"},
+                    inplace=True)
+                data = (
+                    data_raw.groupby("region")
+                    .sum()
+                    .drop(columns=["Lat", "Long"])
+                    .reset_index()
+                )
+                logger.info(
+                    'length {}: {}'.format(
+                        url.rstrip('_url'),
+                        len(data)))
+
+                return data
+            except BaseException:
+                logger.error('prepare_data')
+                logger.error(error_msg)
+                return None
+
+        def create_timeseries_jhu(data, lookup_table, value_name):
+            try:
+                logger.info('timeseries: ' + value_name)
+                id_vars = "region"
+                var_name = "date"
+                timeseries = pd.melt(
+                    data, id_vars=id_vars, var_name=var_name, value_name=value_name
+                )
+
+                timeseries.loc[:, var_name] = pd.to_datetime(
+                    timeseries.loc[:, var_name])
+                timeseries = pd.merge(
+                    lookup_table[["iso2", "iso3",
+                                  "code3", "Lat", "Lon", id_vars]]
+                    .groupby(id_vars)
+                    .first(),
+                    timeseries,
+                    on=id_vars,
+                    how="inner",
+                )
+
+                return timeseries
+            except BaseException:
+                logger.error('failed to create timeseries')
+                return None
+
         try:
             lookup_table = pd.read_csv(
                 self.parser.get("urls", "jhu_lookup_url"))
@@ -52,63 +104,13 @@ class Extract:
             return None
 
         if not lookup_table.empty:
-            def read_prepare_data(url):
-                try:
-                    logger.info(url)
-                    data_raw = pd.read_csv(self.parser.get("urls", url))
-                    data_raw.rename(
-                        columns={
-                            "Country/Region": "region"},
-                        inplace=True)
-                    data = (
-                        data_raw.groupby("region")
-                        .sum()
-                        .drop(columns=["Lat", "Long"])
-                        .reset_index()
-                    )
-                    logger.info('length data ({}): {}'.format(url, len(data)))
-
-                    return data
-                except BaseException:
-                    logger.error('prepare_data')
-                    logger.error(error_msg)
-                    return None
-
-            def create_timeseries_jhu(data, lookup_table, value_name):
-                try:
-                    logger.info('timeseries: ' + value_name)
-                    id_vars = "region"
-                    var_name = "date"
-                    timeseries = pd.melt(
-                        data, id_vars=id_vars, var_name=var_name, value_name=value_name
-                    )
-                    timeseries = pd.merge(
-                        lookup_table[["iso2", "iso3",
-                                      "code3", "Lat", "Lon", id_vars]]
-                        .groupby(id_vars)
-                        .first(),
-                        timeseries,
-                        on=id_vars,
-                        how="inner",
-                    )
-                    timeseries.loc[:, var_name] = pd.to_datetime(
-                        timeseries.loc[:, var_name])
-                    return timeseries
-                except BaseException:
-                    logger.error('failed to create timeseries')
-                    return None
 
             confirmed_data = read_prepare_data("jhu_confirmed_url")
             deaths_data = read_prepare_data("jhu_deaths_url")
-            #recovered_data = read_prepare_data("jhu_recovered_url")
-            # logger.error(deaths_data.columns)
-            # logger.error(recovered_data.columns)
 
             confirmed = create_timeseries_jhu(
                 confirmed_data, lookup_table, "confirmed")
             deaths = create_timeseries_jhu(deaths_data, lookup_table, "deaths")
-            # recovered = create_timeseries_jhu(
-            #    recovered_data, lookup_table, "recovered")
 
             data = pd.merge(
                 deaths[["date", "region", "iso3", "Lat", "Lon", "deaths"]],

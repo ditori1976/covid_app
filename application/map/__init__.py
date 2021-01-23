@@ -1,5 +1,4 @@
-import plotly.graph_objects as go
-from application.config import logger
+from application.config import logger, go
 
 
 def map_fig(parser, data):
