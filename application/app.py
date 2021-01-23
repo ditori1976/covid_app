@@ -18,12 +18,19 @@ configuration = Config()
 parser = ConfigParser()
 parser.read("settings.ini")
 
-data = DataLoader(parser)
-# data.countries_geojson()
-# data.read_geonames_country_info()
-data.load_geo()
-data.load_data()
+def get_new_data():
 
+    global data
+    global latest_update
+    data = DataLoader(parser)
+
+    data.load_geo()
+    data.load_data()
+    latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
+
+    logger.info("Data updated at " + latest_update)
+
+get_new_data()
 
 state = configuration.state
 
@@ -101,6 +108,13 @@ app = Dash(
     ]
 )
 app.title = "COVID-19"
+
+# alles folgende nötig? XXX
+app.scripts.config.serve_locally = False
+app.config.suppress_callback_exceptions = True
+app.scripts.append_script({
+    "external_url": "https://www.googletagmanager.com/gtag/js?id=UA-164129496-1"
+})
 
 
 def set_layout():
