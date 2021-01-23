@@ -7,9 +7,38 @@ body {
   margin-top: 1vh;
 }
 
+@media screen and (min-width: 601px) {
+  h1 {
+    font-size: 4vw;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  h1 {
+    font-size: 40px;
+  }
+}
+
 h1 {
-  font-size: 5vw;
-  color: red;
+  color: rgb(116, 35, 170);
+  text-align: center;
+  font-family: Garamond, serif;
+}
+
+@media screen and (min-width: 601px) {
+  h3 {
+    font-size: 2vw;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  h3 {
+    font-size: 16px;
+  }
+}
+
+h3 {
+  color: rgb(108, 148, 233);
   text-align: center;
 }
 
