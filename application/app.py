@@ -1,7 +1,8 @@
-from application.config import Config, logger, daq, dbc, dcc, html, go
+from application.config import Config, logger, daq, dbc, dcc, html, go, DataTable
 from application.controller import controller, continents
 from application.comparsion import comparsion_list
 from application.timeline import timeline
+from application.table import table
 from application.map import map_fig
 from application.layout import graph_template
 from application.data.data_loader import DataLoader
@@ -33,6 +34,9 @@ map_graph.figure = map_figure
 continent_div = continents(parser, data)
 
 timeline_tab = graph_template("timeline", parser)
+
+table_data = data.map_data(True, "days", ["deaths", "cases"])[
+    ["region", "continent", "deaths", "cases"]]
 
 map_tab = dbc.Row(
     children=[
@@ -76,6 +80,16 @@ row_2 = dbc.Col(
     xs=12,
     style={'margin-bottom': '7px'})
 
+row_3 = dbc.Col(
+    children=[
+        html.Div(id="table", children=[table(table_data)]),
+    ],
+    lg=7,
+    md=8,
+    sm=9,
+    xs=12,
+    style={'margin-bottom': '7px'})
+
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -94,10 +108,11 @@ def set_layout():
         children=[
             dbc.Row(row_1, no_gutters=True, justify="center"),
             dbc.Row(row_2, no_gutters=False, justify="center"),
+            dbc.Row(row_3, no_gutters=False, justify="center"),
             html.Div(
                 id="state",
                 children=json.dumps(state),
-                # style={'display': 'None'}
+                style={'display': 'None'}
             )
         ],
         fluid=True
@@ -109,6 +124,18 @@ app.layout = set_layout
 """
 callbacks
 """
+
+
+@app.callback(
+    Output("table", "children"),
+    [
+        Input("state", "children")
+    ])
+def update_table(state):
+    state = json.loads(state)
+    data_table = data.map_data(state["per capita"], state["aggregation"], ["deaths", "cases"])[
+        ["region", "continent", "deaths", "cases"]].sort_values(by=state["indicator"], ascending=False)
+    return table(data_table, selected_rows=state["regions"])
 
 
 @app.callback(

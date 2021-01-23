@@ -189,8 +189,6 @@ row_2 = dbc.Col(
 row_3 = dbc.Col(
     children=[
         html.Div(id="table", children=[table(table_data)]),
-
-
     ],
     lg=7,
     md=8,
