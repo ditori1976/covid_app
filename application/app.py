@@ -18,6 +18,7 @@ configuration = Config()
 parser = ConfigParser()
 parser.read("settings.ini")
 
+
 def get_new_data():
 
     global data
@@ -29,6 +30,7 @@ def get_new_data():
     latest_update = data.latest_load.strftime("%m/%d/%Y, %H:%M:%S")
 
     logger.info("Data updated at " + latest_update)
+
 
 get_new_data()
 
@@ -43,30 +45,28 @@ continent_div = continents(parser, data)
 timeline_tab = graph_template("timeline", parser)
 
 table_data = data.map_data(True, "days", ["deaths", "cases"])[
-    ["region", "continent", "deaths", "cases"]]
+    ["region", "deaths", "cases"]]
 
 map_tab = dbc.Row(
     children=[
-        dbc.Col(map_graph,
-                lg=10,
-                md=9,
-                xs=12,),
         dbc.Col(
-            children=[
-                continent_div
-            ],
+            continent_div,
             lg=2,
             md=3,
-            xs=12,)
+            xs=12),
+        dbc.Col(
+            map_graph,
+            lg=10,
+            md=9,
+            xs=12),
     ],
     no_gutters=True
 )
 
 row_1 = dbc.Col(
     children=[
-        html.H1("Country Comparsion COVID-19"),
-        html.H3(
-            "Course of COVID-19 cases and fatalities. Pick countries from map or continents from list"),
+        html.H1(parser.get("layout", "main_title")),
+        html.H3(parser.get("layout", "sub_title")),
         comparsion_list(parser)
     ],
     lg=11,
@@ -148,7 +148,7 @@ callbacks
 def update_table(state):
     state = json.loads(state)
     data_table = data.map_data(state["per capita"], state["aggregation"], ["deaths", "cases"])[
-        ["region", "continent", "deaths", "cases"]].sort_values(by=state["indicator"], ascending=False)
+        ["region", "deaths", "cases"]].sort_values(by=state["indicator"], ascending=False)
     return table(data_table, selected_rows=state["regions"])
 
 

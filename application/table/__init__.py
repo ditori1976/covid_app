@@ -25,13 +25,16 @@ def table(data, selected_rows=[]):
         page_size=10,
         style_cell_conditional=[
             {'if': {'column_id': 'region'},
-             'width': '35%'},
-            {'if': {'column_id': 'continent'},
-             'width': '25%'},
+             'width': '35%',
+             'textAlign': 'left'},
+            # {'if': {'column_id': 'continent'},
+            #  'width': '25%'},
             {'if': {'column_id': 'deaths'},
-             'width': '20%'},
+             'width': '20%',
+             'textAlign': 'center'},
             {'if': {'column_id': 'cases'},
-                'width': '20%'},
+             'width': '20%',
+             'textAlign': 'center'},
 
         ],
         style_data_conditional=[
@@ -44,8 +47,7 @@ def table(data, selected_rows=[]):
             'backgroundColor': 'white',
             'fontWeight': 'bold'
         },
-        style_cell={'textAlign': 'left',
-                    'overflow': 'hidden',
+        style_cell={'overflow': 'hidden',
                     'textOverflow': 'ellipsis',
                     'maxWidth': 0},
     )
